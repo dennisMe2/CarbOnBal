@@ -11,5 +11,7 @@ The hardware consists mainly of an Arduino (or clone), HD54470 Display with 4 li
 The display displays bar graphs that indicate how well the throttle bodies or carbs are in sync.
 This makes it easy to tweak them for that super smooth ride we all love.
 
-I will be uploading the schematics soon and posting a hackaday project to help you out with the build.
-Stay tuned!
+The hardware I built makes use of the following library, which you can simply install in your Arduino Libs directory.
+https://github.com/omersiar/ShiftedLCD
+
+Note that it is possible to build this basic version with a straight "four wire" interface in stead of the SPI shifted version I used. This might be easyer but it will prevent the connection of extra features in future. 
