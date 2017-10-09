@@ -14,4 +14,8 @@ This makes it easy to tweak them for that super smooth ride we all love.
 The hardware I built makes use of the following library, which you can simply install in your Arduino Libs directory.
 https://github.com/omersiar/ShiftedLCD
 
-Note that it is possible to build this basic version with a straight "four wire" interface in stead of the SPI shifted version I used. This might be easyer but it will prevent the connection of extra features in future. 
+Note that it is possible to build this basic version with a straight "four wire" interface in stead of the SPI shifted version I used. This might be easyer but it will prevent the connection of extra features in future. I'm looking into making a simpler version using this, but I want to tweak the prototype and make it insanely user friendly first.
+
+I'm documenting the project on this Hackaday site:
+https://hackaday.io/project/27569-carbonbal
+If you're interested in building this as a D.I.Y.project then that's the place to go. It will eventually contain a step-by-step guide on building this.
