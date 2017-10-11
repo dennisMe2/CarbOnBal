@@ -42,12 +42,13 @@ static const int maxValue=1024;
 static const uint8_t brightnessPin=6;
 static const uint8_t contrastPin=5;
 static const int numberOfCalibrationValues=256;
-static const uint8_t calibrationOffset=50; //eeprom base address for calibration
+static const int calibrationOffset=500; //eeprom base address for calibration
 
 
 
-static const uint8_t versionUID = 9; //update when settings_t changes!
+static const uint8_t versionUID = 10; //update when settings_t changes!
 
+//this struct is used to store settings in NVRAM
 struct settings_t
 {
     uint8_t versionID = versionUID;
@@ -65,6 +66,7 @@ struct settings_t
     uint8_t button1;
     uint8_t button2;
     uint8_t rpmDamping;
+    uint8_t responsiveness;
 };
 
 extern int readingCount[NUM_SENSORS];

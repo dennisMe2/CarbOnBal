@@ -50,6 +50,7 @@ void doLoadCalibrations();
 void doSaveCalibrations();
 void doZeroCalibrations();
 
+int doBasicSettingChanger(String valueName, int minimum, int maximum, int startValue, int steps );
 int doSettingChanger(String valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) );
 int doSettingChooser(String valueName, String settings[], int count, int startIndex) ;
 

@@ -34,6 +34,7 @@ extern float alphaRpm;
 extern const uint8_t brightnessPin;//6
 extern const uint8_t contrastPin;//5
 
+
 void doBaudRate(){
     String actions[] = {F("300"), F("600"), F("1200"), F("2400"), F("4800"), F("9600"), F("14400")
     , F("19200"), F("28800"), F("31250"), F("38400"), F("57600"), F("115200")};
@@ -67,60 +68,41 @@ void actionGraphing() {
 }
 
 void actionDelay() {
-    settings.delayTime = doSettingChanger(F("Delay: (us)"), 0, 1000, settings.delayTime, 10, &doDelayTime) ;
+    settings.delayTime = doBasicSettingChanger(F("Delay: (us)"), 0, 1000, settings.delayTime, 10) ;
 }
 
-void doDelayTime(int value) {
-    settings.delayTime = value;
+
+void actionResponsiveness() {
+    settings.responsiveness = (uint8_t) doBasicSettingChanger(F("Response: (%)"), 0, 100, settings.responsiveness, 5);
 }
 
 void actionDamping() {
-    settings.damping = (uint8_t) doSettingChanger(F("Damping: (%)"), 0, 100, settings.damping, 1, &doDamping);
+    settings.damping = (uint8_t) doBasicSettingChanger(F("Damping: (%)"), 0, 100, settings.damping, 1);
     alpha = calculateAlpha(settings.damping);
 }
 
-void doDamping(int value) {
-    settings.damping = (uint8_t) value;
-    alpha = calculateAlpha(settings.damping);
-}
 
 void actionRPMDamping() {
-    settings.rpmDamping = (uint8_t) doSettingChanger(F("RPM Damping: (%)"), 0, 100, settings.rpmDamping, 1, &doRPMDamping);
+    settings.rpmDamping = (uint8_t) doBasicSettingChanger(F("RPM Damping: (%)"), 0, 100, settings.rpmDamping, 1);
     alphaRpm = calculateAlpha(settings.rpmDamping);
 }
 
-void doRPMDamping(int value) {
-    settings.rpmDamping = (uint8_t) value;
-    alphaRpm = calculateAlpha(settings.rpmDamping);
-}
 
 void actionThreshold() {
-    settings.threshold = (uint8_t) doSettingChanger(F("Threshold:"), 0, 1023, settings.threshold, 10, &doThreshold) ;
+    settings.threshold = (uint8_t) doBasicSettingChanger(F("Threshold:"), 0, 1023, settings.threshold, 10) ;
 }
 
-void doThreshold(int value) {
-    settings.threshold = (uint8_t) value;
-}
 
 void actionCylinders() {
-    settings.cylinders = (uint8_t) doSettingChanger(F("Cylinder count:"), 1, 4, settings.cylinders, 1, &doCylinders);
-    fixMaster();
-}
-
-void doCylinders(int value) {
-    settings.cylinders = (uint8_t) value;
+    settings.cylinders = (uint8_t) doBasicSettingChanger(F("Cylinder count:"), 1, 4, settings.cylinders, 1);
     fixMaster();
 }
 
 void actionMaster() {
-    settings.master = (uint8_t) doSettingChanger(F("Master Carb:"), 1, 4, settings.master, 1, &doMaster);
+    settings.master = (uint8_t) doBasicSettingChanger(F("Master Carb:"), 1, 4, settings.master, 1);
     fixMaster();
 }
 
-void doMaster(int value) {
-    settings.master = (uint8_t) value;
-    fixMaster();
-}
 
 void fixMaster(){
     if (settings.cylinders < settings.master){

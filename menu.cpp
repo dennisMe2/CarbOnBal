@@ -33,7 +33,10 @@
 #define RIGHT 2
 #define CANCEL 3
 
-
+// an array of strings contains the menu titles
+// an array of function pointers, the same number and order as the above array, determines the actions to be taken when that title is selected
+// a size is passed which must be equal to the number of menu entries
+// NOTE the Arduino F() macro is used to store strings in SRAM, which saves a lot of normal RAM for real variables
 void actionDisplayMainMenu() {
 
     String menu[] = {F("Display"), F("Calibration"), F("Settings"), F("Data Transfer") };
@@ -54,9 +57,9 @@ void actionDisplaySettingsMenu() {
 
     void actionDisplaySoftwareSettingsMenu() {
 
-        String menu[] = { F("Damping"), F("RPM Damping"),F("Sample Delay (us)"), F("Threshold")};
-        void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold };
-        uint8_t menuSize = 4;
+        String menu[] = { F("Damping"), F("RPM Damping"),F("Sample Delay (us)"), F("Threshold"), F("Responsiveness")};
+        void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold, &actionResponsiveness };
+        uint8_t menuSize = 5;
 
         handleMenu(menu, actions, menuSize);
     }
@@ -99,6 +102,13 @@ void actionDisplaySettingsMenu() {
         handleMenu(menu, actions, menuSize);
     }
 
+// display a basic setting change screen that does not have to call a function
+int doBasicSettingChanger(String valueName, int minimum, int maximum, int startValue, int steps ) {
+  return doSettingChanger( valueName, minimum, maximum, startValue, steps, NULL );
+}
+
+// display a settings change screen that calls a function every time the value changes for an immediate response
+// normally used for setting contrast and brightness
 int doSettingChanger(String valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) ) {
     int value = startValue;
     lcd_clear();
@@ -143,7 +153,7 @@ int doSettingChanger(String valueName, int minimum, int maximum, int startValue,
             } else {
                 value = maximum;
             }
-            (*func)(value);
+            if(func)(*func)(value);
             break;
 
             case LEFT: if (value > minimum + steps) {
@@ -151,9 +161,9 @@ int doSettingChanger(String valueName, int minimum, int maximum, int startValue,
             } else {
                 value = minimum;
             }
-            (*func)(value);
+            if(func)(*func)(value);
             break;
-            case CANCEL: (*func)(startValue); return startValue;
+            case CANCEL: if(func)(*func)(startValue); return startValue;
         }
 
         delay(50);
@@ -161,6 +171,8 @@ int doSettingChanger(String valueName, int minimum, int maximum, int startValue,
     return startValue;
 }
 
+// allows the user to choose a value from an array of strings, 
+// the selected array index is returned.
 int doSettingChooser(String valueName, String settings[], int count, int startIndex) {
     int index = startIndex;
     boolean settingChanged = true;
@@ -212,7 +224,10 @@ int doSettingChooser(String valueName, String settings[], int count, int startIn
     return startIndex;
 }
 
-
+// displays a menu screen
+// menu[] = an array of menu option strings
+// *func[] = an array of pointers to the corresponding functions 
+// menuSize = a counter to say how many values are in both arrays
 void handleMenu(String menu[], void (*func[])(), int menuSize) {
     int cursorLine = 0;
     int offset = 0;
@@ -258,6 +273,7 @@ void handleMenu(String menu[], void (*func[])(), int menuSize) {
     }
 }
 
+// display the resulting menu, used by handleMenu()
 void drawMenu(String lines[], int count, int offset) {
     lcd_clear();
 
@@ -301,6 +317,7 @@ void drawMenu(String lines[], int count, int offset) {
     drawCaret(0);
 }
 
+// puts the menu cursor in the right place
 void drawCaret(uint8_t line) {
     for (uint8_t i = 0; i < DISPLAY_ROWS; i++) {
         lcd_setCursor(0, i);
@@ -311,6 +328,7 @@ void drawCaret(uint8_t line) {
 
 }
 
+// builds a custom character used for smooth display (less than 5 stripes)
 void makeChar(byte *character, int value){
 
     byte line = 0x00;
@@ -332,6 +350,7 @@ void makeChar(byte *character, int value){
     }
 }
 
+// generates a single bar graph
 void makeBars(char *bars, uint8_t number, uint8_t skip) {
     if(number >20) number=20;
     if(number <0) number=0;

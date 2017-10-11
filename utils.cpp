@@ -24,6 +24,7 @@
 
 
 #include <Arduino.h>
+#include "globals.h"
 
 #define NUM_SENSORS 4
 #define NUM_BUTTONS 4
@@ -32,12 +33,17 @@
 #define RIGHT 2
 #define CANCEL 3
 
-byte buttonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH};
-byte lastButtonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH};
-unsigned long lastDebounceTime[NUM_BUTTONS];
+extern settings_t settings;
 
-uint8_t debounceDelay = 200;
+byte buttonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH}; //array for recording the state of buttons
+byte lastButtonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH};//array for recording the previous state of buttons
+unsigned long lastDebounceTime[NUM_BUTTONS]; //array for recording when the buttonpress was first seen
 
+uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
+
+// tests if a button was pressed and applies debounce logic
+// this function assumes all buttons are input_pullup, active LOW, and contiguous pin numbers!
+// this function does not use wait loops or other blocking functions which delay processing
 int buttonPressed() {
 
     for (uint8_t button = SELECT; button <= CANCEL; button++) {
@@ -57,26 +63,49 @@ int buttonPressed() {
     return -1;
 }
 
+// used by switches which "short" the pin to ground, saves wiring a resistor per switch
 void setInputActiveLow(int i) {
     pinMode(i, INPUT);
     digitalWrite(i, HIGH);  // turn on internal pullups
 }
 
+// sets a pin to output, with internal pull-up resistors
 void setOutputHigh(int i) {
     pinMode(i, OUTPUT);
     digitalWrite(i, HIGH);  // turn on internal pullups
 }
 
+// calculates the smoothing factor 'alpha' used by the Exponential moving average
+// this takes a percentage as input and uses an exponential function to make the settings more sensitive
 float calculateAlpha(int input){
     int reverse = 100-input;
     return pow((float) reverse / 100.0, 5);
 }
 
+// calculate Exponentially weighted moving average for smoothing
+// alpha is how much weight is given to new values vs the stored average: 0 = 0%  - 1 = 100%
+// accumulator is a pointer to a global value in which to store the average
+// new value is the new data measurement
 float exponentialMovingAverage(float alpha, float *accumulator, float new_value) {
     *accumulator += alpha * (new_value - *accumulator);
     return(*accumulator);
 }
 
+// version of the Exponential Moving Average that deliberately stops smoothing
+// if the value changes more than a certain "percentage"
+// this is needed to get a stable readout, yet respond quickly when the gas is tweaked.
+// not technically needed but convinces the user the system is working as expected!
+float responsiveEMA(float alpha, float *accumulator, float new_value) {
+    float stability = *accumulator / new_value; //new value will never be 0 unless launched into space
+    float stabilityThreshold = (100 - settings.responsiveness) / 100; //more than a certain % difference from the average
+
+    if(stability > (1 + stabilityThreshold) || stability < (1-stabilityThreshold)) *accumulator = new_value; //short out the EMA if our value is changing fast
+
+    *accumulator += alpha * (new_value - *accumulator);
+    return(*accumulator);
+}
+
+// calculate the absolute difference between two integers
 int delta(int first, int second){
     if( first >= second){
         return first-second;
@@ -85,6 +114,7 @@ int delta(int first, int second){
     }
 }
 
+// return the highest value from a given array
 int maxVal( int value[]) {
     int maxValue = 0;
     for (int index = 0 ; index < NUM_SENSORS; index++) {
@@ -95,6 +125,7 @@ int maxVal( int value[]) {
     return maxValue;
 }
 
+// return the lowest value from a given array
 int minVal( int value[]) {
     int minValue = 20000;
     for (int index = 0 ; index < NUM_SENSORS; index++) {
@@ -105,6 +136,7 @@ int minVal( int value[]) {
     return minValue;
 }
 
+// convert an integer index into a baud rate for the arduino
 unsigned long getBaud(int index){
     const unsigned long baud[] = {
         300,

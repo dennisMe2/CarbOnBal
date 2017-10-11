@@ -38,6 +38,7 @@ void actionSilent() ;
 void actionGraphing();
 void actionDelay();
 void doDelayTime(int value);
+void actionResponsiveness();
 void actionDamping();
 void doDamping(int value);
 void actionRPMDamping();

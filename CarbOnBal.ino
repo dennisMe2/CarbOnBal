@@ -127,7 +127,7 @@ void runningAverage() {
         } else {
             if(readingCount[sensor] > 0){//immediately after the vacuum peak
 
-                average[sensor] = exponentialMovingAverage(alpha, &accumulator[sensor], sums[sensor]/readingCount[sensor]);
+                average[sensor] = responsiveEMA(alpha, &accumulator[sensor], sums[sensor]/readingCount[sensor]);
             }
             //done the calcs, now reset everything
             sums[sensor]=0;
@@ -303,6 +303,7 @@ void loadSettings(){
         settings.button1 =0;
         settings.button2 =0;
         settings.rpmDamping =20;
+        settings.responsiveness = 80;
     }
 
     doContrast(settings.contrast);
@@ -435,7 +436,7 @@ void doCalibrate() {
         bool descending = false;
         bool previousDescending = false;
 
-        unsigned long peak;
+        unsigned long peak = millis();
         unsigned int delta;
         unsigned long previousPeak = millis();
         unsigned long lastUpdateTime = millis();
