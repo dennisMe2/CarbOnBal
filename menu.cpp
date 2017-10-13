@@ -353,7 +353,6 @@ void makeChar(byte *character, int value){
 // generates a single bar graph
 void makeBars(char *bars, uint8_t number, uint8_t skip) {
     if(number >20) number=20;
-    if(number <0) number=0;
 
     for (uint8_t i = 0; i < skip ; i++) {
         bars[i] = ' ';

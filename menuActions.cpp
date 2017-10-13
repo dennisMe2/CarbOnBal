@@ -30,6 +30,7 @@
 extern settings_t settings;
 extern float alpha;
 extern float alphaRpm;
+extern float stabilityThreshold;
 
 extern const uint8_t brightnessPin;//6
 extern const uint8_t contrastPin;//5
@@ -74,16 +75,17 @@ void actionDelay() {
 
 void actionResponsiveness() {
     settings.responsiveness = (uint8_t) doBasicSettingChanger(F("Response: (%)"), 0, 100, settings.responsiveness, 5);
+    stabilityThreshold = (100 - settings.responsiveness) / 100.00; //more than a certain % difference from the average
 }
 
 void actionDamping() {
-    settings.damping = (uint8_t) doBasicSettingChanger(F("Damping: (%)"), 0, 100, settings.damping, 1);
+    settings.damping = (uint8_t) doBasicSettingChanger(F("Damping: (%)"), 0, 100, settings.damping, 5);
     alpha = calculateAlpha(settings.damping);
 }
 
 
 void actionRPMDamping() {
-    settings.rpmDamping = (uint8_t) doBasicSettingChanger(F("RPM Damping: (%)"), 0, 100, settings.rpmDamping, 1);
+    settings.rpmDamping = (uint8_t) doBasicSettingChanger(F("RPM Damping: (%)"), 0, 100, settings.rpmDamping, 5);
     alphaRpm = calculateAlpha(settings.rpmDamping);
 }
 

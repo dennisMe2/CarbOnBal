@@ -85,5 +85,6 @@ extern unsigned int rpm;
 extern settings_t settings;
 extern float alpha;
 extern float alphaRpm;
+extern float stabilityThreshold;
 
 #endif

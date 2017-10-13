@@ -43,6 +43,8 @@ bool freezeDisplay = false;
 unsigned int rpm;
 float alpha;
 float alphaRpm;
+float stabilityThreshold;
+
 int readingCount[NUM_SENSORS];
 uint8_t readIndex[NUM_SENSORS];
 int average[NUM_SENSORS];
@@ -67,6 +69,7 @@ void setup() {
     doLoadCalibrations();
     alpha = calculateAlpha(settings.damping);
     alphaRpm = calculateAlpha(settings.rpmDamping);
+    stabilityThreshold = (100 - settings.responsiveness) / 100; //more than a certain % difference from the average
     delay(1000);
 }
 
@@ -355,7 +358,7 @@ void doCalibrate() {
             }
         }
 
-        int uncalibrated =0;
+        int uncalibrated = 0;
         for(int i=0 ;i<256;i++){
             if(!calibrated[i]) uncalibrated++;
         }

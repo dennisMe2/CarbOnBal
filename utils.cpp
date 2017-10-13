@@ -41,6 +41,7 @@ unsigned long lastDebounceTime[NUM_BUTTONS]; //array for recording when the butt
 
 uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
 
+
 // tests if a button was pressed and applies debounce logic
 // this function assumes all buttons are input_pullup, active LOW, and contiguous pin numbers!
 // this function does not use wait loops or other blocking functions which delay processing
@@ -92,15 +93,15 @@ float exponentialMovingAverage(float alpha, float *accumulator, float new_value)
 }
 
 // version of the Exponential Moving Average that deliberately stops smoothing
-// if the value changes more than a certain "percentage"
+// if the value changes more than a certain "percentage", the global 'stabilityThreshold' which is precalculated to save an expensive FP division.
 // this is needed to get a stable readout, yet respond quickly when the gas is tweaked.
 // not technically needed but convinces the user the system is working as expected!
 float responsiveEMA(float alpha, float *accumulator, float new_value) {
-    float stability = *accumulator / new_value; //new value will never be 0 unless launched into space
-    float stabilityThreshold = (100 - settings.responsiveness) / 100; //more than a certain % difference from the average
-
-    if(stability > (1 + stabilityThreshold) || stability < (1-stabilityThreshold)) *accumulator = new_value; //short out the EMA if our value is changing fast
-
+    
+    if(new_value > (*accumulator * (1 + stabilityThreshold)) || new_value < (*accumulator * (1-stabilityThreshold))){ 
+      *accumulator = new_value;//short out the EMA if our value is changing fast
+      } 
+      
     *accumulator += alpha * (new_value - *accumulator);
     return(*accumulator);
 }
