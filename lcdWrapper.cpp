@@ -26,7 +26,7 @@
 #include <SPI.h>
 #include <ShiftedLCD.h>
 #include "lcdWrapper.h"
-
+#include "utils.h"
 LiquidCrystal lcd(9);
 
 void lcd_setCursor(int a, int i){
@@ -39,6 +39,10 @@ void lcd_print(String str){
 
 void lcd_printInt(int integer){
     lcd.print(String(integer));
+}
+
+void lcd_printFloat(float value){
+  lcd.print(String(value));
 }
 
 void lcd_printChar(char chr){
@@ -77,3 +81,9 @@ void printLcdInteger(int value, uint8_t column, uint8_t row, uint8_t length){
     printLcdSpace(column,row,length);
     lcd_print(String(value));
 }
+void printLcdFloat(float value, uint8_t column, uint8_t row, uint8_t length){
+    printLcdSpace(column,row,length);
+    lcd_print(String(value));
+}
+
+

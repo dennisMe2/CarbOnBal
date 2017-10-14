@@ -37,6 +37,7 @@
 // an array of function pointers, the same number and order as the above array, determines the actions to be taken when that title is selected
 // a size is passed which must be equal to the number of menu entries
 // NOTE the Arduino F() macro is used to store strings in SRAM, which saves a lot of normal RAM for real variables
+//this menu would not be possible in an Atega328 without the F macro or an equivalent trick
 void actionDisplayMainMenu() {
 
     String menu[] = {F("Display"), F("Calibration"), F("Settings"), F("Data Transfer") };
@@ -47,10 +48,10 @@ void actionDisplayMainMenu() {
 }
 void actionDisplaySettingsMenu() {
 
-    String menu[] = {F("Software"), F("Hardware"), F("Save Settings"), F("Load Settings")};
+    String menu[] = {F("Software"), F("Hardware"), F("Save Settings"), F("Load Settings"), F("'Factory' reset")};
     void (*actions[])() = {&actionDisplaySoftwareSettingsMenu, &actionDisplayHardwareSettingsMenu,
-        &actionSaveSettings, &actionLoadSettings };
-        uint8_t menuSize = 4;
+        &actionSaveSettings, &actionLoadSettings, &actionReset };
+        uint8_t menuSize = 5;
 
         handleMenu(menu, actions, menuSize);
     }
@@ -86,9 +87,9 @@ void actionDisplaySettingsMenu() {
 
     void actionDisplayContrastMenu() {
 
-        String menu[] = {F("Contrast"), F("Brightness"), F("Details"), F("Graph Type"), F("RPM Display") };
-        void (*actions[])() = {&actionContrast, &actionBrightness, &actionSilent, &actionGraphing, &doRevs };
-        uint8_t menuSize = 5;
+        String menu[] = {F("Contrast"), F("Brightness"), F("Details"), F("Graph Type"), F("RPM Display"), F("Units") };
+        void (*actions[])() = {&actionContrast, &actionBrightness, &actionSilent, &actionGraphing, &doRevs, &doUnits };
+        uint8_t menuSize = 6;
 
         handleMenu(menu, actions, menuSize);
     }
@@ -171,7 +172,7 @@ int doSettingChanger(String valueName, int minimum, int maximum, int startValue,
     return startValue;
 }
 
-// allows the user to choose a value from an array of strings, 
+// allows the user to choose a value from an array of strings,
 // the selected array index is returned.
 int doSettingChooser(String valueName, String settings[], int count, int startIndex) {
     int index = startIndex;
@@ -193,7 +194,7 @@ int doSettingChooser(String valueName, String settings[], int count, int startIn
                 lcd_setCursor(0, 1);
                 lcd_print("<");
             }
-            lcd_setCursor(3, 1);
+            lcd_setCursor(0, 1);
             lcd_print(settings[index]);
 
             if(index < count -1){
@@ -226,7 +227,7 @@ int doSettingChooser(String valueName, String settings[], int count, int startIn
 
 // displays a menu screen
 // menu[] = an array of menu option strings
-// *func[] = an array of pointers to the corresponding functions 
+// *func[] = an array of pointers to the corresponding functions
 // menuSize = a counter to say how many values are in both arrays
 void handleMenu(String menu[], void (*func[])(), int menuSize) {
     int cursorLine = 0;

@@ -36,6 +36,7 @@ void actionContrast();
 void doContrast(int value) ;
 void actionSilent() ;
 void actionGraphing();
+void actionReset();
 void actionDelay();
 void doDelayTime(int value);
 void actionResponsiveness();
@@ -51,4 +52,5 @@ void actionMaster() ;
 void doMaster(int value);
 void fixMaster();
 void actionBrightnessButton();
+void doUnits();
 #endif

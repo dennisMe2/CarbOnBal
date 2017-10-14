@@ -33,70 +33,77 @@
 #include "globals.h"
 settings_t settings;
 
-float accumulator[NUM_SENSORS]= {1000.0, 1000.0, 1000.0, 1000.0};
-int inputPin[NUM_SENSORS] = {A0, A1, A2, A3};
-int timeBase=0;
-long sums[NUM_SENSORS]={0,0,0,0};
-long sums2[NUM_SENSORS]={0,0,0,0};
-int8_t calibration[NUM_SENSORS-1][256];
-bool freezeDisplay = false;
-unsigned int rpm;
-float alpha;
-float alphaRpm;
-float stabilityThreshold;
+// The software uses a lot of global variables. This may not be elegant but its one way of writing non-blocking code
+float accumulator[NUM_SENSORS]= {1000.0, 1000.0, 1000.0, 1000.0}; //used to track the average values per sensor
+int inputPin[NUM_SENSORS] = {A0, A1, A2, A3};               //used as a means to access the sensor pins using a counter
+int timeBase=0;                                             //darned if I remember
+long sums[NUM_SENSORS]={0,0,0,0};                           //tracks totals for calculating a numerical average
+long sums2[NUM_SENSORS]={0,0,0,0};                          //totals for numerical averages
+// this array is 1/4 the size of the possible values bacause it would eat up all the ram
+// (there are theoretically four arrays of 1024 values required) by only sampling 1/4 we get a close approxmation
+int8_t calibration[NUM_SENSORS-1][256];                     //store the offsets of the sensors relative to the sensor 0 reading, used to get a calibrated reading
+bool freezeDisplay = false;                                 //used to tell when a user wants to freeze the display
+unsigned int rpm;                                           //stores the current RPM
+float alpha;                                                //alpha is the math term for the weighting factor used to calculate
+                                                            //EMA Exponentially weighted moving average. Using this we save a lot of precious memory
+float alphaRpm;                                             //alpha factor used to smoothe the RPM display
+float stabilityThreshold;                                   //the factor used to detect when the throttle is being janked and a response is required
 
-int readingCount[NUM_SENSORS];
-uint8_t readIndex[NUM_SENSORS];
-int average[NUM_SENSORS];
-int total[NUM_SENSORS];
-int reading[NUM_SENSORS];
+int readingCount[NUM_SENSORS];                              //used to store the number of captured readings for calculating a numerical average
+uint8_t readIndex[NUM_SENSORS];                             //
+int average[NUM_SENSORS];                                   //used to share the current average for each sensor
+int total[NUM_SENSORS];                                     //
+int reading[NUM_SENSORS];                                   //the current reading for each sensor
 
+//this does the initial setup on startup.
 void setup() {
-    loadSettings();
+    loadSettings();                                         //load saved settings into memory from FLASH
     Serial.begin(getBaud(settings.baudRate));
 
-    setInputActiveLow(SELECT);
-    setInputActiveLow(LEFT);
-    setInputActiveLow(RIGHT);
+    setInputActiveLow(SELECT);                              //set the pins connected to the switches
+    setInputActiveLow(LEFT);                                //switches are wired directly and could
+    setInputActiveLow(RIGHT);                               //short out the pins if setup wrong
     setInputActiveLow(CANCEL);
 
-    analogWrite(brightnessPin, settings.brightness);
-    analogWrite(contrastPin, settings.contrast);
+    analogWrite(brightnessPin, settings.brightness);        //brightness is PWM driven
+    analogWrite(contrastPin, settings.contrast);            //contrast is PWM with smoothing (R/C network) to prevent flicker
 
-    lcd_begin(DISPLAY_COLS, DISPLAY_ROWS);
-    lcd_print(F("Lets Rock!"));
+    lcd_begin(DISPLAY_COLS, DISPLAY_ROWS);                  //instantiate the ShiftedLCD library
 
-    doLoadCalibrations();
-    alpha = calculateAlpha(settings.damping);
+    doLoadCalibrations();                                   //load calibration data into RAM
+
+    alpha = calculateAlpha(settings.damping);               //prime the alpha from the settings
     alphaRpm = calculateAlpha(settings.rpmDamping);
-    stabilityThreshold = (100 - settings.responsiveness) / 100; //more than a certain % difference from the average
+    stabilityThreshold = (100 - settings.responsiveness) / 100; //responsiveness is how quickly the system responds to rapid RPM changes asopposed to smoothing the display
     delay(1000);
 }
 
 void loop() {
 
+    //test if a button was pressed
     switch ( buttonPressed()) {
-        case SELECT: actionDisplayMainMenu(); break;
+        case SELECT: actionDisplayMainMenu(); break;        //the menu is the only function that does not return asap
         case LEFT: actionContrast(); break;
         case RIGHT:
-        if(settings.button2 ==0){
+        if(settings.button2 ==0){                           // there are two modes fot this pin, user settable
             actionBrightness();
         } else{
             doRevs();
         }
         break;
 
-        case CANCEL: freezeDisplay = !freezeDisplay; break;
+        case CANCEL: freezeDisplay = !freezeDisplay; break; //toggle the freezeDisplay option
     }
 
-    runningAverage();
+    runningAverage(); //calculate the running averages and return asap
 
     if (!freezeDisplay){
-        switch ( settings.graphType) {
-            case 0: lcdBarsSmooth(average); break;
-            case 1: lcdBarsCenterSmooth(average); break;
+        switch ( settings.graphType) {                      //there are twotypes of graph. bar and centered around the value of the master carb
+            case 0: lcdBarsSmooth(average); break;          //these functions both draw a graph and return asap
+            case 1: lcdBarsCenterSmooth(average); break;    //
         }
     }else{
+        //make a little snowflake to indicate the frozen state of the display
         byte frozen[8] = {
             0b00000,
             0b00000,
@@ -107,102 +114,108 @@ void loop() {
             0b01010,
             0b00000
         };
-        lcd_createChar(7, frozen);
-        lcd_setCursor(19, 0);
-        lcd_write(byte(0x07));
+        lcd_createChar(7, frozen);                          //tells LCD to store our snowflake in slot 7
+        lcd_setCursor(19, 0);                               // place the cursor on the LCD
+        lcd_write(byte(0x07));                              //display the stored snowflake
     }
 }
 
+//the main measurement function which calculates a true average of all samples while the signal drops below the threshold.
+//all the sensors are sampled and values stored then the loop returns asap so the screen can be updated in real time
 void runningAverage() {
     unsigned long startTime = millis();
-    for (int sensor = 0; sensor < settings.cylinders; sensor++) {
-        delayMicroseconds(settings.delayTime);
+    for (int sensor = 0; sensor < settings.cylinders; sensor++) {       //loop over all sensors
+        delayMicroseconds(settings.delayTime);                          //arduino's analog read needs a delay or the results suffer
 
         reading[sensor] = analogRead(inputPin[sensor]);
-        if (reading[sensor] <= 1023 - settings.threshold ){
-            if (sensor != 0) {  //only apply calibration for non reference sensors
-                sums[sensor] += reading[sensor] + calibration[sensor-1][(unsigned int) reading[sensor] >> 2 ];
+        if (reading[sensor] <= 1023 - settings.threshold ){             //1023 is basically normal airpressure at sea level. it can be lower, especially in the mountains
+            if (sensor != 0) {                                          //only apply calibration for non reference sensors
+                sums[sensor] += reading[sensor] + calibration[sensor-1][(unsigned int) reading[sensor] >> 2 ]; //adds this reading adjusted for calibration
             } else {
-                sums[sensor] += reading[sensor];
+                sums[sensor] += reading[sensor];                        //sensor0 is the reference sensor, no calibration needed
             }
-            readingCount[sensor]++;
+            readingCount[sensor]++;                                     //keeps count of the number of readings collected
 
-        } else {
-            if(readingCount[sensor] > 0){//immediately after the vacuum peak
-
+        } else {                                                        //above the measurement threshold
+            if(readingCount[sensor] > 0){                               //immediately after the vacuum peak
+                //calculate the average now we've measured a whole "vacuum signal trough"
                 average[sensor] = responsiveEMA(alpha, &accumulator[sensor], sums[sensor]/readingCount[sensor]);
             }
-            //done the calcs, now reset everything
+            //done the calcs, now reset everything ready to start over when the signal drops below threshold
             sums[sensor]=0;
             readingCount[sensor]=0;
         }
     }
-    timeBase = millis() - startTime;
+    timeBase = millis() - startTime;                                    //monitor how long it takes to measure 4 sensors
 }
 
-
+// display centered bars, centered on the reference carb's reading, because that's the target we are aiming for
+//takes an array of current average values for all sensors as parameter
 void lcdBarsCenterSmooth( int value[]) {
-    const uint8_t segmentsInCharacter = 5;
+    const uint8_t segmentsInCharacter = 5;                              //we need this number to make the display smooth
 
-    byte bar[4][8];
+    byte bar[4][8];                                                     //store one custom character per bar
 
-    char bars[DISPLAY_COLS + 1];
+    char bars[DISPLAY_COLS + 1];                                        //store for the bar of full characters
 
-    int maximumValue = maxVal(value);
-    int minimumValue = minVal(value);
-    int range;
-    int zoomFactor;
+    int maximumValue = maxVal(value);                                   //determine the sensor with the highest average
+    int minimumValue = minVal(value);                                   //determine the lowest sensor average
+    int range;                                                          //store the range between the highest and lowest sensors
+    int zoomFactor;                                                     //store the zoom of the display
 
+    //the range depends on finding the reading furthest from the master carb reading
     if (maximumValue - value[settings.master-1] >= value[settings.master-1] - minimumValue) {
         range = maximumValue - value[settings.master-1];
     } else {
         range = value[settings.master-1] - minimumValue;
     }
 
+    //sets the minimum range before the display becomes 'pixellated' there are 100 segments available, 50 on either side of the master
     if (range < 50) {
         range = 50;
     }
     zoomFactor = range / 50;
 
-    for (int sensor = 0 ; sensor < settings.cylinders; sensor++) {
-        int delta = value[sensor] - value[settings.master-1];
-        int TotalNumberOfLitSegments = delta / zoomFactor;
-        int numberOfLitBars = TotalNumberOfLitSegments / segmentsInCharacter;
-        int numberOfLitSegments = TotalNumberOfLitSegments % segmentsInCharacter;
+    for (int sensor = 0 ; sensor < settings.cylinders; sensor++) { //for each of the sensors the user wants to use
+        int delta = value[sensor] - value[settings.master-1];       //find the difference between it and master
+        int TotalNumberOfLitSegments = delta / zoomFactor;          //determine the number of lit segments
+        int numberOfLitBars = TotalNumberOfLitSegments / segmentsInCharacter;   //determine the number of whole characters
+        int numberOfLitSegments = TotalNumberOfLitSegments % segmentsInCharacter;   //determine the remaining stripes
 
-        if (sensor != settings.master -1) {
-            makeCenterBars(bars, numberOfLitBars);
+        if (sensor != settings.master -1) {             //for all sensors except the master carb sensor
+            makeCenterBars(bars, numberOfLitBars);      //give us the bars of whole charachters
             lcd_setCursor(0, sensor);
-            lcd_print(bars);
+            lcd_print(bars);                            //place the bars in the display
 
-            makeChar(bar[sensor],numberOfLitSegments);
+            makeChar(bar[sensor],numberOfLitSegments);  //make a custom char for the remaining stripes
             lcd_createChar(sensor+2, bar[sensor]);
 
             if(numberOfLitSegments >0){
-                lcd_setCursor(10 + numberOfLitBars, sensor);
+                lcd_setCursor(10 + numberOfLitBars, sensor); //place it on the right
             }else{
-                lcd_setCursor(9 + numberOfLitBars, sensor);
+                lcd_setCursor(9 + numberOfLitBars, sensor); //or in the center
             }
             if(numberOfLitBars <10) lcd_write(byte(sensor+2));
 
             if (numberOfLitBars < 0) {
-                printLcdSpace(16,sensor,4);
+                printLcdSpace(15,sensor,5);             //clear the display in preparation of printing the readings
             } else {
-                printLcdSpace(0,sensor,4);
+                printLcdSpace(0,sensor,5);
             }
             if (!settings.silent) {
-                lcd_printInt(delta);
+                lcd_printFloat(convertToPreferredUnits(delta));                    //display the difference between this sensor and master
             }
         } else {
-            printLcdInteger(value[sensor], 0, sensor, 4);
-            printLcdInteger(timeBase, 10, sensor, 4);
-            printLcdInteger(range, 16, sensor, 4);
+            float result = convertToPreferredUnits(value[sensor]);
+            printLcdFloat(result, 0, sensor, 5);   //print the value
+            printLcdInteger(timeBase, 10, sensor, 4);       //show how long it took to measure four sensors
+            printLcdInteger(range, 16, sensor, 4);          //show the zoom range
         }
     }
 }
 
 
-
+// this is used to display four plain unzoomed bars with absolute pressure readings
 void lcdBarsSmooth( int value[]) {
     const uint8_t segmentsInCharacter = 5;
 
@@ -210,7 +223,7 @@ void lcdBarsSmooth( int value[]) {
     char bars[DISPLAY_COLS + 1];
 
     for (int sensor = 0 ; sensor < settings.cylinders; sensor++) {
-        int TotalNumberOfLitSegments = 100000L/1024 * value[sensor]/1000;
+        int TotalNumberOfLitSegments = 100000L/1024 * value[sensor]/1000;// integer math works faster, so we multiply by 1000 and divide later, powers of two would be even faster
         int numberOfLitBars = TotalNumberOfLitSegments / segmentsInCharacter;
         int numberOfLitSegments = TotalNumberOfLitSegments % segmentsInCharacter;
 
@@ -227,16 +240,20 @@ void lcdBarsSmooth( int value[]) {
         lcd_setCursor(numberOfLitBars, sensor);
         lcd_write(byte(sensor+2));
 
-        if (numberOfLitBars <= 14) {
-            lcd_setCursor(16, sensor);
+        //set the cursor so the pressure readings don't interfere with the bars
+        if (numberOfLitBars <= 12) {
+            lcd_setCursor(14, sensor);
         } else {
             lcd_setCursor(0, sensor);
         }
 
-        if (!settings.silent) lcd_printInt(value[sensor]);
+        if (!settings.silent) {
+          float result = convertToPreferredUnits(value[sensor]);
+          lcd_printFloat(result);
+        }
     }
 }
-
+//does the display while clearing the calibration array
 void doZeroCalibrations() {
     lcd_clear();
     lcd_setCursor(3, 1);
@@ -244,7 +261,7 @@ void doZeroCalibrations() {
     zeroCalibrations();
     delay(500);
 }
-
+//actually clears the array
 void zeroCalibrations() {
     for (uint8_t sensor = 0; sensor < (NUM_SENSORS - 1); sensor++) {
         for (int i = 0; i < numberOfCalibrationValues; i++) {
@@ -253,6 +270,7 @@ void zeroCalibrations() {
     }
 }
 
+//loads calibrations from FLASH
 void doLoadCalibrations() {
     lcd_clear();
     lcd_setCursor(3, 1);
@@ -260,7 +278,7 @@ void doLoadCalibrations() {
     eeprom_read_block((void*)&calibration, (void*)calibrationOffset, sizeof(calibration));
     delay(500);
 }
-
+//saves calibrations to flash
 void doSaveCalibrations() {
     lcd_clear();
     lcd_setCursor(3, 1);
@@ -269,6 +287,7 @@ void doSaveCalibrations() {
     delay(500);
 }
 
+//saves our settings struct
 void actionSaveSettings() {
     lcd_clear();
     lcd_setCursor(3, 1);
@@ -277,6 +296,7 @@ void actionSaveSettings() {
     delay(500);
 }
 
+//handles the display for loading settings
 void actionLoadSettings() {
     lcd_clear();
     lcd_setCursor(3, 1);
@@ -285,28 +305,16 @@ void actionLoadSettings() {
     delay(500);
 }
 
+//loads the settings from EEPROM (Flash)
 void loadSettings(){
-    uint8_t compareVersion=0;
+    uint8_t compareVersion=0; //compare version MUST be altered each time the settings struct is altered with a new setting or a different type
     eeprom_read_block((void*)&compareVersion, (void*)0, sizeof(settings.versionID));
 
+    //only load settings if saved by the current version, otherwise reset to 'factory' defaults
     if(compareVersion == versionUID){
         eeprom_read_block((void*)&settings, (void*)0, sizeof(settings));
     } else{
-        settings.brightness=255;
-        settings.contrast=40;
-        settings.damping=20;
-        settings.delayTime=10;
-        settings.graphType=0;
-        settings.usePeakAverage=false;
-        settings.baudRate = 9;
-        settings.silent = false;
-        settings.cylinders = 4;
-        settings.master = 4;
-        settings.threshold  = 100;
-        settings.button1 =0;
-        settings.button2 =0;
-        settings.rpmDamping =20;
-        settings.responsiveness = 80;
+        resetToFactoryDefaultSettings();
     }
 
     doContrast(settings.contrast);

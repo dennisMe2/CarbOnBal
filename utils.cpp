@@ -25,6 +25,7 @@
 
 #include <Arduino.h>
 #include "globals.h"
+#include "utils.h"
 
 #define NUM_SENSORS 4
 #define NUM_BUTTONS 4
@@ -32,8 +33,13 @@
 #define LEFT 1
 #define RIGHT 2
 #define CANCEL 3
+                         
+#define P0VSENSOR 150                                             //minimum pressure reported by MAP sensor at 0V in millibar/hPa (=10x KPa value)
+#define P5VSENSOR 1020                                            //maximum pressure reported by sensor at 5V in millibar
 
 extern settings_t settings;
+
+float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversion factor to convert the arduino readings to millibars
 
 byte buttonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH}; //array for recording the state of buttons
 byte lastButtonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH};//array for recording the previous state of buttons
@@ -41,6 +47,51 @@ unsigned long lastDebounceTime[NUM_BUTTONS]; //array for recording when the butt
 
 uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
 
+float convertToPreferredUnits(int value){
+  if (0 == settings.units) return value;
+  if (1 == settings.units) return convertToMillibar(value);
+  if (2 == settings.units) return convertToCmHg(value);
+  if (3 == settings.units) return convertToInHg(value);
+  return 0; //error
+}
+
+
+//convert the arduino reading to millibars for display
+float convertToMillibar(int value){
+  return value * millibarFactor + P0VSENSOR;                      //convert reading and add the sensor's minimum pressure
+}
+
+//convert the arduino readings to centimeters of mercury
+float convertToCmHg(int value){
+    return convertToMillibar(value) * 0.075;
+}
+
+//convert the arduino readings to inches of mercury
+float convertToInHg(int value){
+    return convertToMillibar(value) * 0.02953;
+}
+
+
+
+//reset to factory defaults
+void resetToFactoryDefaultSettings(){
+    settings.brightness=255;
+    settings.contrast=40;
+    settings.damping=20;
+    settings.delayTime=10;
+    settings.graphType=0;
+    settings.usePeakAverage=false;
+    settings.baudRate = 9;
+    settings.silent = false;
+    settings.cylinders = 4;
+    settings.master = 4;
+    settings.threshold  = 100;
+    settings.button1 =0;
+    settings.button2 =0;
+    settings.rpmDamping =20;
+    settings.responsiveness = 80;
+    settings.units = 0;
+}
 
 // tests if a button was pressed and applies debounce logic
 // this function assumes all buttons are input_pullup, active LOW, and contiguous pin numbers!
@@ -97,11 +148,11 @@ float exponentialMovingAverage(float alpha, float *accumulator, float new_value)
 // this is needed to get a stable readout, yet respond quickly when the gas is tweaked.
 // not technically needed but convinces the user the system is working as expected!
 float responsiveEMA(float alpha, float *accumulator, float new_value) {
-    
-    if(new_value > (*accumulator * (1 + stabilityThreshold)) || new_value < (*accumulator * (1-stabilityThreshold))){ 
+
+    if(new_value > (*accumulator * (1 + stabilityThreshold)) || new_value < (*accumulator * (1-stabilityThreshold))){
       *accumulator = new_value;//short out the EMA if our value is changing fast
-      } 
-      
+      }
+
     *accumulator += alpha * (new_value - *accumulator);
     return(*accumulator);
 }

@@ -68,6 +68,16 @@ void actionGraphing() {
     settings.graphType = doSettingChooser(F("Select Graph Type:"), actions, 2, settings.graphType) ;
 }
 
+void actionReset() {
+    String actions[] ={ F("Keep settings"), F("Reset ALL settings")};
+    bool reset = doSettingChooser(F("'Factory' reset?"), actions, 2, 0);
+    if(reset){
+        resetToFactoryDefaultSettings();
+        eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));     //store the data
+        asm volatile ("  jmp 0");                                 //soft reset by jumping into the arduino boot loader directly
+    }
+}
+
 void actionDelay() {
     settings.delayTime = doBasicSettingChanger(F("Delay: (us)"), 0, 1000, settings.delayTime, 10) ;
 }
@@ -95,6 +105,7 @@ void actionThreshold() {
 }
 
 
+
 void actionCylinders() {
     settings.cylinders = (uint8_t) doBasicSettingChanger(F("Cylinder count:"), 1, 4, settings.cylinders, 1);
     fixMaster();
@@ -115,4 +126,9 @@ void fixMaster(){
 void actionBrightnessButton(){
     String actions[] = {F("Brightness"), F("RPM Display")};
     settings.button2 = doSettingChooser(F("Button 2 function:"), actions, 2, (int) settings.button2) ;
+}
+
+void doUnits(){
+    String actions[] = {F("Raw values"), F("Millibar / hPa"), F("cm Hg"), F("Inches of mercury")};
+    settings.units = doSettingChooser(F("Display Units:"), actions, 4, (int) settings.units) ;
 }

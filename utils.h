@@ -28,6 +28,12 @@
 
 
 
+float convertToPreferredUnits(int value);
+float convertToMillibar(int value);
+float convertToCmHg(int value);
+float convertToInHg(int value);
+
+void resetToFactoryDefaultSettings();
 int buttonPressed();
 void setInputActiveLow(int i);
 void setOutputHigh(int i);

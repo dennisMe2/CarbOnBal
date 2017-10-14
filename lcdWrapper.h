@@ -34,10 +34,12 @@ void lcd_write(byte);
 void lcd_setCursor(int a, int i);
 void lcd_print(String str);
 void lcd_printInt(int integer);
+void lcd_printFloat(float value);
 
 void lcd_printChar(char chr);
 void lcd_clear();
 void printLcdSpace( uint8_t column, uint8_t row, uint8_t length);
 void printLcdInteger(int value, uint8_t column, uint8_t row, uint8_t length);
+void printLcdFloat(float value, uint8_t column, uint8_t row, uint8_t length);
 
 #endif
