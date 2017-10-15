@@ -46,7 +46,7 @@ static const int calibrationOffset=500; //eeprom base address for calibration
 
 
 
-static const uint8_t versionUID = 11; //update when settings_t changes!
+static const uint8_t versionUID = 12; //update when settings_t changes!
 
 //this struct is used to store settings in NVRAM
 struct settings_t
@@ -68,6 +68,7 @@ struct settings_t
     uint8_t rpmDamping;
     uint8_t responsiveness;
     uint8_t units;
+    uint8_t zoom;
 };
 
 extern int readingCount[NUM_SENSORS];
@@ -87,5 +88,6 @@ extern settings_t settings;
 extern float alpha;
 extern float alphaRpm;
 extern float stabilityThreshold;
+extern int ambientPressure;
 
 #endif

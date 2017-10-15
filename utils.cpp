@@ -47,23 +47,43 @@ unsigned long lastDebounceTime[NUM_BUTTONS]; //array for recording when the butt
 
 uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
 
-float convertToPreferredUnits(int value){
+float convertToPreferredUnits(int value, int ambient){
   if (0 == settings.units) return value;
-  if (1 == settings.units) return convertToMillibar(value);
-  if (2 == settings.units) return convertToCmHg(value);
-  if (3 == settings.units) return convertToInHg(value);
+  if (1 == settings.units) return ambient - value;
+  if (2 == settings.units) return convertToMillibar(value);
+  if (3 == settings.units) return convertToMillibar(ambient) - convertToMillibar(value);
+  if (4 == settings.units) return convertToCmHg(value);
+  if (5 == settings.units) return convertToCmHg(ambient) - convertToCmHg(value);
+  if (6 == settings.units) return convertToInHg(value);
+  if (7 == settings.units) return convertToInHg(ambient) - convertToInHg(value);
   return 0; //error
 }
-
+float differenceToPreferredUnits(int value){
+  if (0 == settings.units) return value;
+  if (1 == settings.units) return value;
+  if (2 == settings.units) return differenceToMillibar(value);
+  if (3 == settings.units) return differenceToMillibar(value);
+  if (4 == settings.units) return differenceToCmHg(value);
+  if (5 == settings.units) return differenceToCmHg(value);
+  if (6 == settings.units) return differenceToInHg(value);
+  if (7 == settings.units) return differenceToInHg(value);
+  return 0; //error
+}
 
 //convert the arduino reading to millibars for display
 float convertToMillibar(int value){
   return value * millibarFactor + P0VSENSOR;                      //convert reading and add the sensor's minimum pressure
 }
+float differenceToMillibar(int value){
+  return value * millibarFactor;                      //convert reading and add the sensor's minimum pressure
+}
 
 //convert the arduino readings to centimeters of mercury
 float convertToCmHg(int value){
     return convertToMillibar(value) * 0.075;
+}
+float differenceToCmHg(int value){
+    return differenceToMillibar(value) * 0.075;
 }
 
 //convert the arduino readings to inches of mercury
@@ -71,26 +91,30 @@ float convertToInHg(int value){
     return convertToMillibar(value) * 0.02953;
 }
 
+float differenceToInHg(int value){
+    return differenceToMillibar(value) * 0.02953;
+}
 
 
 //reset to factory defaults
 void resetToFactoryDefaultSettings(){
-    settings.brightness=255;
-    settings.contrast=40;
-    settings.damping=20;
-    settings.delayTime=10;
-    settings.graphType=0;
-    settings.usePeakAverage=false;
+    settings.brightness = 255;
+    settings.contrast = 40;
+    settings.damping = 20;
+    settings.delayTime = 10;
+    settings.graphType = 0;
+    settings.usePeakAverage = false;
     settings.baudRate = 9;
     settings.silent = false;
     settings.cylinders = 4;
     settings.master = 4;
     settings.threshold  = 100;
-    settings.button1 =0;
-    settings.button2 =0;
-    settings.rpmDamping =20;
+    settings.button1 = 0;
+    settings.button2 = 0;
+    settings.rpmDamping = 20;
     settings.responsiveness = 80;
     settings.units = 0;
+    settings.zoom = 0;
 }
 
 // tests if a button was pressed and applies debounce logic

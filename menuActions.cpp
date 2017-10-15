@@ -129,6 +129,34 @@ void actionBrightnessButton(){
 }
 
 void doUnits(){
-    String actions[] = {F("Raw values"), F("Millibar / hPa"), F("cm Hg"), F("Inches of mercury")};
-    settings.units = doSettingChooser(F("Display Units:"), actions, 4, (int) settings.units) ;
+    String actions[] = {F("Raw values"),F("Raw, descending"), F("Millibar / hPa"), F("mBar / hPa Desc."), 
+                        F("cm Hg"), F("cm Hg Descending"), F("Inches of mercury"), F("Inch. Hg desc.")};
+    settings.units = doSettingChooser(F("Display Units:"), actions, 8, (int) settings.units) ;
 }
+
+void doMaxZoom(){
+    
+    static uint8_t count = 5;
+    
+    if ((0 == settings.units)||(1 == settings.units)){
+      String actions[] = { F("100 = max"), F("200"), F("300"), F("600"), F("1024 = no zoom")  };
+      settings.zoom = doSettingChooser(F("Zoom Units:"), actions, count, (int) settings.zoom) ;
+    }
+    
+    if ((2 == settings.units) || (3 == settings.units)){
+     String actions[] = { F("84.96 = max"), F("169.92"), F("254.88"), F("509.77"), F("870.00 = no zoom")  };
+      settings.zoom = doSettingChooser(F("Zoom millibar:"), actions, count, (int) settings.zoom) ;
+    }
+    
+    if ((4 == settings.units) || (5 == settings.units)){
+      String actions[] = { F("6.37 = max"), F("9.56"), F("19.12"), F("32.63"), F("65.25 = no zoom")  };
+      settings.zoom = doSettingChooser(F("Zoom in cm Mercury:"), actions, count, (int) settings.zoom) ;
+    }
+    
+    if ((6 == settings.units) || (7 == settings.units)){
+      String actions[] = { F("2.51 = max"), F("5.02"), F("7.53"), F("15.05"), F("25.69 = no zoom")  };
+      settings.zoom = doSettingChooser(F("Zoom in cm Mercury:"), actions, count, (int) settings.zoom) ;
+    }
+
+}
+

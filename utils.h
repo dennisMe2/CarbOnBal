@@ -28,10 +28,14 @@
 
 
 
-float convertToPreferredUnits(int value);
+float convertToPreferredUnits(int value, int ambient);
+float differenceToPreferredUnits(int value);
 float convertToMillibar(int value);
+float differenceToMillibar(int value);
 float convertToCmHg(int value);
+float differenceToCmHg(int value);
 float convertToInHg(int value);
+float differenceToInHg(int value);
 
 void resetToFactoryDefaultSettings();
 int buttonPressed();

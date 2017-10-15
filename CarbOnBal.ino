@@ -36,7 +36,7 @@ settings_t settings;
 // The software uses a lot of global variables. This may not be elegant but its one way of writing non-blocking code
 float accumulator[NUM_SENSORS]= {1000.0, 1000.0, 1000.0, 1000.0}; //used to track the average values per sensor
 int inputPin[NUM_SENSORS] = {A0, A1, A2, A3};               //used as a means to access the sensor pins using a counter
-int timeBase=0;                                             //darned if I remember
+int timeBase=0;                                             //allows us to calculate how long it took to measure and update the display (only used for testing)
 long sums[NUM_SENSORS]={0,0,0,0};                           //tracks totals for calculating a numerical average
 long sums2[NUM_SENSORS]={0,0,0,0};                          //totals for numerical averages
 // this array is 1/4 the size of the possible values bacause it would eat up all the ram
@@ -55,6 +55,8 @@ int average[NUM_SENSORS];                                   //used to share the 
 int total[NUM_SENSORS];                                     //
 int reading[NUM_SENSORS];                                   //the current reading for each sensor
 
+int ambientPressure;                                        //stores current ambient pressure for negative pressure display
+
 //this does the initial setup on startup.
 void setup() {
     loadSettings();                                         //load saved settings into memory from FLASH
@@ -71,10 +73,10 @@ void setup() {
     lcd_begin(DISPLAY_COLS, DISPLAY_ROWS);                  //instantiate the ShiftedLCD library
 
     doLoadCalibrations();                                   //load calibration data into RAM
-
+    ambientPressure = detectAmbient();                      //set ambient pressure (important because it varies with weather and altitude)
     alpha = calculateAlpha(settings.damping);               //prime the alpha from the settings
     alphaRpm = calculateAlpha(settings.rpmDamping);
-    stabilityThreshold = (100 - settings.responsiveness) / 100; //responsiveness is how quickly the system responds to rapid RPM changes asopposed to smoothing the display
+    stabilityThreshold = (100 - settings.responsiveness) / 100; //responsiveness is how quickly the system responds to rapid RPM changes as opposed to smoothing the display
     delay(1000);
 }
 
@@ -171,9 +173,11 @@ void lcdBarsCenterSmooth( int value[]) {
     }
 
     //sets the minimum range before the display becomes 'pixellated' there are 100 segments available, 50 on either side of the master
-    if (range < 50) {
-        range = 50;
+    int ranges[]={50, 100, 150,300, 512};
+    if (range < ranges[settings.zoom]) {
+        range = ranges[settings.zoom];
     }
+    
     zoomFactor = range / 50;
 
     for (int sensor = 0 ; sensor < settings.cylinders; sensor++) { //for each of the sensors the user wants to use
@@ -203,13 +207,13 @@ void lcdBarsCenterSmooth( int value[]) {
                 printLcdSpace(0,sensor,5);
             }
             if (!settings.silent) {
-                lcd_printFloat(convertToPreferredUnits(delta));                    //display the difference between this sensor and master
+                lcd_printFloat(differenceToPreferredUnits(delta) );                    //display the difference between this sensor and master
             }
         } else {
-            float result = convertToPreferredUnits(value[sensor]);
-            printLcdFloat(result, 0, sensor, 5);   //print the value
+            float result = convertToPreferredUnits(value[sensor],ambientPressure);
+            printLcdFloat(result, 0, sensor, 5);   //print the absolute value of the reference carb
             printLcdInteger(timeBase, 10, sensor, 4);       //show how long it took to measure four sensors
-            printLcdInteger(range, 16, sensor, 4);          //show the zoom range
+            printLcdFloat(differenceToPreferredUnits(range*2), 15, sensor, 5);          //show the zoom range
         }
     }
 }
@@ -248,7 +252,7 @@ void lcdBarsSmooth( int value[]) {
         }
 
         if (!settings.silent) {
-          float result = convertToPreferredUnits(value[sensor]);
+          float result = convertToPreferredUnits(value[sensor], ambientPressure);
           lcd_printFloat(result);
         }
     }
@@ -584,3 +588,16 @@ void doCalibrate() {
 
         bars[DISPLAY_COLS] = 0x00;
     }
+
+    //used to detect ambient pressure for readings that ascend with vacuum in stead of going down toward absolute 0 pressure
+    int detectAmbient(){
+      unsigned long total=0;
+      uint8_t numberOfSamples = 200;                                //set the number of samples to average
+      
+      for (int i = 0; i < numberOfSamples; i++){
+        delayMicroseconds(settings.delayTime);
+        total += analogRead(inputPin[0]);                    //add the reading we got
+      }
+      return total / numberOfSamples;                         //divide the result by the number of samples for the resulting average
+    }
+

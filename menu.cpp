@@ -87,9 +87,9 @@ void actionDisplaySettingsMenu() {
 
     void actionDisplayContrastMenu() {
 
-        String menu[] = {F("Contrast"), F("Brightness"), F("Details"), F("Graph Type"), F("RPM Display"), F("Units") };
-        void (*actions[])() = {&actionContrast, &actionBrightness, &actionSilent, &actionGraphing, &doRevs, &doUnits };
-        uint8_t menuSize = 6;
+        String menu[] = {F("Contrast"), F("Brightness"), F("Details"), F("Graph Type"), F("RPM Display"), F("Units"), F("Max zoom range") };
+        void (*actions[])() = {&actionContrast, &actionBrightness, &actionSilent, &actionGraphing, &doRevs, &doUnits ,&doMaxZoom };
+        uint8_t menuSize = 7;
 
         handleMenu(menu, actions, menuSize);
     }
@@ -190,16 +190,19 @@ int doSettingChooser(String valueName, String settings[], int count, int startIn
         if (settingChanged) {
             lcd_setCursor(0, 1);
             lcd_print(F("                    "));
+            lcd_setCursor(0, 3);
+            lcd_print(F("                    "));
             if(index > 0 ){
-                lcd_setCursor(0, 1);
-                lcd_print("<");
+                lcd_setCursor(0, 3);
+                lcd_printChar(char(MENUCARET+1));           //little arrow to the left
             }
             lcd_setCursor(0, 1);
             lcd_print(settings[index]);
 
             if(index < count -1){
-                lcd_setCursor(19, 1);
-                lcd_print(">");
+                lcd_setCursor(19, 3);
+                lcd_printChar(char(MENUCARET));             //little arrow to the right
+
             }
             settingChanged = false;
         }

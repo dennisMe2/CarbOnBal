@@ -53,4 +53,5 @@ void doMaster(int value);
 void fixMaster();
 void actionBrightnessButton();
 void doUnits();
+void doMaxZoom();
 #endif
