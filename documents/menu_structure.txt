@@ -1,0 +1,86 @@
+/*
+This document shows the menu structure in the CarbOnBal software and gives an idea of the available settings 
+and capablilities of the software.
+*/
+
+Display 
+    Contrast 
+        0-255 in steps of 10
+        
+    Brightness 
+        0-255 in steps of 10
+        
+    Details 
+         "More details", "Less details"
+         
+    Graph Type 
+        "Absolute", "Centered"
+        
+    RPM Display 
+        Show RPM display with bar graph and numerical readout
+        
+    Units 
+        "Raw values", "Raw, descending", "Millibar / hPa", "mBar / hPa Desc.", "cm Hg", "cm Hg Descending", "Inches of mercury", "Inch. Hg desc."
+        
+    Max zoom range (values shown in the selected units)
+        "100 = max", "200", "300", "600","1024 = no zoom"
+        
+Calibration
+    Calibrate Now 
+        show calibration screen and start calibration process (20 seconds)
+        
+    Save Calibration
+        Save calibration to flash memory
+        
+    Load Calibration 
+        Load previously saved calibration
+        
+    Clear Calibration
+        Wipes calibration data from memory (no effect on saved settings)
+        
+Settings 
+    Software 
+        Damping 
+            0-100% in 5% increments
+            
+        RPM Damping
+            0-100% in 5% increments
+            
+        Sample Delay (us) 
+            0-1000 in steps of 10
+            
+        Threshold 
+            1-1023 in steps of 10
+            
+        Responsiveness
+            0-100% in 5% increments
+
+    Hardware 
+        Cylinder count 
+            1-4
+            
+        Master Cylinder
+            1-4 (or less if less cylinders selected)
+            
+        Brightness Button
+            "Brightness", "RPM Display"
+            
+    Save Settings 
+        Saves ALL settings to Flash
+        
+    Load Settings
+        Load previously saved settings from Flash
+        
+    'Factory' reset
+        Returns ALL settings to their default values
+
+Data Transfer
+    Calibration Dump
+        Dumps the calibration values table to the serial port where they can be viewed on a computer
+        
+    Live Data Dump
+        Directly sends the captured sensor data to the computer over serial
+        
+    Baud Rate
+        "300", "600", "1200", "2400", "4800", "9600", "14400", "19200", "28800", "31250", "38400", "57600", "115200"
+        
