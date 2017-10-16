@@ -38,7 +38,6 @@ float accumulator[NUM_SENSORS]= {1000.0, 1000.0, 1000.0, 1000.0}; //used to trac
 int inputPin[NUM_SENSORS] = {A0, A1, A2, A3};               //used as a means to access the sensor pins using a counter
 int timeBase=0;                                             //allows us to calculate how long it took to measure and update the display (only used for testing)
 long sums[NUM_SENSORS]={0,0,0,0};                           //tracks totals for calculating a numerical average
-long sums2[NUM_SENSORS]={0,0,0,0};                          //totals for numerical averages
 // this array is 1/4 the size of the possible values bacause it would eat up all the ram
 // (there are theoretically four arrays of 1024 values required) by only sampling 1/4 we get a close approxmation
 int8_t calibration[NUM_SENSORS-1][256];                     //store the offsets of the sensors relative to the sensor 0 reading, used to get a calibrated reading
@@ -50,7 +49,6 @@ float alphaRpm;                                             //alpha factor used 
 float stabilityThreshold;                                   //the factor used to detect when the throttle is being janked and a response is required
 
 int readingCount[NUM_SENSORS];                              //used to store the number of captured readings for calculating a numerical average
-uint8_t readIndex[NUM_SENSORS];                             //
 int average[NUM_SENSORS];                                   //used to share the current average for each sensor
 int total[NUM_SENSORS];                                     //
 int reading[NUM_SENSORS];                                   //the current reading for each sensor
@@ -332,9 +330,9 @@ void doCalibrate() {
     lcd_setCursor(0, 1);
     lcd_print(F("apply vacuum!"));
 
-    bool calibrated[256];
-    for(int i =0 ; i<256;i++){
-        calibrated[i] = false;
+    uint8_t calibrated[256>>3];                   //make an array of bytes, the bits of which will be used as flags. This saves 8x the RAM we would otherwise need
+    for(int i =0 ; i<(256>>3); i++){              // 25>>3 means 256 (the number we want to use, divided by 2x2x2 = 8 (the number of bits in a uint8_t (byte) 
+        calibrated[i] = 0;                        //I could have written 32 but I feel this is more logical
     }
 
     bool calibrationTimeout = false;
@@ -355,7 +353,9 @@ void doCalibrate() {
                 int8_t calibrationValue = reading[0] - reading[sensor];
 
                 calibration[sensor-1][reading[sensor] >> 2] = calibrationValue;
-                calibrated[reading[0] >> 2] = true;
+                calibrated[reading[0] >> 5] |= 1<<(reading[0] >> 2)%8;            //set the nth bit in our array of bytes shift right 5 = dividing by 4 then again by 8 (because we are storing bits)
+                                                                                  //the trick to setting abit like tis is divide the index by the number of bits in a byte then with that byte
+                                                                                  //you do a bitwise OR with a single bit '1' shifted left into the bit we want to set
             }
 
             if (millis() - lastUpdateTime > 1000L) {
@@ -372,7 +372,7 @@ void doCalibrate() {
 
         int uncalibrated = 0;
         for(int i=0 ;i<256;i++){
-            if(!calibrated[i]) uncalibrated++;
+            if( 0 == (calibrated[i>>3] & (1 << i%8)) ) uncalibrated++;      //here again index divided by 8 is bitwise tested by shifting '1' the modulo (remainder) of the /8 division
         }
 
         calibrationTimeout = true;

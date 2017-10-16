@@ -72,7 +72,6 @@ struct settings_t
 };
 
 extern int readingCount[NUM_SENSORS];
-extern uint8_t readIndex[NUM_SENSORS];
 extern int average[NUM_SENSORS];
 extern int total[NUM_SENSORS];
 

@@ -100,19 +100,19 @@ float differenceToInHg(int value){
 void resetToFactoryDefaultSettings(){
     settings.brightness = 255;
     settings.contrast = 40;
-    settings.damping = 20;
-    settings.delayTime = 10;
+    settings.damping = 85;
+    settings.delayTime = 200;
     settings.graphType = 0;
     settings.usePeakAverage = false;
     settings.baudRate = 9;
     settings.silent = false;
     settings.cylinders = 4;
     settings.master = 4;
-    settings.threshold  = 100;
+    settings.threshold  = 200;
     settings.button1 = 0;
     settings.button2 = 0;
-    settings.rpmDamping = 20;
-    settings.responsiveness = 80;
+    settings.rpmDamping = 35;
+    settings.responsiveness = 75;
     settings.units = 0;
     settings.zoom = 0;
 }
@@ -231,3 +231,5 @@ unsigned long getBaud(int index){
     };
     return baud[index];
 }
+
+
