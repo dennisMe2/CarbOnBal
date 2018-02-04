@@ -23,11 +23,9 @@
 // along with CarbOnBal.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "../../Arduino-ide/CarbOnBal/utils.h"
-
+#include "utils.h"
 #include <Arduino.h>
-
-#include "../../Arduino-ide/CarbOnBal/globals.h"
+#include "globals.h"
 
 #define NUM_SENSORS 4
 #define NUM_BUTTONS 4

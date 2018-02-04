@@ -25,10 +25,9 @@
 
 #ifndef MENUACTIONS_H_INCLUDED
 #define MENUACTIONS_H_INCLUDED
+
 #include <Arduino.h>
-
-#include "../../Arduino-ide/CarbOnBal/globals.h"
-
+#include "globals.h"
 
 void doBaudRate();
 void actionBrightness() ;

@@ -23,11 +23,10 @@
 // along with CarbOnBal.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "../../Arduino-ide/CarbOnBal/menuActions.h"
-
-#include "../../Arduino-ide/CarbOnBal/menu.h"
-#include "../../Arduino-ide/CarbOnBal/utils.h"
-#include "../../Arduino-ide/CarbOnBal/lang_gb_gb.h"   //include British English texts
+#include "menuActions.h"
+#include "menu.h"
+#include "utils.h"
+#include "lang_gb_gb.h"   //include British English texts
 
 extern settings_t settings;
 extern float alpha;

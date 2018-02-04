@@ -24,10 +24,10 @@
 
 #include <LiquidCrystal.h>
 
-#include "../../Arduino-ide/CarbOnBal/lcdWrapper.h"
+#include "lcdWrapper.h"
 
 
-#include "../../Arduino-ide/CarbOnBal/utils.h"
+#include "utils.h"
 //  Order of parameters: RS, E, D4, D5, D6, D7
 LiquidCrystal lcd(13,12,10,9,8,7);
 

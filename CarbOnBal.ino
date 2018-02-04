@@ -27,13 +27,13 @@
 #include <EEPROM.h>
 #include <LiquidCrystal.h>
 
-#include "../../Arduino-ide/CarbOnBal/functions.h"
-#include "../../Arduino-ide/CarbOnBal/globals.h"
-#include "../../Arduino-ide/CarbOnBal/lcdWrapper.h"
-#include "../../Arduino-ide/CarbOnBal/menu.h"
-#include "../../Arduino-ide/CarbOnBal/menuActions.h"
-#include "../../Arduino-ide/CarbOnBal/utils.h"
-#include "../../Arduino-ide/CarbOnBal/lang_gb_gb.h"   //include British English texts
+#include "functions.h"
+#include "globals.h"
+#include "lcdWrapper.h"
+#include "menu.h"
+#include "menuActions.h"
+#include "utils.h"
+#include "lang_gb_gb.h"   //include British English texts
 settings_t settings;
 
 // The software uses a lot of global variables. This may not be elegant but its one way of writing non-blocking code
