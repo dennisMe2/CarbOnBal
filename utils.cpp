@@ -23,16 +23,18 @@
 // along with CarbOnBal.  If not, see <http://www.gnu.org/licenses/>.
 
 
+#include "../../Arduino-ide/CarbOnBal/utils.h"
+
 #include <Arduino.h>
-#include "globals.h"
-#include "utils.h"
+
+#include "../../Arduino-ide/CarbOnBal/globals.h"
 
 #define NUM_SENSORS 4
 #define NUM_BUTTONS 4
-#define SELECT 0
-#define LEFT 1
-#define RIGHT 2
-#define CANCEL 3
+#define SELECT 2
+#define LEFT 3
+#define RIGHT 4
+#define CANCEL 5
                          
 #define P0VSENSOR 150                                             //minimum pressure reported by MAP sensor at 0V in millibar/hPa (=10x KPa value)
 #define P5VSENSOR 1020                                            //maximum pressure reported by sensor at 5V in millibar
@@ -44,6 +46,7 @@ float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversio
 byte buttonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH}; //array for recording the state of buttons
 byte lastButtonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH};//array for recording the previous state of buttons
 unsigned long lastDebounceTime[NUM_BUTTONS]; //array for recording when the buttonpress was first seen
+unsigned long lastEntry = 0 ;
 
 uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
 
@@ -99,7 +102,7 @@ float differenceToInHg(int value){
 //reset to factory defaults
 void resetToFactoryDefaultSettings(){
     settings.brightness = 255;
-    settings.contrast = 40;
+    settings.contrast = 20;
     settings.damping = 85;
     settings.delayTime = 200;
     settings.graphType = 0;
@@ -121,21 +124,24 @@ void resetToFactoryDefaultSettings(){
 // this function assumes all buttons are input_pullup, active LOW, and contiguous pin numbers!
 // this function does not use wait loops or other blocking functions which delay processing
 int buttonPressed() {
+	if( millis() - lastEntry < 50) return -1;//checking more often that every 50ms is nonsense, just return
 
-    for (uint8_t button = SELECT; button <= CANCEL; button++) {
-        buttonState[button] = digitalRead(button);
+	for (uint8_t button = SELECT; button <= CANCEL; button++) {
+		buttonState[button-SELECT] = digitalRead(button);
 
-        if ( (millis() - lastDebounceTime[button]) > debounceDelay) {
-            if ((buttonState[button] != lastButtonState[button] ) || ((millis() - lastDebounceTime[button]) > debounceDelay * 2) ) {
-                if (buttonState[button] == LOW) {
-                    lastDebounceTime[button] = millis();
-                    lastButtonState[button] = buttonState[button];
-                    return button;
-                }
-            }
-            lastButtonState[button] = buttonState[button];
-        }
-    }
+		if ( (millis() - lastDebounceTime[button-SELECT]) > debounceDelay) {
+			if ((buttonState[button-SELECT] != lastButtonState[button-SELECT] ) || ((millis() - lastDebounceTime[button-SELECT]) > debounceDelay * 2) ) {
+				if (buttonState[button-SELECT] == LOW) {
+					lastDebounceTime[button-SELECT] = millis();
+					lastButtonState[button-SELECT] = buttonState[button-SELECT];
+					return button;
+				}
+			}
+			lastButtonState[button-SELECT] = buttonState[button-SELECT];
+		}
+	}
+
+	lastEntry = millis();
     return -1;
 }
 

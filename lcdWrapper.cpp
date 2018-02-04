@@ -6,8 +6,8 @@
 // Always be careful when working on a vehicle or electronic project like this.
 // Your life and health are your sole responsibility, use wisely.
 //
-// CarbOnBal hardware is covered by the Cern Open Hardware License v1.2
-// a copy of the text is incuded with the source code.
+// CarbOnBal hardware is covered by the CERN Open Hardware License v1.2
+// a copy of the text is included with the source code.
 //
 // CarbOnBal is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,68 +22,86 @@
 // You should have received a copy of the GNU General Public License
 // along with CarbOnBal.  If not, see <http://www.gnu.org/licenses/>.
 
+#include <LiquidCrystal.h>
 
-#include <SPI.h>
-#include <ShiftedLCD.h>
-#include "lcdWrapper.h"
-#include "utils.h"
-LiquidCrystal lcd(9);
+#include "../../Arduino-ide/CarbOnBal/lcdWrapper.h"
+
+
+#include "../../Arduino-ide/CarbOnBal/utils.h"
+//  Order of parameters: RS, E, D4, D5, D6, D7
+LiquidCrystal lcd(13,12,10,9,8,7);
 
 void lcd_setCursor(int a, int i){
-    lcd.setCursor(a, i);
+	lcd.setCursor(a, i);
 }
 
 void lcd_print(String str){
-    lcd.print(str);
+	lcd.print(str);
 }
 
 void lcd_printInt(int integer){
-    lcd.print(String(integer));
+	lcd.print(String(integer));
 }
 
 void lcd_printFloat(float value){
-  lcd.print(String(value));
+	lcd.print(String(value));
 }
 
 void lcd_printChar(char chr){
-    lcd.print(chr);
+	lcd.print(chr);
 }
 
 void lcd_begin(int cols, int rows){
-    lcd.begin(cols, rows);
+	lcd.begin(cols, rows);
 }
 
 void lcd_createChar(byte byt, byte array[]){
-    lcd.createChar(byt, array);
+	lcd.createChar(byt, array);
 }
 
 void lcd_write(byte byt){
-    lcd.write(byt);
+	lcd.write(byt);
 }
 
 void lcd_clear(){
-    lcd.clear();
+	lcd.clear();
 }
 
 void printLcdSpace( uint8_t column, uint8_t row, uint8_t length){
-    char space[length+1];
-    for (uint8_t i=0 ; i<length; i++){
-        space[i] = ' ';
-    }
-    space[length] = 0x00;
+	char space[length+1];
+	for (uint8_t i=0 ; i<length; i++){
+		space[i] = ' ';
+	}
+	space[length] = 0x00;
 
-    lcd_setCursor(column, row);
-    lcd_print(space);
-    lcd_setCursor(column, row);
+	lcd_setCursor(column, row);
+	lcd_print(space);
+	lcd_setCursor(column, row);
 }
 
 void printLcdInteger(int value, uint8_t column, uint8_t row, uint8_t length){
-    printLcdSpace(column,row,length);
-    lcd_print(String(value));
+	printLcdSpace(column,row,length);
+	lcd_print(String(value));
 }
 void printLcdFloat(float value, uint8_t column, uint8_t row, uint8_t length){
-    printLcdSpace(column,row,length);
-    lcd_print(String(value));
+	printLcdSpace(column,row,length);
+	lcd_print(String(value));
 }
 
+void drawSnowFlake() {
+	//make a little snow flake to indicate the frozen state of the display
+	byte frozen[8] = {
+			0b00000,
+			0b00000,
+			0b01010,
+			0b10101,
+			0b01110,
+			0b10101,
+			0b01010,
+			0b00000
+	};
+	lcd_createChar(7, frozen); //tells LCD to store our snow flake in slot 7
+	lcd_setCursor(19, 0); // place the cursor on the LCD
+	lcd_write(byte(0x07)); //display the stored snow flake
+}
 

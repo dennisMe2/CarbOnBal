@@ -23,9 +23,11 @@
 // along with CarbOnBal.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include "menuActions.h"
-#include "menu.h"
-#include "utils.h"
+#include "../../Arduino-ide/CarbOnBal/menuActions.h"
+
+#include "../../Arduino-ide/CarbOnBal/menu.h"
+#include "../../Arduino-ide/CarbOnBal/utils.h"
+#include "../../Arduino-ide/CarbOnBal/lang_gb_gb.h"   //include British English texts
 
 extern settings_t settings;
 extern float alpha;
@@ -33,17 +35,17 @@ extern float alphaRpm;
 extern float stabilityThreshold;
 
 extern const uint8_t brightnessPin;//6
-extern const uint8_t contrastPin;//5
+extern const uint8_t contrastPin;//11
 
 
 void doBaudRate(){
     String actions[] = {F("300"), F("600"), F("1200"), F("2400"), F("4800"), F("9600"), F("14400")
     , F("19200"), F("28800"), F("31250"), F("38400"), F("57600"), F("115200")};
-    settings.baudRate = doSettingChooser(F("Select Baud Rate:"), actions, 13, settings.baudRate) ;
+    settings.baudRate = doSettingChooser(F(TXT_BAUD_RATE), actions, 13, settings.baudRate) ;
 }
 
 void actionBrightness() {
-    settings.brightness = doSettingChanger(F("Brightness:"), 0, 255, settings.brightness, 10, &doBrightness) ;
+    settings.brightness = doSettingChanger(F(TXT_BRIGHTNESS), 0, 255, settings.brightness, 10, &doBrightness) ;
 }
 
 void doBrightness(int value) {
@@ -51,7 +53,7 @@ void doBrightness(int value) {
 }
 
 void actionContrast() {
-    settings.contrast = doSettingChanger(F("Contrast:"), 0, 255, settings.contrast, 10, &doContrast) ;
+    settings.contrast = doSettingChanger(F(TXT_CONTRAST), 0, 255, settings.contrast, 10, &doContrast) ;
 }
 
 void doContrast(int value) {
@@ -59,13 +61,13 @@ void doContrast(int value) {
 }
 
 void actionSilent() {
-    String actions[] = {F("More details"), F("Less details")};
-    settings.silent = (bool) doSettingChooser(F("Show Details:"), actions, 2, (int) settings.silent) ;
+    String actions[] = {F(TXT_MORE), F(TXT_LESS)};
+    settings.silent = (bool) doSettingChooser(F(TXT_SHOW_DETAILS), actions, 2, (int) settings.silent) ;
 }
 
 void actionGraphing() {
-    String actions[] = {F("Absolute"), F("Centered")};
-    settings.graphType = doSettingChooser(F("Select Graph Type:"), actions, 2, settings.graphType) ;
+    String actions[] = {F(TXT_ABSOLUTE_GRAPH), F(TXT_CENTERED_GRAPH)};
+    settings.graphType = doSettingChooser(F(TXT_SELECT_GRAPH_TYPE), actions, 2, settings.graphType) ;
 }
 
 void actionReset() {

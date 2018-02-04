@@ -41,5 +41,5 @@ void lcd_clear();
 void printLcdSpace( uint8_t column, uint8_t row, uint8_t length);
 void printLcdInteger(int value, uint8_t column, uint8_t row, uint8_t length);
 void printLcdFloat(float value, uint8_t column, uint8_t row, uint8_t length);
-
+void drawSnowFlake(void);
 #endif
