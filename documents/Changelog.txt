@@ -1,0 +1,10 @@
+Besides the commit comments this is a place I'll document major changes I make to the software.
+
+2018 02 04  The initial upload for the new, redesigned, hardware: CarbOnBal Basic. It contains the following changes:
+    - Using NewLiquidCrystal Library and (standard) four wire interface for the display.
+    - Added a header file containing English language strings, to aid in translation (Dutch planned). Help with other languages or dialects welcome. 
+            Note that switching languages will require a couple of changes to the #include statements that select the language file to be used.
+    - Save and read calibration data directly to and from Flash memory. This saves around 50% SRAM usage!
+    - Removed a very nasty bug when buttons aren't connected starting at Digital pin 0. They now start at D2 to prevent interaction with the serial interface.
+    - General refactoring of the code
+    
