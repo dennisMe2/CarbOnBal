@@ -113,8 +113,8 @@ void loop() {
 void runningAverage() {
 	unsigned long startTime = millis();
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) {       //loop over all sensors
+		analogRead(inputPin[sensor]);									//dummy read to prime the input capacitor
 		delayMicroseconds(settings.delayTime);                          //arduino's analog read needs a delay or the results suffer
-
 		reading[sensor] = analogRead(inputPin[sensor]);
 		if (reading[sensor] <= 1023 - settings.threshold ){             //1023 is basically normal airpressure at sea level. it can be lower, especially in the mountains
 			if (sensor != 0) { //only apply calibration for non reference sensors
@@ -333,6 +333,7 @@ void doCalibrate() {
 
 			//sample all sensors as close as possible to the same time because writing to flash is slow and the slope of the applied vacuum would skew the data
 			for (uint8_t sensor = 0; sensor < NUM_SENSORS; sensor++) {
+				analogRead(inputPin[sensor]);
 				delayMicroseconds(settings.delayTime);
 				reading[sensor] = analogRead(inputPin[sensor]);
 			}
@@ -418,6 +419,7 @@ void doDataDump() {
 			Serial.print(millis() - startTime);
 			Serial.print("\t");
 			for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
+				analogRead(inputPin[sensor]);
 				delayMicroseconds(settings.delayTime);
 				if (sensor != 0) {  //only apply calibration for non reference sensors
 					reading = analogRead(inputPin[sensor]) + (int8_t) EEPROM.read(getCalibrationOffset(sensor, reading));

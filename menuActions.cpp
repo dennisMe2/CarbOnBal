@@ -52,7 +52,7 @@ void doBrightness(int value) {
 }
 
 void actionContrast() {
-    settings.contrast = doSettingChanger(F(TXT_CONTRAST), 0, 255, settings.contrast, 10, &doContrast) ;
+    settings.contrast = doSettingChanger(F(TXT_CONTRAST), 0, 127, settings.contrast, 1, &doContrast) ;
 }
 
 void doContrast(int value) {
