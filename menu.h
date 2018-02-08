@@ -54,6 +54,7 @@ int doBasicSettingChanger(String valueName, int minimum, int maximum, int startV
 int doSettingChanger(String valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) );
 int doSettingChooser(String valueName, String settings[], int count, int startIndex) ;
 
+void handleMenuNoStack(String menu[], void (*func[])(), int menuSize, void (*homeMenu)());
 void handleMenu(String menu[], void (*func[])(), int menuSize);
 void drawMenu(String lines[], int count, int offset) ;
 void drawCaret(uint8_t line);

@@ -171,6 +171,18 @@ float exponentialMovingAverage(float alpha, float *accumulator, float new_value)
     return(*accumulator);
 }
 
+// calculate Extremely Fast Integer Exponentially weighted moving average for smoothing.
+// factor is how much weight is given to new values vs the stored average as a power of 2.
+//    ie: 0 = 1:1 and 4 = 1/16th
+// shift is used to get n bits of accuracy 'below zero' as it were 0 means no smoothing, more is exponentially (1/2^n) more smoothing
+// average is a value in which to store the moving average; 
+//    NOTE that this value is stored shifted 'shift' bits to the left and must be unshifted before use
+//    NOTE2 the shift WILL truncate if you overdo it, best used on 8-bit Bytes etc.
+int intExponentialMovingAverage(int shift, int factor, int average, int input) {
+    average += ((input<<shift) - average)>>factor;
+    return(average);
+}
+
 // version of the Exponential Moving Average that deliberately stops smoothing
 // if the value changes more than a certain "percentage", the global 'stabilityThreshold' which is precalculated to save an expensive FP division.
 // this is needed to get a stable readout, yet respond quickly when the gas is tweaked.
@@ -184,6 +196,7 @@ float responsiveEMA(float alpha, float *accumulator, float new_value) {
     *accumulator += alpha * (new_value - *accumulator);
     return(*accumulator);
 }
+
 
 // calculate the absolute difference between two integers
 int delta(int first, int second){

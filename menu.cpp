@@ -229,6 +229,13 @@ int doSettingChooser(String valueName, String settings[], int count, int startIn
 	return startIndex;
 }
 
+//handles a menu and allows the previous menu functions to return, thereby releasing the stack space they occupied
+//todo use pointers to strings because string arrays are a waste of space (especially if they reside on the stack AND in memory)
+void handleMenuNoStack(String menu[], void (*func[])(), int menuSize, void (*homeMenu)()){
+    handleMenu(menu, func, menuSize);
+    homeMenu();
+}
+
 // displays a menu screen
 // menu[] = an array of menu option strings
 // *func[] = an array of pointers to the corresponding functions

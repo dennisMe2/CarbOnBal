@@ -42,6 +42,7 @@ int buttonPressed();
 void setInputActiveLow(int i);
 void setOutputHigh(int i);
 float calculateAlpha(int input);
+int intExponentialMovingAverage(int shift, int factor, int average, int input);
 float exponentialMovingAverage(float alpha, float *accumulator, float new_value);
 float responsiveEMA(float alpha, float *accumulator, float new_value);
 int delta(int first, int second);
