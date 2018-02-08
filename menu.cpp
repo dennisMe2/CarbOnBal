@@ -98,10 +98,19 @@ void actionDisplayContrastMenu() {
 void actionDisplayCalibrationMenu() {
 
 	String menu[] = {F(TXT_CALIBRATE_NOW), F(TXT_CLEAR_CALIBRATION)};
-	void (*actions[])() = {&doCalibrate, &doZeroCalibrations };
+	void (*actions[])() = {&actionDisplayCalibrationSensorMenu, &doZeroCalibrations };
 	uint8_t menuSize = 2;
 
 	handleMenu(menu, actions, menuSize);
+}
+
+void actionDisplayCalibrationSensorMenu() {
+
+  String menu[] = {F("Sensor2"), F("Sensor3"),F("Sensor4")};
+  void (*actions[])() = {&doCalibrate1, &doCalibrate2, &doCalibrate3 };
+  uint8_t menuSize = 3;
+
+  handleMenu(menu, actions, menuSize);
 }
 
 // display a basic setting change screen that does not have to call a function

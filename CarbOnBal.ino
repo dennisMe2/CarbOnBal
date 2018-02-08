@@ -313,7 +313,19 @@ void zeroCalibrations() {
 	}
 }
 
-void doCalibrate() {
+void doCalibrate1(){
+    doCalibrate(1);
+}
+void doCalibrate2(){
+    doCalibrate(2);
+}
+void doCalibrate3(){
+    doCalibrate(3);
+}
+void doCalibrate(int sensor) {
+  const int shift=8;
+  const int factor=3;
+  
 	lcd_clear();
 	lcd_setCursor(0, 0);
 	lcd_print(F(TXT_CALIBRATION_BUSY));
@@ -322,15 +334,11 @@ void doCalibrate() {
 
   //initialize temp values array, note full ints (16 bits) used
   int values[256];
- 
+
+ //todo read existing values from EEPROM and pre-shift them
   for(int i=0;i<256;i++){
-    values[i] = 0;
+    values[i] = ((int) EEPROM.read(calibrationOffset + (256 *(sensor-1)) + i)) << shift; 
   }
-  
-	uint8_t calibrated[256>>3];                   //make an array of bytes, the bits of which will be used as flags. This saves 8x the RAM we would otherwise need
-	for(int i =0 ; i<(256>>3); i++){              // 256>>3 means 256 (the number we want to use, divided by 2x2x2 = 2^3 = 8 (the number of bits in a uint8_t (byte)
-		calibrated[i] = 0;                        //I could have written 32 but I feel this is more logical
-	}
 
 	bool calibrationTimeout = false;
 	unsigned long startCalibrationTime = millis();
@@ -342,28 +350,26 @@ void doCalibrate() {
 
 		while (millis() < startCalibrationTime + (long) (1000 * seconds)) {
 
-			//sample all sensors as close as possible to the same time because writing to flash is slow and the slope of the applied vacuum would skew the data
-			//for (uint8_t sensor = 0; sensor < NUM_SENSORS; sensor++) {
-      for (uint8_t sensor = 0; sensor < 2; sensor++) { //only calibrate one sensor as a test
+				//read master
+				if(!settings.delayTime) {
+          analogRead(inputPin[0]);
+        }else{
+          delayMicroseconds(settings.delayTime);
+        }
+        reading[sensor] = analogRead(inputPin[0]);
+
+        //read calibration sensor
 				if(!settings.delayTime) {
 				  analogRead(inputPin[sensor]);
 				}else{
 				  delayMicroseconds(settings.delayTime);
 				}
 				reading[sensor] = analogRead(inputPin[sensor]);
-			}
-
-      for (uint8_t sensor = 1; sensor < 2; sensor++) {
-				int8_t calibrationValue = reading[0] - reading[sensor];
-        //int intExponentialMovingAverage(int shift, int factor, int *average, int input) 
+      
+  			int calibrationValue = reading[0] - reading[sensor];
         
-        values[(reading[sensor]>>2)] = intExponentialMovingAverage(8, 3, values[(reading[sensor]>>2)], calibrationValue);
-        
-				calibrated[reading[0] >> 5] |= 1<<(reading[0] >> 2)%8;            //set the nth bit in our array of bytes shift right 5 = dividing by 4 then again by 8 (because we are storing bits)
-				//the trick to setting a bit like this is to divide the index by the number of bits in a byte then with that byte
-				//you do a bitwise OR with a single bit '1' shifted left into the position of the bit we want to set
-			}
-
+        values[(reading[sensor]>>2)] = intExponentialMovingAverage(shift, factor, values[(reading[sensor]>>2)], calibrationValue);
+      
 			if (millis() - lastUpdateTime > 1000L) {
 				char bars[DISPLAY_COLS+1];
 				makeBars(bars, secondCountDown - 2,0);
@@ -375,18 +381,19 @@ void doCalibrate() {
 			}
 		}
 
-		int uncalibrated = 0;
-		for(int i=0 ;i<256;i++){
-			if( 0 == (calibrated[i>>3] & (1 << i%8)) ) uncalibrated++;      //here again index divided by 8 is bitwise tested by shifting '1' the modulo (remainder) of the /8 division
-		}
+    //todo post_shift the values in preparation of writing back to EEPROM
+    for(int i=0;i<256;i++){
+      values[i] = (values[i] >> shift);
+    }
+  
       //save calibrations
       //todo needs to be checked for quality and post smoothed if needed
       //for (uint8_t sensor = 1; sensor < NUM_SENSORS; sensor++) {
-      for (uint8_t sensor = 1; sensor < 2; sensor++) {
-        for (int i =0; i<256;i++){
-          eepromWriteIfChanged(calibrationOffset + sensor-1 , values[i]);
-        }  
-      }
+      
+      for (int i =0; i<256;i++){
+        eepromWriteIfChanged(calibrationOffset + (256 *(sensor-1)) , values[i]);
+      }  
+     
 
 		calibrationTimeout = true;
 		lcd_clear();
@@ -394,9 +401,7 @@ void doCalibrate() {
 		lcd_print(F(TXT_CALIBRATION_DONE));
 		lcd_setCursor(0, 1);
 		lcd_print("             ");
-		printLcdSpace(0, 3, 15);
-		lcd_print(F(TXT_UNCALIBRATED));
-		printLcdInteger(uncalibrated, 15, 3, 4);
+		
 		delay(3000);
 
 	}
