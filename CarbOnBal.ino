@@ -114,12 +114,7 @@ void loop() {
 void runningAverage() {
 	unsigned long startTime = millis();
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) {       //loop over all sensors
-		if(!settings.delayTime) {
-          analogRead(inputPin[sensor]);                                    //if no delay is set up an initial read will always work
-        }else{
-          delayMicroseconds(settings.delayTime);                          //arduino's analog read needs a delay or the results suffer
-        }
-		reading[sensor] = analogRead(inputPin[sensor]);
+		readSensorRaw(sensor);
 		if (reading[sensor] <= 1023 - settings.threshold ){             //1023 is basically normal airpressure at sea level. it can be lower, especially in the mountains
 			if (sensor != 0) { //only apply calibration for non reference sensors
 
@@ -293,13 +288,14 @@ void doZeroCalibrations() {
 	delay(500);
 }
 
+//determine where the calibration value is stored depending on the sample value 
 int getCalibrationOffset(int sensor, int value){
 	return calibrationOffset + (sensor-1 * 256) + (int8_t) (value >> 2);
-
 }
 
+//only write if the value needs writing (saves write cycles)
 void eepromWriteIfChanged(int address, int data){
-	if(data != (int) EEPROM.read(address)){			//only write if the value needs writing (saves write cycles)
+	if(data != (int) EEPROM.read(address)){			
 		EEPROM.write(address, data); 				//write the data directly to EEPROM
 	}
 }
@@ -313,6 +309,17 @@ void zeroCalibrations() {
 	}
 }
 
+//read raw data from the sensor by an effective method
+ int readSensorRaw(int sensor){
+    if(!settings.delayTime) { //if delaytime is zero, do a pre-read to prime the ADC
+      analogRead(inputPin[sensor]);
+    }else{
+      delayMicroseconds(settings.delayTime);
+    }
+    reading[sensor] = analogRead(inputPin[sensor]);
+    return (reading[sensor]);
+ }
+
 void doCalibrate1(){
     doCalibrate(1);
 }
@@ -325,7 +332,10 @@ void doCalibrate3(){
 void doCalibrate(int sensor) {
   const int shift=8;
   const int factor=3;
-  
+  int maxValue = 0;
+  int minValue = 0;
+  int lowestCalibratedValue = 1024;
+	
 	lcd_clear();
 	lcd_setCursor(0, 0);
 	lcd_print(F(TXT_CALIBRATION_BUSY));
@@ -349,25 +359,14 @@ void doCalibrate(int sensor) {
 		long lastUpdateTime = startCalibrationTime;
 
 		while (millis() < startCalibrationTime + (long) (1000 * seconds)) {
-
-				//read master
-				if(!settings.delayTime) {
-          analogRead(inputPin[0]);
-        }else{
-          delayMicroseconds(settings.delayTime);
-        }
-        reading[sensor] = analogRead(inputPin[0]);
-
-        //read calibration sensor
-				if(!settings.delayTime) {
-				  analogRead(inputPin[sensor]);
-				}else{
-				  delayMicroseconds(settings.delayTime);
-				}
-				reading[sensor] = analogRead(inputPin[sensor]);
+				readSensorRaw(0);  //read master
+				readSensorRaw(sensor); //read calibration sensor
       
   			int calibrationValue = reading[0] - reading[sensor];
-        
+        if(calibrationValue > maxValue) maxValue = calibrationValue;
+        if(calibrationValue < minValue) minValue = calibrationValue;
+        if(reading[sensor] < lowestCalibratedValue) lowestCalibratedValue = reading[sensor];
+         
         values[(reading[sensor]>>2)] = intExponentialMovingAverage(shift, factor, values[(reading[sensor]>>2)], calibrationValue);
       
 			if (millis() - lastUpdateTime > 1000L) {
@@ -388,20 +387,22 @@ void doCalibrate(int sensor) {
   
       //save calibrations
       //todo needs to be checked for quality and post smoothed if needed
-      //for (uint8_t sensor = 1; sensor < NUM_SENSORS; sensor++) {
-      
+     
       for (int i =0; i<256;i++){
         eepromWriteIfChanged(calibrationOffset + (256 *(sensor-1)) , values[i]);
       }  
-     
 
 		calibrationTimeout = true;
 		lcd_clear();
 		lcd_setCursor(0, 0);
 		lcd_print(F(TXT_CALIBRATION_DONE));
 		lcd_setCursor(0, 1);
-		lcd_print("             ");
-		
+    lcd_print(F("Lowest: "));
+		printLcdInteger( lowestCalibratedValue, 14, 1, 5);
+    lcd_print(F("Min Adjust: "));
+    printLcdInteger( minValue, 14, 2, 5);
+    lcd_print(F("Max Adjust: "));
+    printLcdInteger( maxValue, 14, 3, 5);
 		delay(3000);
 
 	}
@@ -449,15 +450,11 @@ void doDataDump() {
 			Serial.print(millis() - startTime);
 			Serial.print("\t");
 			for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
-				if(!settings.delayTime) {
-          analogRead(inputPin[sensor]);
-        }else{
-          delayMicroseconds(settings.delayTime);
-        }
+				
 				if (sensor != 0) {  //only apply calibration for non reference sensors
-					reading = analogRead(inputPin[sensor]) + (int8_t) EEPROM.read(getCalibrationOffset(sensor, reading));
+					reading = readSensorRaw(sensor) + (int8_t) EEPROM.read(getCalibrationOffset(sensor, reading));
 				} else {
-					reading = analogRead(inputPin[sensor]);
+					reading = readSensorRaw(sensor);
 				}
 
 				Serial.print(reading);
@@ -489,7 +486,7 @@ void doRevs(){
 
 	while (! (buttonPressed() == CANCEL)) {
 
-		measurement = analogRead(inputPin[0]);
+		measurement = readSensorRaw(0);
 
 		if(measurement < (previous)){
 			descentCount++;
@@ -617,12 +614,8 @@ int detectAmbient(){
 	uint8_t numberOfSamples = 200;                                //set the number of samples to average
 
 	for (int i = 0; i < numberOfSamples; i++){
-		    if(!settings.delayTime) {
-          analogRead(inputPin[0]);
-        }else{
-          delayMicroseconds(settings.delayTime);
-        }
-		total += analogRead(inputPin[0]);                    //add the reading we got
+		    
+		total += readSensorRaw(0);                          //add the reading we got
 	}
 	return total / numberOfSamples;                         //divide the result by the number of samples for the resulting average
 }

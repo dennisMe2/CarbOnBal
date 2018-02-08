@@ -25,6 +25,7 @@
 #include <Arduino.h>
 void makeCenterBars(char *bars, int8_t number);
 void initRpmDisplay();
+int readSensorRaw(int sensor);
 int getCalibrationOffset(int sensor, int value);
 void updateRpmDisplay(unsigned int rpm);
 void eepromWriteIfChanged(int address, int data);
