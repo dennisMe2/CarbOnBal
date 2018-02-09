@@ -403,6 +403,8 @@ void doCalibrate(int sensor) {
 
     //todo text / icon on screen to tell user we are waiting for a keypress
     waitForAnyKey();
+    displayCalibratedValues(values);
+    waitForAnyKey();
 }
 
 void displayCalibratedValues(int values[]){
@@ -433,9 +435,12 @@ void displayCalibratedValues(int values[]){
            lcd_printChar('|');
         }else if (valueInSegments < 0 && valueInSegments < -segmentsPerCharacter){
            lcd_setCursor(3,column);
-           lcd_write(byte((byte) ((10+valueInSegments) % segmentsPerCharacter)-1 ));
+           lcd_write(byte((byte) 8-(-valueInSegments % segmentsPerCharacter)-1 ));
            lcd_setCursor(2,column);
            lcd_printChar('|');
+        }else if(valueInSegments < 0 && valueInSegments >= -segmentsPerCharacter){
+           lcd_setCursor(2,column);
+           lcd_write(byte((byte) 8-(-valueInSegments)-1));
         }
         //todo negative values
         //todo paging
