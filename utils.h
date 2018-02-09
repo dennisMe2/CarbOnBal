@@ -39,6 +39,7 @@ float differenceToInHg(int value);
 
 void resetToFactoryDefaultSettings();
 int buttonPressed();
+void waitForAnyKey();
 void setInputActiveLow(int i);
 void setOutputHigh(int i);
 float calculateAlpha(int input);

@@ -140,7 +140,13 @@ int buttonPressed() {
 	}
 
 	lastEntry = millis();
-    return -1;
+    return 0;//just don't try to connect a button to pin 0
+}
+
+void waitForAnyKey(){
+      while(!buttonPressed()){
+      delay(50);
+    }
 }
 
 // used by switches which "short" the pin to ground, saves wiring a resistor per switch

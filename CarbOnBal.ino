@@ -118,7 +118,7 @@ void runningAverage() {
     if (reading[sensor] <= 1023 - settings.threshold ) {            //1023 is basically normal airpressure at sea level. it can be lower, especially in the mountains
       if (sensor != 0) { //only apply calibration for non reference sensors
 
-        sums[sensor] += reading[sensor] + (int8_t) EEPROM.read(getValueCalibrationOffset(sensor, reading[sensor])); //adds this reading adjusted for calibration
+        sums[sensor] += reading[sensor] + (int8_t) EEPROM.read(getCalibrationTableOffsetByValue(sensor, reading[sensor])); //adds this reading adjusted for calibration
       } else {
         sums[sensor] += reading[sensor];                        //sensor0 is the reference sensor, no calibration needed
       }
@@ -289,13 +289,13 @@ void doZeroCalibrations() {
 }
 
 //determine where the calibration value is stored depending on the sample value
-int getValueCalibrationOffset(int sensor, int value) {
-  return calibrationOffset + ((sensor - 1) * 256) + (int8_t) (value >> 2);
+int getCalibrationTableOffsetByValue(int sensor, int value) {
+  return calibrationOffset + ((sensor - 1) * numberOfCalibrationValues) + (value >> 2);
 }
 
 //determine where the calibration value is stored depending on the sample value
-int getTableCalibrationOffset(int sensor, int pos) {
-  return calibrationOffset + ((sensor - 1) * 256) + (int8_t) pos;
+int getCalibrationTableOffsetByPosition(int sensor, int pos) {
+  return calibrationOffset + ((sensor - 1) * numberOfCalibrationValues) + pos;
 }
 
 //only write if the value needs writing (saves write cycles)
@@ -308,8 +308,8 @@ void eepromWriteIfChanged(int address, int data) {
 //actually clears the flash
 void zeroCalibrations() {
   for (uint8_t sensor = 1; sensor < (NUM_SENSORS ); sensor++) {
-    for (int i = 0; i < 256; i++) {
-      eepromWriteIfChanged(calibrationOffset + (256 * (sensor - 1) + i), 0); //write the data directly to EEPROM
+    for (int i = 0; i < numberOfCalibrationValues; i++) {
+      eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i), 0); //write the data directly to EEPROM
     }
   }
 }
@@ -346,24 +346,21 @@ void doCalibrate(int sensor) {
   lcd_print(F(TXT_CALIBRATION_BUSY));
   lcd_setCursor(0, 1);
   lcd_print(F(TXT_CALIBRATION_BUSY_2));
-
+  lcd_setCursor(0, 2);
+  lcd_print(F(TXT_PRESS_ANY_KEY));
+  
   //initialize temp values array, note full ints (16 bits) used
-  int values[256];
+  int values[numberOfCalibrationValues];
 
-  //todo read existing values from EEPROM and pre-shift them
-  for (int i = 0; i < 256; i++) {
-    values[i] = ((int) EEPROM.read(getTableCalibrationOffset(sensor,i))) << shift;
+  //todo read existing values from EEPROM and pre-shift them 
+  //shifting an int left by n bits gives us n bits of 'virtual' decimal places
+  // this is needed for accuracy because EMA calculation works by adding or subtracting relatively small values
+  // which would otherwise all be truncated to '0' 
+  for (int i = 0; i < numberOfCalibrationValues; i++) {
+    values[i] = ((int) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i))) << shift;
   }
 
-  bool calibrationTimeout = false;
-  unsigned long startCalibrationTime = millis();
-  while (!calibrationTimeout) {
-
-    uint8_t seconds = 20;
-    uint8_t secondCountDown = seconds;
-    long lastUpdateTime = startCalibrationTime;
-
-    while (millis() < startCalibrationTime + (long) (1000 * seconds)) {
+  while (!buttonPressed) {
       readSensorRaw(0);  //read master
       readSensorRaw(sensor); //read calibration sensor
 
@@ -375,44 +372,100 @@ void doCalibrate(int sensor) {
       if (reading[sensor] < lowestCalibratedValue) lowestCalibratedValue = reading[sensor];
 
       values[(reading[sensor] >> 2)] = intExponentialMovingAverage(shift, factor, values[(reading[sensor] >> 2)], calibrationValue);
-
-      if (millis() - lastUpdateTime > 1000L) {
-        char bars[DISPLAY_COLS + 1];
-        makeBars(bars, secondCountDown - 2, 0);
-
-        lcd_setCursor(0, 3);
-        lcd_print(bars);
-        secondCountDown--;
-        lastUpdateTime = millis();
-      }
     }
 
     //todo post_shift the values in preparation of writing back to EEPROM
-    for (int i = 0; i < 256; i++) {
+    // we don't need to save the 'decimal places' because they are not needed anymore.
+    // so we lose them by shifting them out of range to the right
+    for (int i = 0; i < numberOfCalibrationValues; i++) {
       values[i] = (values[i] >> shift);
     }
 
     //save calibrations
     //todo needs to be checked for quality and post smoothed if needed
 
-    for (int i = 0; i < 256; i++) {
-      eepromWriteIfChanged(getTableCalibrationOffset(sensor, i) , values[i]);
+    for (int i = 0; i < numberOfCalibrationValues; i++) {
+      eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i) , values[i]);
     }
 
-    calibrationTimeout = true;
     lcd_clear();
     lcd_setCursor(0, 0);
     lcd_print(F(TXT_CALIBRATION_DONE));
     lcd_setCursor(0, 1);
     lcd_print(F("Lowest: "));
     printLcdInteger( lowestCalibratedValue, 14, 1, 5);
+    lcd_setCursor(0, 2);
     lcd_print(F("Min Adjust: "));
     printLcdInteger( minValue, 14, 2, 5);
+    lcd_setCursor(0, 3);
     lcd_print(F("Max Adjust: "));
     printLcdInteger( maxValue, 14, 3, 5);
-    delay(3000);
 
-  }
+    //todo text / icon on screen to tell user we are waiting for a keypress
+    waitForAnyKey();
+}
+
+void displayCalibratedValues(int values[]){
+  int valueOffset=0;
+  int maxVal = 127;
+  int numberOfColumns = 20;
+  int segmentsPerCharacter = 8;
+  int numberOfCharacters = 4;
+  int numberOfSegments = segmentsPerCharacter * (numberOfCharacters / 2);
+  int valuePerSegment = maxVal / numberOfSegments; //128 / 16 = 8
+  
+  lcd_clear();
+
+  makeCalibrationChars();
+  
+    for(int column = 0; column < numberOfColumns; column++){
+      int valueInSegments = values[valueOffset + column] / valuePerSegment;
+
+        if(valueInSegments == 0){
+          //do nothing
+        }else if(valueInSegments <=  segmentsPerCharacter && valueInSegments > 0){
+           lcd_setCursor(1,column);
+           lcd_write(byte((byte) valueInSegments-1));
+        }else if(valueInSegments >  segmentsPerCharacter){
+           lcd_setCursor(0,column);
+           lcd_write(byte((byte) (valueInSegments % segmentsPerCharacter)-1 ));
+           lcd_setCursor(1,column);
+           lcd_printChar('|');
+        }else if (valueInSegments < 0 && valueInSegments < -segmentsPerCharacter){
+           lcd_setCursor(3,column);
+           lcd_write(byte((byte) ((10+valueInSegments) % segmentsPerCharacter)-1 ));
+           lcd_setCursor(2,column);
+           lcd_printChar('|');
+        }
+        //todo negative values
+        //todo paging
+        //todo refactor code
+      
+      
+    }
+    
+  
+  
+}
+
+
+void createSpecialCharacter(int number){
+   byte specialCharacter[8];
+
+   for(int i=0; i < 8; i++){
+      specialCharacter[i] = 0b00000;
+   }
+    specialCharacter[number-1] = 0b11111;
+    lcd_createChar(number-1, specialCharacter); 
+}
+
+
+//create special characters in LCD memory these contain the horizontal lines 
+// we use these to indicate the size of the calibration value on a graph
+void makeCalibrationChars(){
+    for(int i = 1; i<=8; i++){
+      createSpecialCharacter(i);
+    }
 }
 
 void doCalibrationDump() {
@@ -425,12 +478,12 @@ void doCalibrationDump() {
 
     Serial.println(F(TXT_SERIAL_HEADER));
 
-    for (int i = 0; i < 256; i++) {
+    for (int i = 0; i < numberOfCalibrationValues; i++) {
       Serial.print(i);
-      Serial.print("\t");
+      Serial.print(" :\t");
       for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
-        Serial.print((int8_t) EEPROM.read(getTableCalibrationOffset(sensor, i)));
-        Serial.print("\t");
+        Serial.print((int) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
+        Serial.print(" | ");
       }
       Serial.print("\n");
     }
@@ -457,7 +510,7 @@ void doDataDump() {
       for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
 
         if (sensor != 0) {  //only apply calibration for non reference sensors
-          reading = readSensorRaw(sensor) + (int8_t) EEPROM.read(getValueCalibrationOffset(sensor, reading));
+          reading = readSensorRaw(sensor) + (int) EEPROM.read(getCalibrationTableOffsetByValue(sensor, reading));
         } else {
           reading = readSensorRaw(sensor);
         }
