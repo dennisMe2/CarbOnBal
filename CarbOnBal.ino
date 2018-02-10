@@ -56,6 +56,7 @@ int total[NUM_SENSORS];                                     //
 int reading[NUM_SENSORS];                                   //the current reading for each sensor
 
 int ambientPressure;                                        //stores current ambient pressure for negative pressure display
+unsigned long lastUpdate;
 
 //this does the initial setup on startup.
 void setup() {
@@ -77,7 +78,7 @@ void setup() {
 	alphaRpm = calculateAlpha(settings.rpmDamping);
 	stabilityThreshold = (100 - settings.responsiveness) / 100; //responsiveness is how quickly the system responds to rapid RPM changes as opposed to smoothing the display
 	lcd_print(F(TXT_WELCOME));
-	delay(3000);
+	delay(2000);
 }
 
 void loop() {
@@ -98,12 +99,13 @@ void loop() {
 
 	runningAverage(); //calculate the running averages and return asap
 
-	if (!freezeDisplay) {
+	if (!freezeDisplay && ((millis() - lastUpdate) > 100)) {//only update the display every 100ms or so to prevent flickering
+		lastUpdate=millis();
 		switch ( settings.graphType) {                      //there are two types of graph. bar and centered around the value of the master carb
 		case 0:  lcdBarsSmooth(average); break;          //these functions both draw a graph and return asap
 		case 1:  lcdBarsCenterSmooth(average); break;    //
 		}
-	} else {
+	} else if(freezeDisplay){
 		//make a little snow flake to indicate the frozen state of the display
 		drawSnowFlake();
 	}
@@ -325,6 +327,23 @@ int readSensorRaw(int sensor) {
 	return (reading[sensor]);
 }
 
+
+void createWaitKeyPressChar(){
+	//todo text / icon on screen to tell user we are waiting for a keypress
+		byte customChar[8] = {
+			0b00100,
+			0b00100,
+			0b10101,
+			0b01110,
+			0b00100,
+			0b00000,
+			0b01110,
+			0b11111
+		};
+		lcd_createChar(0, customChar);
+
+}
+
 void doCalibrate1() {
 	doCalibrate(1);
 }
@@ -342,13 +361,20 @@ void doCalibrate(int sensor) {
 	int lowestCalibratedValue = 1024;
 
 	lcd_clear();
+	createWaitKeyPressChar();
+	lcd_setCursor(19,0);
+	lcd_write(byte((byte) 0));
+
 	lcd_setCursor(0, 0);
 	lcd_print(F(TXT_CALIBRATION_BUSY));
+
 	lcd_setCursor(0, 1);
 	lcd_print(F(TXT_CALIBRATION_BUSY_2));
+
 	lcd_setCursor(0, 2);
 	lcd_print(F(TXT_PRESS_ANY_KEY));
-	delay(1000);//otherwise key still pressed, probably need a better solution
+
+	delay(500);//otherwise key still pressed, probably need a better solution
 
 	//initialize temp values array, note full ints (16 bits) used
 	int values[numberOfCalibrationValues];
@@ -388,8 +414,12 @@ void doCalibrate(int sensor) {
 	}
 
 	lcd_clear();
+	lcd_setCursor(19,0);
+	lcd_write(byte((byte) 0));
+
 	lcd_setCursor(0, 0);
 	lcd_print(F(TXT_CALIBRATION_DONE));
+
 	lcd_setCursor(0, 1);
 	lcd_print(F("Lowest: "));
 	printLcdInteger( lowestCalibratedValue, 14, 1, 5);
@@ -400,7 +430,9 @@ void doCalibrate(int sensor) {
 	lcd_print(F("Max Adjust: "));
 	printLcdInteger( maxValue, 14, 3, 5);
 
-	//todo text / icon on screen to tell user we are waiting for a keypress
+	lcd_setCursor(19,0);
+	lcd_write(byte((byte) 0));
+
 	waitForAnyKey();
 	displayCalibratedValues(values);
 	waitForAnyKey();
@@ -415,7 +447,7 @@ void displayCalibratedValues(int values[]){
 	int valuePerSegment = settings.calibrationMax / numberOfSegments; //128 / 16 = 8
 	int pressedButton = 0;
 	bool dataChanged = true;
-
+	bool topLeftArrowPositionAvailable, topRightArrowPositionAvailable = true;
 	makeCalibrationChars();
 
 	while(pressedButton != CANCEL){
@@ -429,17 +461,54 @@ void displayCalibratedValues(int values[]){
 				}else if(valueInSegments <=  segmentsPerCharacter && valueInSegments > 0){
 					lcd_setCursor(column,1);
 					lcd_write(byte((byte) 8-valueInSegments));
+				}else if(valueInSegments >  2 * segmentsPerCharacter){
+					lcd_setCursor(column,0);
+					lcd_printChar('|');
+					lcd_setCursor(column,1);
+					lcd_printChar('|');
 				}else if(valueInSegments >  segmentsPerCharacter){
 					lcd_setCursor(column,0);
 					lcd_write(byte((byte) 8-(valueInSegments % segmentsPerCharacter)));
-				}else if (valueInSegments < 0 && valueInSegments < -segmentsPerCharacter){
+				}else if (valueInSegments < (2 * -segmentsPerCharacter)){
+					lcd_setCursor(column,2);
+					lcd_printChar('|');
 					lcd_setCursor(column,3);
-					lcd_write(byte((byte) (-valueInSegments % segmentsPerCharacter)-1 ));
-				}else if(valueInSegments < 0 && valueInSegments >= -segmentsPerCharacter){
+					lcd_printChar('|');
+				}else if(valueInSegments < 0 && (valueInSegments >= -segmentsPerCharacter)){
 					lcd_setCursor(column,2);
 					lcd_write(byte((byte) (-valueInSegments)-1));
+				}else if (valueInSegments < 0 && (valueInSegments < -segmentsPerCharacter)){
+					lcd_setCursor(column,3);
+					lcd_write(byte((byte) 8-((valueInSegments+1) % segmentsPerCharacter)));
 				}
+
+				if(column == 0) topLeftArrowPositionAvailable = (valueInSegments <= 0);
+				if(column == 19) topRightArrowPositionAvailable = (valueInSegments <= 0);
+
 			}
+
+			if(valueOffset == 0 ){
+				(topLeftArrowPositionAvailable) ? lcd_setCursor(0,0) : lcd_setCursor(0,3);
+				lcd_printChar('[');
+				lcd_printInt(valueOffset);
+			}
+			if(valueOffset > 0 ){
+				(topLeftArrowPositionAvailable) ? lcd_setCursor(0,0) : lcd_setCursor(0,3);
+				lcd_printChar(char(MENUCARET+1));           //little arrow to the left
+				lcd_printInt(valueOffset);
+			}
+			if(valueOffset == numberOfCalibrationValues-20 ){
+				(topRightArrowPositionAvailable) ? lcd_setCursor(16,0) : lcd_setCursor(16,3);
+				lcd_printInt(valueOffset + 20);
+				lcd_printChar(']');
+			}
+			if(valueOffset < numberOfCalibrationValues-20 ){
+				(topRightArrowPositionAvailable) ? lcd_setCursor(16,0) : lcd_setCursor(16,3);
+				if((valueOffset + 20) < 100) lcd_printChar(' ');
+				lcd_printInt(valueOffset + 20);
+				lcd_printChar(char(MENUCARET));           //little arrow to the right
+			}
+
 		}
 
 		pressedButton = buttonPressed();
@@ -460,6 +529,8 @@ void displayCalibratedValues(int values[]){
 		}
 	}
 }
+
+
 
 //create special characters in LCD memory these contain the horizontal lines
 // we use to generate a graph of our calibration data

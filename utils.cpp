@@ -100,22 +100,23 @@ float differenceToInHg(int value){
 //reset to factory defaults
 void resetToFactoryDefaultSettings(){
     settings.brightness = 255;
-    settings.contrast = 20;
+    settings.contrast = 10;
     settings.damping = 85;
-    settings.delayTime = 200;
+    settings.delayTime = 0;
     settings.graphType = 0;
     settings.usePeakAverage = false;
     settings.baudRate = 9;
     settings.silent = false;
     settings.cylinders = 4;
     settings.master = 4;
-    settings.threshold  = 200;
+    settings.threshold  = 100;
     settings.button1 = 0;
     settings.button2 = 0;
     settings.rpmDamping = 35;
     settings.responsiveness = 75;
     settings.units = 0;
     settings.zoom = 0;
+    settings.calibrationMax = 16;
 }
 
 // tests if a button was pressed and applies debounce logic
