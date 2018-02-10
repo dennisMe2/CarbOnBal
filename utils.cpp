@@ -122,7 +122,8 @@ void resetToFactoryDefaultSettings(){
 // this function assumes all buttons are input_pullup, active LOW, and contiguous pin numbers!
 // this function does not use wait loops or other blocking functions which delay processing
 int buttonPressed() {
-	if( millis() - lastEntry < 50) return -1;//checking more often that every 50ms is nonsense, just return
+	if( millis() - lastEntry < 50) return 0;//checking more often that every 50ms is nonsense, just return
+	lastEntry = millis();
 
 	for (uint8_t button = SELECT; button <= CANCEL; button++) {
 		buttonState[button-SELECT] = digitalRead(button);
@@ -139,7 +140,7 @@ int buttonPressed() {
 		}
 	}
 
-	lastEntry = millis();
+
     return 0;//just don't try to connect a button to pin 0
 }
 

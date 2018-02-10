@@ -135,6 +135,10 @@ void doUnits(){
     settings.units = doSettingChooser(F("Display Units:"), actions, 8, (int) settings.units) ;
 }
 
+void actionCalibrationMax() {
+    settings.calibrationMax = doBasicSettingChanger(F("Max calibration"), 16, 127, settings.calibrationMax, 16);
+}
+
 void doMaxZoom(){
     
     static uint8_t count = 5;

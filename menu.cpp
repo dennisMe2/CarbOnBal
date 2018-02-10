@@ -97,9 +97,9 @@ void actionDisplayContrastMenu() {
 
 void actionDisplayCalibrationMenu() {
 
-	String menu[] = {F(TXT_CALIBRATE_NOW), F(TXT_CLEAR_CALIBRATION)};
-	void (*actions[])() = {&actionDisplayCalibrationSensorMenu, &doZeroCalibrations };
-	uint8_t menuSize = 2;
+	String menu[] = {F(TXT_CALIBRATE_NOW), F(TXT_CLEAR_CALIBRATION), F("Set Calibration Max")};
+	void (*actions[])() = {&actionDisplayCalibrationSensorMenu, &doZeroCalibrations, &actionCalibrationMax };
+	uint8_t menuSize = 3;
 
 	handleMenu(menu, actions, menuSize);
 }

@@ -52,6 +52,7 @@ void actionMaster() ;
 void doMaster(int value);
 void fixMaster();
 void actionBrightnessButton();
+void actionCalibrationMax();
 void doUnits();
 void doMaxZoom();
 #endif
