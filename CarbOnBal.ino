@@ -30,11 +30,11 @@
 
 #include "functions.h"
 #include "globals.h"
+#include "lang_en_gb.h"   //include British English texts
 #include "lcdWrapper.h"
 #include "menu.h"
 #include "menuActions.h"
 #include "utils.h"
-#include "lang_gb_gb.h"   //include British English texts
 settings_t settings;
 
 // The software uses a lot of global variables. This may not be elegant but its one way of writing non-blocking code
@@ -47,13 +47,13 @@ bool freezeDisplay = false;                                 //used to tell when 
 unsigned int rpm;                                           //stores the current RPM
 float alpha;                                                //alpha is the math term for the weighting factor used to calculate
 //EMA Exponentially weighted moving average. Using this we save a lot of precious memory
-float alphaRpm;                                             //alpha factor used to smoothe the RPM display
-float stabilityThreshold;                                   //the factor used to detect when the throttle is being janked and a response is required
+float alphaRpm;                                             //alpha factor used to smooth the RPM display
+float stabilityThreshold;                                   //the factor used to detect when the throttle is being yanked and a response is required
 
 int readingCount[NUM_SENSORS];                              //used to store the number of captured readings for calculating a numerical average
 int average[NUM_SENSORS];                                   //used to share the current average for each sensor
 int total[NUM_SENSORS];                                     //
-int reading[NUM_SENSORS];                                   //the current reading for each sensor
+int reading[NUM_SENSORS];                                   //the latest reading for each sensor
 
 int ambientPressure;                                        //stores current ambient pressure for negative pressure display
 unsigned long lastUpdate;
@@ -290,12 +290,12 @@ void doZeroCalibrations() {
 	delay(500);
 }
 
-//determine where the calibration value is stored depending on the sample value
+//determine where the calibration value is stored in EEPROM depending on the sample value
 int getCalibrationTableOffsetByValue(int sensor, int value) {
 	return calibrationOffset + ((sensor - 1) * numberOfCalibrationValues) + (value >> 2);
 }
 
-//determine where the calibration value is stored depending on the sample value
+//determine where in EEPROM the calibration value is stored depending on the position
 int getCalibrationTableOffsetByPosition(int sensor, int pos) {
 	return calibrationOffset + ((sensor - 1) * numberOfCalibrationValues) + pos;
 }
@@ -303,7 +303,7 @@ int getCalibrationTableOffsetByPosition(int sensor, int pos) {
 //only write if the value needs writing (saves write cycles)
 void eepromWriteIfChanged(int address, int data) {
 	if (data != (int) EEPROM.read(address)) {
-		EEPROM.write(address, data); 				//write the data directly to EEPROM
+		EEPROM.write(address, data); 				//write the data to EEPROM
 	}
 }
 
@@ -327,9 +327,8 @@ int readSensorRaw(int sensor) {
 	return (reading[sensor]);
 }
 
-
+//creates a special character which is stored in the display's memory
 void createWaitKeyPressChar(){
-	//todo text / icon on screen to tell user we are waiting for a keypress
 		byte customChar[8] = {
 			0b00100,
 			0b00100,
@@ -361,6 +360,7 @@ void doCalibrate(int sensor) {
 	int lowestCalibratedValue = 1024;
 
 	lcd_clear();
+
 	createWaitKeyPressChar();
 	lcd_setCursor(19,0);
 	lcd_write(byte((byte) 0));
@@ -380,7 +380,7 @@ void doCalibrate(int sensor) {
 	int values[numberOfCalibrationValues];
 
 	//read existing values from EEPROM and pre-shift them
-	//shifting an int left by n bits gives us n bits of 'virtual' decimal places
+	//shifting an int left by n bits simply gives us n bits of 'virtual' decimal places
 	// this is needed for accuracy because EMA calculation works by adding or subtracting relatively small values
 	// which would otherwise all be truncated to '0'
 	for (int i = 0; i < numberOfCalibrationValues; i++) {
@@ -421,13 +421,13 @@ void doCalibrate(int sensor) {
 	lcd_print(F(TXT_CALIBRATION_DONE));
 
 	lcd_setCursor(0, 1);
-	lcd_print(F("Lowest: "));
+	lcd_print(F(TXT_LOWEST_PRESSURE));
 	printLcdInteger( lowestCalibratedValue, 14, 1, 5);
 	lcd_setCursor(0, 2);
-	lcd_print(F("Min Adjust: "));
+	lcd_print(F(TXT_MIN_ADJUST));
 	printLcdInteger( minValue, 14, 2, 5);
 	lcd_setCursor(0, 3);
-	lcd_print(F("Max Adjust: "));
+	lcd_print(F(TXT_MAX_ADJUST));
 	printLcdInteger( maxValue, 14, 3, 5);
 
 	lcd_setCursor(19,0);
@@ -438,6 +438,43 @@ void doCalibrate(int sensor) {
 	waitForAnyKey();
 }
 
+//display indicator arrows and numeric offsets so we don't get lost in the graph of calibration values.
+void displayNavArrowsAndOffsets(int valueOffset,
+		bool topLeftArrowPositionAvailable,
+		bool topRightArrowPositionAvailable) {
+	if (valueOffset == 0) {
+		(topLeftArrowPositionAvailable) ?
+				lcd_setCursor(0, 0) : lcd_setCursor(0, 3);
+		lcd_printChar('[');
+		lcd_printInt(valueOffset);
+	}
+	if (valueOffset > 0) {
+		(topLeftArrowPositionAvailable) ?
+				lcd_setCursor(0, 0) : lcd_setCursor(0, 3);
+		lcd_printChar(char(MENUCARET + 1)); //little arrow to the left
+		lcd_printInt(valueOffset);
+	}
+	if (valueOffset == numberOfCalibrationValues - 20) {
+		(topRightArrowPositionAvailable) ?
+				lcd_setCursor(16, 0) : lcd_setCursor(16, 3);
+		lcd_printInt(valueOffset + 20);
+		lcd_printChar(']');
+	}
+	if (valueOffset < numberOfCalibrationValues - 20) {
+		(topRightArrowPositionAvailable) ?
+				lcd_setCursor(16, 0) : lcd_setCursor(16, 3);
+		if ((valueOffset + 20) < 100)
+			lcd_printChar(' ');
+
+		lcd_printInt(valueOffset + 20);
+		lcd_printChar(char(MENUCARET)); //little arrow to the right
+	}
+}
+
+// Show a graph of the computed calibration values so the user can get an idea of the quality of the sensors
+// and of the calibration. Repeated calibration increases the accuracy.
+// Note: if all sensors are showing the same type of displacement that means that sensor 0
+// is off by that much in the opposite direction.
 void displayCalibratedValues(int values[]){
 	int valueOffset=0;
 	int numberOfColumns = 20;
@@ -456,9 +493,7 @@ void displayCalibratedValues(int values[]){
 			for(int column = 0; column < numberOfColumns; column++){
 				int valueInSegments = values[valueOffset + column] / valuePerSegment;
 
-				if(valueInSegments == 0){
-					//nothing
-				}else if(valueInSegments <=  segmentsPerCharacter && valueInSegments > 0){
+				if(valueInSegments <=  segmentsPerCharacter && valueInSegments > 0){
 					lcd_setCursor(column,1);
 					lcd_write(byte((byte) 8-valueInSegments));
 				}else if(valueInSegments >  2 * segmentsPerCharacter){
@@ -487,30 +522,13 @@ void displayCalibratedValues(int values[]){
 
 			}
 
-			if(valueOffset == 0 ){
-				(topLeftArrowPositionAvailable) ? lcd_setCursor(0,0) : lcd_setCursor(0,3);
-				lcd_printChar('[');
-				lcd_printInt(valueOffset);
-			}
-			if(valueOffset > 0 ){
-				(topLeftArrowPositionAvailable) ? lcd_setCursor(0,0) : lcd_setCursor(0,3);
-				lcd_printChar(char(MENUCARET+1));           //little arrow to the left
-				lcd_printInt(valueOffset);
-			}
-			if(valueOffset == numberOfCalibrationValues-20 ){
-				(topRightArrowPositionAvailable) ? lcd_setCursor(16,0) : lcd_setCursor(16,3);
-				lcd_printInt(valueOffset + 20);
-				lcd_printChar(']');
-			}
-			if(valueOffset < numberOfCalibrationValues-20 ){
-				(topRightArrowPositionAvailable) ? lcd_setCursor(16,0) : lcd_setCursor(16,3);
-				if((valueOffset + 20) < 100) lcd_printChar(' ');
-				lcd_printInt(valueOffset + 20);
-				lcd_printChar(char(MENUCARET));           //little arrow to the right
-			}
-
+			//show arrows to indicate scrolling and our location in the calibration array
+			displayNavArrowsAndOffsets(valueOffset,
+					topLeftArrowPositionAvailable,
+					topRightArrowPositionAvailable);
 		}
 
+		//allow the user to scroll through the values from left to right and vice versa
 		pressedButton = buttonPressed();
 		if((pressedButton == LEFT) && (valueOffset > 20)) {
 			valueOffset -= 20;
@@ -534,7 +552,7 @@ void displayCalibratedValues(int values[]){
 
 //create special characters in LCD memory these contain the horizontal lines
 // we use to generate a graph of our calibration data
-// using simple lines instead of full bars, means we can use them above and below zero
+// using simple lines instead of full bars means we can use the same characters above and below zero
 // because we only have 8 special chars, we would run out if we used bars!
 void createSpecialCharacter(int number){
 	byte specialCharacter[8];
@@ -554,6 +572,8 @@ void makeCalibrationChars(){
 	}
 }
 
+
+//dump the calibration array to the serial port for review
 void doCalibrationDump() {
 	lcd_clear();
 	lcd_setCursor(0, 1);
@@ -566,10 +586,10 @@ void doCalibrationDump() {
 
 		for (int i = 0; i < numberOfCalibrationValues; i++) {
 			Serial.print(i);
-			Serial.print(" :\t");
+			Serial.print("  \t");
 			for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
 				Serial.print((int) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
-				Serial.print(" | ");
+				Serial.print("  \t");
 			}
 			Serial.print("\n");
 		}
@@ -577,6 +597,7 @@ void doCalibrationDump() {
 	}
 }
 
+//dump calibrated sensor data directly to serial
 void doDataDump() {
 	int reading = 0;
 
@@ -682,7 +703,7 @@ void initRpmDisplay() {
 	lcd_setCursor(6, 0);
 	lcd_print(F(TXT_RPM));
 	lcd_setCursor(0, 1);
-	lcd_print(F("  1 2 3 4 5 6 7 8 9"));
+	lcd_print(F(TXT_RPM_SCALE));
 }
 
 void updateRpmDisplay(unsigned int rpm) {

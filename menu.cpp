@@ -24,7 +24,8 @@
 
 
 #include "menu.h"
-#include "lang_gb_gb.h"   //include British English texts
+
+#include "lang_en_gb.h"   //include British English texts
 #include "lcdWrapper.h"
 #include "menuActions.h"
 #include "utils.h"
@@ -34,6 +35,8 @@
 #define RIGHT 4
 #define CANCEL 5
 #define PGMSTR(x) (__FlashStringHelper*)(x)
+#define TXT_SPACE_20 "                    "//EXACTLY 20 spaces!
+
 
 // an array of strings contains the menu titles
 // an array of function pointers, the same number and order as the above array, determines the actions to be taken when that title is selected
@@ -97,7 +100,7 @@ void actionDisplayContrastMenu() {
 
 void actionDisplayCalibrationMenu() {
 
-	String menu[] = {F(TXT_CALIBRATE_NOW), F(TXT_CLEAR_CALIBRATION), F("Set Calibration Max")};
+	String menu[] = {F(TXT_CALIBRATE_NOW), F(TXT_CLEAR_CALIBRATION), F(TXT_SET_CALIBRATION_MAX)};
 	void (*actions[])() = {&actionDisplayCalibrationSensorMenu, &doZeroCalibrations, &actionCalibrationMax };
 	uint8_t menuSize = 3;
 
@@ -106,7 +109,7 @@ void actionDisplayCalibrationMenu() {
 
 void actionDisplayCalibrationSensorMenu() {
 
-  String menu[] = {F("Sensor2"), F("Sensor3"),F("Sensor4")};
+  String menu[] = {F(TXT_SENSOR_2), F(TXT_SENSOR_3),F(TXT_SENSOR_4)};
   void (*actions[])() = {&doCalibrate1, &doCalibrate2, &doCalibrate3 };
   uint8_t menuSize = 3;
 
@@ -199,9 +202,9 @@ int doSettingChooser(String valueName, String settings[], int count, int startIn
 
 		if (settingChanged) {
 			lcd_setCursor(0, 1);
-			lcd_print(F("                    "));
+			lcd_print(F(TXT_SPACE_20));
 			lcd_setCursor(0, 3);
-			lcd_print(F("                    "));
+			lcd_print(F(TXT_SPACE_20));
 			if(index > 0 ){
 				lcd_setCursor(0, 3);
 				lcd_printChar(char(MENUCARET+1));           //little arrow to the left
@@ -238,6 +241,25 @@ int doSettingChooser(String valueName, String settings[], int count, int startIn
 	return startIndex;
 }
 
+uint8_t countMaskBits(unsigned int mask){
+	uint8_t bitCounter = 0;
+
+	for(int i=0; i<16; i++){
+		if((1<<i) & mask){
+			bitCounter++;
+		}
+	}
+	return bitCounter;
+}
+
+//void parseMenu(String menu[], void (*func[])(), int menuSize, unsigned int mask){
+//	String parsedMenu = menu;
+//	mask = 0b0000000000000011;
+//	int newMenuSize = countMaskBits(mask);
+//
+//	//handleMenu(String menu[], void (*func[])(), newMenuSize);
+//}
+
 // displays a menu screen
 // menu[] = an array of menu option strings
 // *func[] = an array of pointers to the corresponding functions
@@ -245,7 +267,7 @@ int doSettingChooser(String valueName, String settings[], int count, int startIn
 void handleMenu(String menu[], void (*func[])(), int menuSize) {
 	int cursorLine = 0;
 	int offset = 0;
-	boolean refresh = true;
+	bool refresh = true;
 
 	drawMenu( menu, menuSize, offset );
 
@@ -286,6 +308,7 @@ void handleMenu(String menu[], void (*func[])(), int menuSize) {
 		}
 	}
 }
+
 
 // display the resulting menu, used by handleMenu()
 void drawMenu(String lines[], int count, int offset) {
