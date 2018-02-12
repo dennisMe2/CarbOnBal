@@ -33,6 +33,7 @@ void lcd_write(byte);
 
 void lcd_setCursor(int a, int i);
 void lcd_print(String str);
+void lcd_print(char* str);
 void lcd_printInt(int integer);
 void lcd_printFloat(float value);
 

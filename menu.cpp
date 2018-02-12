@@ -43,14 +43,32 @@
 // a size is passed which must be equal to the number of menu entries
 // NOTE the Arduino F() macro is used to store strings in SRAM, which saves a lot of normal RAM for real variables
 //this menu would not be possible in an Atega328 without the F macro or an equivalent trick
+//void actionDisplayMainMenu() {
+//
+//	String menu[] = {F(TXT_DISPLAY), F(TXT_CALIBRATION), F(TXT_SETTINGS), F(TXT_DATA_TRANSFER) };
+//	void (*actions[])() = {&actionDisplayContrastMenu, &actionDisplayCalibrationMenu, &actionDisplaySettingsMenu, &actionDisplayCommsMenu};
+//	uint8_t menuSize = 4;
+//
+//	handleMenu(menu, actions, menuSize);
+//}
+
+const char txtDisplay[] PROGMEM = TXT_DISPLAY;
+const char txtCalibration[] PROGMEM = TXT_CALIBRATION;
+const char txtSettings[] PROGMEM = TXT_SETTINGS;
+const char txtDataTransfer[] PROGMEM = TXT_DATA_TRANSFER;
+
+const char* const menuMain[] PROGMEM = {txtDisplay, txtCalibration, txtSettings, txtDataTransfer};
+
 void actionDisplayMainMenu() {
 
-	String menu[] = {F(TXT_DISPLAY), F(TXT_CALIBRATION), F(TXT_SETTINGS), F(TXT_DATA_TRANSFER) };
+
 	void (*actions[])() = {&actionDisplayContrastMenu, &actionDisplayCalibrationMenu, &actionDisplaySettingsMenu, &actionDisplayCommsMenu};
 	uint8_t menuSize = 4;
 
-	handleMenu(menu, actions, menuSize);
+	handleMenu_P(menuMain, actions, menuSize);
 }
+
+
 void actionDisplaySettingsMenu() {
 
 	String menu[] = {F(TXT_SOFTWARE), F(TXT_HARDWARE), F(TXT_SAVE_SETTINGS), F(TXT_LOAD_SETTINGS), F(TXT_FACTORY_RESET)};
@@ -353,6 +371,103 @@ void drawMenu(String lines[], int count, int offset) {
 
 	drawCaret(0);
 }
+
+// display the resulting menu, used by handleMenu()
+void drawMenu_P(const char* const pointerTable[], int count, int offset) {
+	lcd_clear();
+
+	char buffer[21];
+
+	for (uint8_t line = 0; ((line < count) && (line < DISPLAY_ROWS)) ; line++) {
+		lcd_setCursor(1, line);
+		strcpy_P(buffer, (char*)pgm_read_word(&(pointerTable[line + offset])));
+		lcd_print(buffer);
+	}
+
+	if (offset > 0) {
+		byte upArrow[8] = {
+				B00100,
+				B01110,
+				B10101,
+				B00100,
+				B00100,
+				B00000,
+				B00000,
+		};
+		lcd_createChar(2, upArrow);
+		lcd_setCursor(19, 0);
+		lcd_write(byte(0x02));
+	}
+
+	if (offset < count - DISPLAY_ROWS) {
+		byte downArrow[8] = {
+
+				B00000,
+				B00000,
+				B00100,
+				B00100,
+				B10101,
+				B01110,
+				B00100,
+
+		};
+		lcd_createChar(3, downArrow);
+		lcd_setCursor(19, 3);
+		lcd_write(byte(0x03));
+	}
+
+	drawCaret(0);
+}
+
+
+
+void handleMenu_P(const char* const pointerTable[], void (*func[])(), int menuSize) {
+	int cursorLine = 0;
+	int offset = 0;
+	bool refresh = true;
+
+	drawMenu_P( pointerTable, menuSize, offset );
+
+	while (true) {
+
+		switch ( buttonPressed()) {
+		case SELECT:
+
+			(*func[cursorLine + offset])();
+
+			refresh = true;
+			break;
+		case LEFT:
+			if (cursorLine > 0) {
+				cursorLine -= 1;
+			} else if ((cursorLine == 0) && (offset > 0)) {
+				offset -= 1;
+			}
+			refresh = true;
+			break;
+		case RIGHT:
+			if (cursorLine < DISPLAY_ROWS-1 && cursorLine < menuSize-1) {
+				cursorLine += 1;
+			} else if ((cursorLine == DISPLAY_ROWS-1) && (offset < menuSize - 4)) {
+				offset += 1;
+			}
+			refresh = true;
+			break;
+		case CANCEL:
+			lcd_clear();
+			return;
+		}
+
+		if (refresh) {
+			drawMenu_P( pointerTable, menuSize, offset );
+			drawCaret(cursorLine);
+			refresh = false;
+		}
+	}
+}
+
+
+
 
 // puts the menu cursor in the right place
 void drawCaret(uint8_t line) {

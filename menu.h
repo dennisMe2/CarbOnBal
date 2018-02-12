@@ -63,6 +63,9 @@ void handleMenu(String menu[], void (*func[])(), int menuSize);
 void drawMenu(String lines[], int count, int offset) ;
 void drawCaret(uint8_t line);
 
+void drawMenu_P( const char* const pointerTable[], int count, int offset);
+void handleMenu_P( const char* const pointerTable[], void (*func[])(), int menuSize);
+
 void makeChar(byte *character, int value);
 void makeBars(char *bars, uint8_t number, uint8_t skip) ;
 

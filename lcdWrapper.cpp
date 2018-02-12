@@ -39,6 +39,10 @@ void lcd_print(String str){
 	lcd.print(str);
 }
 
+void lcd_print(char* str){
+	lcd.print(str);
+}
+
 void lcd_printInt(int integer){
 	lcd.print(String(integer));
 }
