@@ -117,6 +117,7 @@ void resetToFactoryDefaultSettings(){
     settings.units = 0;
     settings.zoom = 0;
     settings.calibrationMax = 16;
+    settings.advanced = false;
 }
 
 // tests if a button was pressed and applies debounce logic

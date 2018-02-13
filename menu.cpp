@@ -41,8 +41,7 @@ void actionDisplayMainMenu() {
 	const char* menu[] = {txtDisplay, txtCalibration, txtSettings, txtDataTransfer};
 	void (*actions[])() = {&actionDisplayContrastMenu, &actionDisplayCalibrationMenu, &actionDisplaySettingsMenu, &actionDisplayCommsMenu};
 	uint8_t menuSize = 4;
-
-	handleMenu(menu, actions, menuSize);
+	handleAdvancedMenu(menu, actions, menuSize, B1111);
 }
 
 
@@ -53,7 +52,7 @@ void actionDisplaySettingsMenu() {
 			&actionSaveSettings, &actionLoadSettings, &actionReset };
 	uint8_t menuSize = 5;
 
-	handleMenu(menu, actions, menuSize);
+	handleAdvancedMenu(menu, actions, menuSize, B11101);
 }
 
 void actionDisplaySoftwareSettingsMenu() {
@@ -62,7 +61,7 @@ void actionDisplaySoftwareSettingsMenu() {
 	void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold, &actionResponsiveness };
 	uint8_t menuSize = 5;
 
-	handleMenu(menu, actions, menuSize);
+	handleAdvancedMenu(menu, actions, menuSize, B10001);
 }
 
 void actionDisplayHardwareSettingsMenu() {
@@ -70,8 +69,7 @@ void actionDisplayHardwareSettingsMenu() {
 	const char* const menu[] = {txtCylinderCount, txtMasterCylinder, txtBrightnessButton};
 	void (*actions[])() = {&actionCylinders, &actionMaster, &actionBrightnessButton };
 	uint8_t menuSize = 3;
-
-	handleMenu(menu, actions, menuSize);
+	handleAdvancedMenu(menu, actions, menuSize, B110);
 }
 
 
@@ -80,17 +78,17 @@ void actionDisplayCommsMenu() {
 	const char* const menu[] = {txtCalibrationDump, txtLiveDataDump, txtBaudRate};
 	void (*actions[])() = {&doCalibrationDump, &doDataDump, &doBaudRate };
 	uint8_t menuSize = 3;
-
-	handleMenu(menu, actions, menuSize);
+	handleAdvancedMenu(menu, actions, menuSize, B111);
 }
 
 void actionDisplayContrastMenu() {
 
-	const char* const menu[] = {txtContrast, txtBrightness, txtDetails, txtGraphType, txtRpmDisplay, txtUnits, txtMaxZoomRange};
-	void (*actions[])() = {&actionContrast, &actionBrightness, &actionSilent, &actionGraphing, &doRevs, &doUnits ,&doMaxZoom };
-	uint8_t menuSize = 7;
-
-	handleMenu(menu, actions, menuSize);
+	const char* const menu[] = {txtContrast, txtBrightness, txtDetails, txtGraphType,
+								txtRpmDisplay, txtUnits, txtMaxZoomRange, txtAdvancedMenu};
+	void (*actions[])() = {&actionContrast, &actionBrightness, &actionSilent, &actionGraphing,
+								&doRevs, &doUnits ,&doMaxZoom, &doAdvanced };
+	uint8_t menuSize = 8;
+	handleAdvancedMenu(menu, actions, menuSize, B11011001);
 }
 
 void actionDisplayCalibrationMenu() {
@@ -98,8 +96,7 @@ void actionDisplayCalibrationMenu() {
 	const char* const menu[] = {txtCalibrateNow, txtClearCalibration, txtSetCalibrationMax};
 	void (*actions[])() = {&actionDisplayCalibrationSensorMenu, &doZeroCalibrations, &actionCalibrationMax };
 	uint8_t menuSize = 3;
-
-	handleMenu(menu, actions, menuSize);
+	handleAdvancedMenu(menu, actions, menuSize, B110);
 }
 
 void actionDisplayCalibrationSensorMenu() {
@@ -236,25 +233,6 @@ int doSettingChooser(const char* valueName, const char* settings[], int count, i
 	return startIndex;
 }
 
-//uint8_t countMaskBits(unsigned int mask){
-//	uint8_t bitCounter = 0;
-//
-//	for(int i=0; i<16; i++){
-//		if((1<<i) & mask){
-//			bitCounter++;
-//		}
-//	}
-//	return bitCounter;
-//}
-
-//void parseMenu(String menu[], void (*func[])(), int menuSize, unsigned int mask){
-//	String parsedMenu = menu;
-//	mask = 0b0000000000000011;
-//	int newMenuSize = countMaskBits(mask);
-//
-//	//handleMenu(String menu[], void (*func[])(), newMenuSize);
-//}
-
 // displays a menu screen
 // menu[] = an array of menu option strings
 // *func[] = an array of pointers to the corresponding functions
@@ -349,6 +327,24 @@ void handleMenu(const char* const pointerTable[], void (*func[])(), int menuSize
 	}
 }
 
+void handleAdvancedMenu(const char* const pointerTable[], void (*func[])(), int menuSize, unsigned int mask){
+	if(settings.advanced){
+		handleMenu(pointerTable, func, menuSize);
+	}else {
+		const char* menu[16];
+		void (*actions[16])();
+
+		int menuIndex=0;
+		for(int i = 0; i <menuSize ; i++){
+			if(mask & (1<<(menuSize-i-1))){
+				menu[menuIndex] = pointerTable[i];
+				actions[menuIndex] = func[i];
+				menuIndex++;
+			}
+		}
+		handleMenu(menu,actions,menuIndex);
+	}
+}
 
 // puts the menu cursor in the right place
 void drawCaret(uint8_t line) {

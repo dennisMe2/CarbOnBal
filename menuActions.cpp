@@ -64,6 +64,11 @@ void actionSilent() {
     settings.silent = (bool) doSettingChooser(txtShowDetails, actions, 2, (int) settings.silent) ;
 }
 
+void doAdvanced() {
+	const char* actions[] = {txtBasic, txtAdvanced};
+    settings.advanced = (bool) doSettingChooser(txtAdvancedMenu, actions, 2, (int) settings.advanced) ;
+}
+
 void actionGraphing() {
 	const char* actions[] = {txtAbsoluteGraph, txtCenteredGraph};
     settings.graphType = doSettingChooser(txtSelectGraphType, actions, 2, settings.graphType) ;

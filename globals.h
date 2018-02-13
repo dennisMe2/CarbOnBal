@@ -49,7 +49,7 @@ static const int calibrationOffset=256; //eeprom base address for calibration
 
 
 
-static const uint8_t versionUID = 16; //update when settings_t changes!
+static const uint8_t versionUID = 17; //update when settings_t changes!
 
 //this struct is used to store settings in NVRAM
 struct settings_t
@@ -73,6 +73,7 @@ struct settings_t
     uint8_t units;
     uint8_t zoom;
     uint8_t calibrationMax;
+    bool advanced;
 };
 
 extern int readingCount[NUM_SENSORS];

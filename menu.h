@@ -62,7 +62,7 @@ void drawCaret(uint8_t line);
 
 void drawMenu( const char* const pointerTable[], int count, int offset);
 void handleMenu( const char* const pointerTable[], void (*func[])(), int menuSize);
-
+void handleAdvancedMenu(const char* const pointerTable[], void (*func[])(), int menuSize, unsigned int mask);
 void makeChar(byte *character, int value);
 void makeBars(char *bars, uint8_t number, uint8_t skip) ;
 
