@@ -54,17 +54,14 @@ void doLoadCalibrations();
 void doSaveCalibrations();
 void doZeroCalibrations();
 
-int doBasicSettingChanger(String valueName, int minimum, int maximum, int startValue, int steps );
-int doSettingChanger(String valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) );
-int doSettingChooser(String valueName, String settings[], int count, int startIndex) ;
+int doBasicSettingChanger(const char* valueName, int minimum, int maximum, int startValue, int steps );
+int doSettingChanger(const char* valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) );
+int doSettingChooser(const char* valueName, const char* settings[], int count, int startIndex) ;
 
-void handleMenuNoStack(String menu[], void (*func[])(), int menuSize, void (*homeMenu)());
-void handleMenu(String menu[], void (*func[])(), int menuSize);
-void drawMenu(String lines[], int count, int offset) ;
 void drawCaret(uint8_t line);
 
-void drawMenu_P( const char* const pointerTable[], int count, int offset);
-void handleMenu_P( const char* const pointerTable[], void (*func[])(), int menuSize);
+void drawMenu( const char* const pointerTable[], int count, int offset);
+void handleMenu( const char* const pointerTable[], void (*func[])(), int menuSize);
 
 void makeChar(byte *character, int value);
 void makeBars(char *bars, uint8_t number, uint8_t skip) ;

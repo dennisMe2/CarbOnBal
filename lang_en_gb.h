@@ -27,92 +27,119 @@
 
     //keep these alphabetical,helps to identify duplicates and find strings in a long list
 
-#define TXT_100_MAX				"100 = max"
-#define TXT_1024_NO_ZOOM		"1024 = no zoom"
-#define TXT_2_MAX				"2.51 = max"
-#define TXT_25_NO_ZOOM			"25.69 = no zoom"
-#define TXT_6_MAX				"6.37 = max"
-#define TXT_65_NO_ZOOM			"65.25 = no zoom"
-#define TXT_84_MAX				"84.96 = max"
-#define TXT_870_NO_ZOOM			"870.00 = no zoom"
-#define TXT_ABSOLUTE_GRAPH		"Absolute"
-#define TXT_BAUD_RATE			"Baud Rate"
-#define TXT_BRIGHTNESS			"Brightness"
-#define TXT_BRIGHTNESS_BUTTON	"Brightness Button"
-#define TXT_BUTTON_2			"Button 2 function:"
-#define TXT_CALIBRATE_NOW		"Calibrate Now"
-#define TXT_CALIBRATION  		"Calibration"
-#define TXT_CALIBRATION_BUSY	"Calibrating now,"
-#define TXT_CALIBRATION_BUSY_2	"apply vacuum!"
-#define TXT_CALIBRATION_DONE	"Calibration Done"
-#define TXT_CALIBRATION_DUMP	"Calibration Dump"
-#define TXT_CENTERED_GRAPH		"Centered"
-#define TXT_CLEAR_CALIBRATION	"Clear Calibration"
-#define TXT_CM_MERCURY			"cm Hg"
-#define TXT_CM_MERCURY_DESC		"cm Hg Descending"
-#define TXT_CONNECT_SERIAL		"Connect Serial monitor"
-#define TXT_CONTRAST			"Contrast"
-#define TXT_CYLINDER_COUNT		"Cylinder count"
-#define TXT_DAMPING				"Damping"
-#define TXT_DAMPING_PERC 		"Damping: (%)"
-#define TXT_DATA_TRANSFER 		"Data Transfer"
-#define TXT_DELAY_US			"Delay: (us)"
-#define TXT_DETAILS				"Details"
-#define TXT_DISPLAY    			"Display"
-#define TXT_DISPLAY_UNITS		"Display Units:"
-#define TXT_DUMPING_SENSOR_DATA "Dumping Sensor Data "
-#define TXT_FACTORY_RESET		"'Factory' reset"
-#define TXT_GRAPH_TYPE			"Graph Type"
-#define TXT_HARDWARE   			"Hardware"
-#define TXT_INCH_MERCURY		"Inches of mercury"
-#define TXT_INCH_MERCURY_DESC	"Inch. Hg desc."
-#define TXT_KEEP_SETTINGS		"Keep settings"
-#define TXT_LESS				"Less"
-#define TXT_LIVE_DATA_DUMP		"Live Data Dump"
-#define TXT_LOAD_SETTINGS 		"Load Settings"
-#define	TXT_LOADING				"Loading..."
-#define TXT_LOWEST_PRESSURE		"Lowest pressure"
-#define TXT_MASTER_CYLINDER		"Master Cylinder"
-#define TXT_MAX_ADJUST			"Max adjustment"
-#define TXT_MAX_CALIBRATION		"Max calibration"
-#define TXT_MAX_ZOOM_RANGE		"Max zoom range"
-#define TXT_MILLIBAR_HPA		"Millibar / hPa"
-#define TXT_MILLIBAR_HPA_DESC	"mBar / hPa Desc."
-#define TXT_MIN_ADJUST			"Min Adjustment"
-#define TXT_MORE				"More"
-#define TXT_PRESS_ANY_KEY  		"Press key when done"
-#define TXT_RAW_DESCENDING		"Raw, descending"
-#define TXT_RAW_VALUES			"Raw values"
-#define TXT_RESET_SETTINGS		"Reset ALL settings"
-#define TXT_RESPONSE_PERC		"Response: (%)"
-#define TXT_RESPONSIVENESS  	"Responsiveness"
-#define TXT_RPM					" RPM"
-#define TXT_RPM_DAMPING     	"RPM Damping"
-#define TXT_RPM_DAMPING_PERC	"RPM Damping: (%)"
-#define TXT_RPM_DISPLAY			"RPM Display"
-#define TXT_RPM_SCALE			"  1 2 3 4 5 6 7 8 9"
-#define TXT_SAMPLE_DELAY_US		"Sample Delay (us)"
-#define TXT_SAVE_SETTINGS 		"Save Settings"
-#define TXT_SAVING 				"Saving..."
-#define TXT_SELECT_GRAPH_TYPE	"Select Graph Type"
-#define TXT_SENSOR_2			"Sensor 2"
-#define TXT_SENSOR_3			"Sensor 3"
-#define TXT_SENSOR_4			"Sensor 4"
-#define TXT_SERIAL_FOOTER		"\n*END*\n"
-#define TXT_SERIAL_HEADER		"val\tS02\tS03\tS04\t"
-#define TXT_SET_CALIBRATION_MAX "Set Calibration Max"
-#define TXT_SETTINGS      		"Settings"
-#define TXT_SHOW_DETAILS		"Show Details"
-#define TXT_SOFTWARE      		"Software"
-#define TXT_THRESHOLD			"Threshold"
-#define TXT_UNCALIBRATED 		"Uncalibrated: "
-#define TXT_UNITS				"Units"
-#define TXT_WELCOME				"Almost Ready!"
-#define TXT_WIPING				"Wiping..."
-#define TXT_ZOOM_CM_MERCURY		"Zoom in cm Mercury:"
-#define TXT_ZOOM_IN_MERCURY		"Zoom in in Mercury:"
-#define TXT_ZOOM_MILLIBAR		"Zoom millibar:"
-#define TXT_ZOOM_UNITS			"Zoom Units:"
+const char txt100Max[]				PROGMEM = "100 = max";
+const char txt1024NoZoom[]			PROGMEM = "1024 = no zoom";
+const char txt2Max[]				PROGMEM = "2.51 = max";
+const char txt25NoZoom[]			PROGMEM = "25.69 = no zoom";
+const char txt6Max[]				PROGMEM = "6.37 = max";
+const char txt65NoZoom[]			PROGMEM = "65.25 = no zoom";
+const char txt84Max[]				PROGMEM = "84.96 = max";
+const char txt870NoZoom[]			PROGMEM = "870.00 = no zoom";
+const char txtAbsoluteGraph[]		PROGMEM = "Absolute";
+const char txtBaudRate[]			PROGMEM = "Baud Rate";
+const char txtBrightness[]			PROGMEM = "Brightness";
+const char txtBrightnessButton[]	PROGMEM = "Brightness Button";
+const char txtButton2[]				PROGMEM = "Button 2 function:";
+const char txtCalibrateNow[]		PROGMEM = "Calibrate Now";
+const char txtCalibration[]  		PROGMEM = "Calibration";
+const char txtCalibrationBusy[]		PROGMEM = "Calibrating now,";
+const char txtCalibrationBusy2[]	PROGMEM = "apply vacuum!";
+const char txtCalibrationDone[]		PROGMEM = "Calibration Done";
+const char txtCalibrationDump[]		PROGMEM = "Calibration Dump";
+const char txtCenteredGraph[]		PROGMEM = "Centered";
+const char txtClearCalibration[]	PROGMEM = "Clear Calibration";
+const char txtCmMercury[]			PROGMEM = "cm Hg";
+const char txtCmMercuryDesc[]		PROGMEM = "cm Hg Descending";
+const char txtConnectSerial[]		PROGMEM = "Connect Serial monitor";
+const char txtContrast[]			PROGMEM = "Contrast";
+const char txtCylinderCount[]		PROGMEM = "Cylinder count";
+const char txtDamping[]				PROGMEM = "Damping";
+const char txtDampingPerc[] 		PROGMEM = "Damping: (%)";
+const char txtDataTransfer[] 		PROGMEM = "Data Transfer";
+const char txtDelayUs[]				PROGMEM = "Delay: (us)";
+const char txtDetails[]				PROGMEM = "Details";
+const char txtDisplay[]    			PROGMEM = "Display";
+const char txtDisplayUnits[]		PROGMEM = "Display Units:";
+const char txtDumpingSensorData[] 	PROGMEM = "Dumping Sensor Data ";
+const char txtFactoryReset[]		PROGMEM = "'Factory' reset";
+const char txtGraphType[]			PROGMEM = "Graph Type";
+const char txtHardware[]   			PROGMEM = "Hardware";
+const char txtInchMercury[]			PROGMEM = "Inches of mercury";
+const char txtInchMercuryDesc[]		PROGMEM = "Inch. Hg desc.";
+const char txtKeepSettings[]		PROGMEM = "Keep settings";
+const char txtLess[]				PROGMEM = "Less";
+const char txtLiveDataDump[]		PROGMEM = "Live Data Dump";
+const char txtLoadSettings[] 		PROGMEM = "Load Settings";
+const char txtLoading[]				PROGMEM = "Loading...";
+const char txtLowestPressure[]		PROGMEM = "Lowest pressure";
+const char txtMasterCylinder[]		PROGMEM = "Master Cylinder";
+const char txtMaxAdjust[]			PROGMEM = "Max adjustment";
+const char txtMaxCalibration[]		PROGMEM = "Max calibration";
+const char txtMaxZoomRange[]		PROGMEM = "Max zoom range";
+const char txtMillibarHpa[]			PROGMEM = "Millibar / hPa";
+const char txtMillibarHpaDesc[]		PROGMEM = "mBar / hPa Desc.";
+const char txtMinAdjust[]			PROGMEM = "Min Adjustment";
+const char txtMore[]				PROGMEM = "More";
+const char txtPressAnyKey[]  		PROGMEM = "Press key when done";
+const char txtRawDescending[]		PROGMEM = "Raw, descending";
+const char txtRawValues[]			PROGMEM = "Raw values";
+const char txtResetSettings[]		PROGMEM = "Reset ALL settings";
+const char txtResponsePerc[]		PROGMEM = "Response: (%)";
+const char txtResponsiveness[]  	PROGMEM = "Responsiveness";
+const char txtRpm[]					PROGMEM = " RPM";
+const char txtRpmDamping[]     		PROGMEM = "RPM Damping";
+const char txtRpmDampingPerc[]		PROGMEM = "RPM Damping: (%)";
+const char txtRpmDisplay[]			PROGMEM = "RPM Display";
+const char txtRpmScale[]			PROGMEM = "  1 2 3 4 5 6 7 8 9";
+const char txtSampleDelayUs[]		PROGMEM = "Sample Delay (us)";
+const char txtSaveSettings[] 		PROGMEM = "Save Settings";
+const char txtSaving[]				PROGMEM = "Saving...";
+const char txtSelectGraphType[]		PROGMEM = "Select Graph Type";
+const char txtSensor2[]				PROGMEM = "Sensor 2";
+const char txtSensor3[]				PROGMEM = "Sensor 3";
+const char txtSensor4[]				PROGMEM = "Sensor 4";
+const char txtSerialFooter[]		PROGMEM = "\n*END*\n";
+const char txtSerialHeader[]		PROGMEM = "val\tS02\tS03\tS04\t";
+const char txtSetCalibrationMax[] 	PROGMEM	= "Set Calibration Max";
+const char txtSettings[]      		PROGMEM = "Settings";
+const char txtShowDetails[]			PROGMEM = "Show Details";
+const char txtSoftware[]    		PROGMEM = "Software";
+const char txtThreshold[]			PROGMEM = "Threshold";
+const char txtUncalibrated[] 			PROGMEM = "Uncalibrated: ";
+const char txtUnits[]				PROGMEM = "Units";
+const char txtWelcome[]     		PROGMEM = " WELCOME ";
+const char txtWiping[]				PROGMEM = "Wiping...";
+const char txtZoomCmMercury[]		PROGMEM = "Zoom in cm Mercury:";
+const char txtZoomInMercury[]		PROGMEM = "Zoom in in Mercury:";
+const char txtZoomMillibar[]		PROGMEM = "Zoom millibar:";
+const char txtZoomUnits[]			PROGMEM = "Zoom Units:";
 
+
+// these probably won't need translating but you never know...
+const char txt200[]					PROGMEM = "200";
+const char txt300[]					PROGMEM = "300";
+const char txt600[]					PROGMEM = "600";
+const char txt1200[]				PROGMEM = "1200";
+const char txt2400[]				PROGMEM = "2400";
+const char txt4800[]				PROGMEM = "4800";
+const char txt9600[]				PROGMEM = "9600";
+const char txt14400[]				PROGMEM = "14400";
+const char txt19200[]				PROGMEM = "19200";
+const char txt28800[]				PROGMEM = "28800";
+const char txt31250[]				PROGMEM = "31250";
+const char txt38400[]				PROGMEM = "38400";
+const char txt57600[]				PROGMEM = "57600";
+const char txt115200[]				PROGMEM = "115200";
+
+const char txt169[]					PROGMEM = "169.92";
+const char txt254[]					PROGMEM = "254.88";
+const char txt509[]					PROGMEM = "509.77";
+
+const char txt9[]					PROGMEM = "9.56";
+const char txt19[]					PROGMEM = "19.12";
+const char txt32[]					PROGMEM = "32.63";
+const char txt5[]					PROGMEM = "5.02";
+const char txt7[]					PROGMEM = "7.53";
+const char txt15[]        PROGMEM = "15.05";
 
 #endif

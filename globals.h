@@ -36,6 +36,9 @@
 #define NUM_SENSORS 4
 #define DISPLAY_COLS 20
 #define DISPLAY_ROWS 4
+
+#define TXT_SPACE_20 "                    "//EXACTLY 20 spaces!
+
  
 static const uint8_t numReadings=20;
 static const int maxValue=1024;

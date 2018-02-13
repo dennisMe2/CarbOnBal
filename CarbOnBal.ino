@@ -1,5 +1,3 @@
-#include <LiquidCrystal.h>
-
 // This software, known as CarbOnBal is
 // Copyright, 2017 L.L.M. (Dennis) Meulensteen. dennis@meulensteen.nl
 //
@@ -77,8 +75,15 @@ void setup() {
 	alpha = calculateAlpha(settings.damping);               //prime the alpha from the settings
 	alphaRpm = calculateAlpha(settings.rpmDamping);
 	stabilityThreshold = (100 - settings.responsiveness) / 100; //responsiveness is how quickly the system responds to rapid RPM changes as opposed to smoothing the display
-	lcd_print(F(TXT_WELCOME));
+	demo();
+	lcd_setCursor(4,1);
+	lcd_print(txtWelcome);
 	delay(2000);
+
+	lcd_clear();
+	demo2();
+	demo3();
+
 }
 
 void loop() {
@@ -251,7 +256,7 @@ void lcdBarsSmooth( int value[]) {
 void actionSaveSettings() {
 	lcd_clear();
 	lcd_setCursor(3, 1);
-	lcd_print(F(TXT_SAVING));
+	lcd_print(txtSaving);
 	eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
 	delay(500);
 }
@@ -260,7 +265,7 @@ void actionSaveSettings() {
 void actionLoadSettings() {
 	lcd_clear();
 	lcd_setCursor(3, 1);
-	lcd_print(F(TXT_LOADING));
+	lcd_print(txtLoading);
 	loadSettings();
 	delay(500);
 }
@@ -285,7 +290,7 @@ void loadSettings() {
 void doZeroCalibrations() {
 	lcd_clear();
 	lcd_setCursor(3, 1);
-	lcd_print(F(TXT_WIPING));
+	lcd_print(txtWiping);
 	zeroCalibrations();
 	delay(500);
 }
@@ -366,13 +371,13 @@ void doCalibrate(int sensor) {
 	lcd_write(byte((byte) 0));
 
 	lcd_setCursor(0, 0);
-	lcd_print(F(TXT_CALIBRATION_BUSY));
+	lcd_print(txtCalibrationBusy);
 
 	lcd_setCursor(0, 1);
-	lcd_print(F(TXT_CALIBRATION_BUSY_2));
+	lcd_print(txtCalibrationBusy2);
 
 	lcd_setCursor(0, 2);
-	lcd_print(F(TXT_PRESS_ANY_KEY));
+	lcd_print(txtPressAnyKey);
 
 	delay(500);//otherwise key still pressed, probably need a better solution
 
@@ -418,16 +423,16 @@ void doCalibrate(int sensor) {
 	lcd_write(byte((byte) 0));
 
 	lcd_setCursor(0, 0);
-	lcd_print(F(TXT_CALIBRATION_DONE));
+	lcd_print(txtCalibrationDone);
 
 	lcd_setCursor(0, 1);
-	lcd_print(F(TXT_LOWEST_PRESSURE));
+	lcd_print(txtLowestPressure);
 	printLcdInteger( lowestCalibratedValue, 14, 1, 5);
 	lcd_setCursor(0, 2);
-	lcd_print(F(TXT_MIN_ADJUST));
+	lcd_print(txtMinAdjust);
 	printLcdInteger( minValue, 14, 2, 5);
 	lcd_setCursor(0, 3);
-	lcd_print(F(TXT_MAX_ADJUST));
+	lcd_print(txtMaxAdjust);
 	printLcdInteger( maxValue, 14, 3, 5);
 
 	lcd_setCursor(19,0);
@@ -577,12 +582,12 @@ void makeCalibrationChars(){
 void doCalibrationDump() {
 	lcd_clear();
 	lcd_setCursor(0, 1);
-	lcd_print(F(TXT_CONNECT_SERIAL));
+	lcd_print(txtConnectSerial);
 	lcd_setCursor(0, 1);
 	Serial.begin(getBaud(settings.baudRate));
 	if (Serial) {
 
-		Serial.println(F(TXT_SERIAL_HEADER));
+		Serial.println(txtSerialHeader);
 
 		for (int i = 0; i < numberOfCalibrationValues; i++) {
 			Serial.print(i);
@@ -593,7 +598,7 @@ void doCalibrationDump() {
 			}
 			Serial.print("\n");
 		}
-		Serial.print(F(TXT_SERIAL_FOOTER));
+		Serial.print(txtSerialFooter);
 	}
 }
 
@@ -603,11 +608,11 @@ void doDataDump() {
 
 	lcd_clear();
 	lcd_setCursor(0, 1);
-	lcd_print(F(TXT_CONNECT_SERIAL));
+	lcd_print(txtConnectSerial);
 	Serial.begin(getBaud(settings.baudRate));
 	if (Serial) {
 		lcd_setCursor(0, 1);
-		lcd_print(F(TXT_DUMPING_SENSOR_DATA));
+		lcd_print(txtDumpingSensorData);
 		Serial.println(F("0\t0\t0\t0\t0"));
 		unsigned long startTime = millis();
 
@@ -627,7 +632,7 @@ void doDataDump() {
 			}
 			Serial.print("\n");
 		}
-		Serial.print(F(TXT_SERIAL_FOOTER));
+		Serial.print(txtSerialFooter);
 	}
 }
 
@@ -701,9 +706,9 @@ void doRevs() {
 void initRpmDisplay() {
 	lcd_clear();
 	lcd_setCursor(6, 0);
-	lcd_print(F(TXT_RPM));
+	lcd_print(txtRpm);
 	lcd_setCursor(0, 1);
-	lcd_print(F(TXT_RPM_SCALE));
+	lcd_print(txtRpmScale);
 }
 
 void updateRpmDisplay(unsigned int rpm) {
@@ -785,3 +790,63 @@ int detectAmbient() {
 	return total / numberOfSamples;                         //divide the result by the number of samples for the resulting average
 }
 
+void demo(){
+	uint8_t colspeed[20];
+	char matrix[4][20];
+
+	while(!buttonPressed()){
+		//set the column speeds
+		for(int col=0;col<20;col++){
+			colspeed[col] = (rand() % 7)+1;
+		}
+		for(int i =0; i<256;i++){
+			delay(50);
+			if(buttonPressed()) return;
+
+			for(int col=0;col<20;col++){
+
+				if(i % colspeed[col] == 0){
+
+					lcd_setCursor(col,3);
+					lcd_printChar(matrix[2][col]);
+					matrix[3][col] = matrix[2][col];
+
+					lcd_setCursor(col,2);
+					lcd_printChar(matrix[1][col]);
+					matrix[2][col] = matrix[1][col];
+
+					lcd_setCursor(col,1);
+					lcd_printChar(matrix[0][col]);
+					matrix[1][col] = matrix[0][col];
+
+					lcd_setCursor(col,0);
+					matrix[0][col] = rand() % 256;
+					lcd_printChar(matrix[0][col]);
+				}
+			}
+		}
+	}
+}
+
+void demo2(){
+	int values[4];
+
+	for(int i=1024;i>=0;i-=15){
+		values[0] = i;
+		values[1] = i;
+		values[2] = i;
+		values[3] = i;
+		lcdBarsSmooth(values);
+	}
+}
+void demo3(){
+	int values[4];
+
+	for(int i=128;i>=0;i-=2){
+		values[0] = i;
+		values[1] = i;
+		values[2] = i;
+		values[3] = 128-i;
+		lcdBarsCenterSmooth(values);
+	}
+}

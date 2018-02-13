@@ -39,6 +39,13 @@ void lcd_print(String str){
 	lcd.print(str);
 }
 
+//print strings stored in PROGMEM to LCD without using a buffer
+void lcd_print(const char* str){
+	for (int i = 0; (unsigned) i < strlen_P(str); i++){
+		lcd.print((char) pgm_read_byte_near(str + i));
+	}
+}
+
 void lcd_print(char* str){
 	lcd.print(str);
 }

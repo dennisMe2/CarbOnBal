@@ -39,13 +39,12 @@ extern const uint8_t contrastPin;//11
 
 
 void doBaudRate(){
-    String actions[] = {F("300"), F("600"), F("1200"), F("2400"), F("4800"), F("9600"), F("14400")
-    , F("19200"), F("28800"), F("31250"), F("38400"), F("57600"), F("115200")};
-    settings.baudRate = doSettingChooser(F(TXT_BAUD_RATE), actions, 13, settings.baudRate) ;
+	 const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200};
+    settings.baudRate = doSettingChooser(txtBaudRate, actions, 13, settings.baudRate) ;
 }
 
 void actionBrightness() {
-    settings.brightness = doSettingChanger(F(TXT_BRIGHTNESS), 0, 255, settings.brightness, 10, &doBrightness) ;
+    settings.brightness = doSettingChanger(txtBrightness, 0, 255, settings.brightness, 10, &doBrightness) ;
 }
 
 void doBrightness(int value) {
@@ -53,7 +52,7 @@ void doBrightness(int value) {
 }
 
 void actionContrast() {
-    settings.contrast = doSettingChanger(F(TXT_CONTRAST), 0, 127, settings.contrast, 1, &doContrast) ;
+    settings.contrast = doSettingChanger(txtContrast, 0, 127, settings.contrast, 1, &doContrast) ;
 }
 
 void doContrast(int value) {
@@ -61,18 +60,18 @@ void doContrast(int value) {
 }
 
 void actionSilent() {
-    String actions[] = {F(TXT_MORE), F(TXT_LESS)};
-    settings.silent = (bool) doSettingChooser(F(TXT_SHOW_DETAILS), actions, 2, (int) settings.silent) ;
+	const char* actions[] = {txtMore, txtLess};
+    settings.silent = (bool) doSettingChooser(txtShowDetails, actions, 2, (int) settings.silent) ;
 }
 
 void actionGraphing() {
-    String actions[] = {F(TXT_ABSOLUTE_GRAPH), F(TXT_CENTERED_GRAPH)};
-    settings.graphType = doSettingChooser(F(TXT_SELECT_GRAPH_TYPE), actions, 2, settings.graphType) ;
+	const char* actions[] = {txtAbsoluteGraph, txtCenteredGraph};
+    settings.graphType = doSettingChooser(txtSelectGraphType, actions, 2, settings.graphType) ;
 }
 
 void actionReset() {
-    String actions[] ={ F(TXT_KEEP_SETTINGS), F(TXT_RESET_SETTINGS)};
-    bool reset = doSettingChooser(F(TXT_FACTORY_RESET), actions, 2, 0);
+	const char* actions[] ={ txtKeepSettings, txtResetSettings};
+    bool reset = doSettingChooser(txtFactoryReset, actions, 2, 0);
     if(reset){
         resetToFactoryDefaultSettings();
         eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));     //store the data
@@ -81,40 +80,40 @@ void actionReset() {
 }
 
 void actionDelay() {
-    settings.delayTime = doBasicSettingChanger(F(TXT_DELAY_US), 0, 1000, settings.delayTime, 10) ;
+    settings.delayTime = doBasicSettingChanger(txtDelayUs, 0, 1000, settings.delayTime, 10) ;
 }
 
 
 void actionResponsiveness() {
-    settings.responsiveness = (uint8_t) doBasicSettingChanger(F(TXT_RESPONSE_PERC), 0, 100, settings.responsiveness, 5);
+    settings.responsiveness = (uint8_t) doBasicSettingChanger(txtResponsePerc, 0, 100, settings.responsiveness, 5);
     stabilityThreshold = (100 - settings.responsiveness) / 100.00; //more than a certain % difference from the average
 }
 
 void actionDamping() {
-    settings.damping = (uint8_t) doBasicSettingChanger(F(TXT_DAMPING_PERC), 0, 100, settings.damping, 5);
+    settings.damping = (uint8_t) doBasicSettingChanger(txtDampingPerc, 0, 100, settings.damping, 5);
     alpha = calculateAlpha(settings.damping);
 }
 
 
 void actionRPMDamping() {
-    settings.rpmDamping = (uint8_t) doBasicSettingChanger(F(TXT_RPM_DAMPING_PERC), 0, 100, settings.rpmDamping, 5);
+    settings.rpmDamping = (uint8_t) doBasicSettingChanger(txtRpmDampingPerc, 0, 100, settings.rpmDamping, 5);
     alphaRpm = calculateAlpha(settings.rpmDamping);
 }
 
 
 void actionThreshold() {
-    settings.threshold = (uint8_t) doBasicSettingChanger(F(TXT_THRESHOLD), 0, 1023, settings.threshold, 10) ;
+    settings.threshold = (uint8_t) doBasicSettingChanger(txtThreshold, 0, 1023, settings.threshold, 10) ;
 }
 
 
 
 void actionCylinders() {
-    settings.cylinders = (uint8_t) doBasicSettingChanger(F(TXT_CYLINDER_COUNT), 1, 4, settings.cylinders, 1);
+    settings.cylinders = (uint8_t) doBasicSettingChanger(txtCylinderCount, 1, 4, settings.cylinders, 1);
     fixMaster();
 }
 
 void actionMaster() {
-    settings.master = (uint8_t) doBasicSettingChanger(F(TXT_MASTER_CYLINDER), 1, 4, settings.master, 1);
+    settings.master = (uint8_t) doBasicSettingChanger(txtMasterCylinder, 1, 4, settings.master, 1);
     fixMaster();
 }
 
@@ -126,18 +125,18 @@ void fixMaster(){
 }
 
 void actionBrightnessButton(){
-    String actions[] = {F(TXT_BRIGHTNESS), F(TXT_RPM_DISPLAY)};
-    settings.button2 = doSettingChooser(F(TXT_BUTTON_2), actions, 2, (int) settings.button2) ;
+	const char* actions[] = {txtBrightness, txtRpmDisplay};
+    settings.button2 = doSettingChooser(txtButton2, actions, 2, (int) settings.button2) ;
 }
 
 void doUnits(){
-    String actions[] = {F(TXT_RAW_VALUES),F(TXT_RAW_DESCENDING), F(TXT_MILLIBAR_HPA), F(TXT_MILLIBAR_HPA_DESC),
-                        F(TXT_CM_MERCURY), F(TXT_CM_MERCURY_DESC), F(TXT_INCH_MERCURY), F(TXT_INCH_MERCURY_DESC)};
-    settings.units = doSettingChooser(F(TXT_DISPLAY_UNITS), actions, 8, (int) settings.units) ;
+    const char* actions[] = {txtRawValues,txtRawDescending, txtMillibarHpa, txtMillibarHpaDesc,
+                        txtCmMercury, txtCmMercuryDesc, txtInchMercury, txtInchMercuryDesc};
+    settings.units = doSettingChooser(txtDisplayUnits, actions, 8, (int) settings.units) ;
 }
 
 void actionCalibrationMax() {
-    settings.calibrationMax = doBasicSettingChanger(F(TXT_MAX_CALIBRATION), 16, 127, settings.calibrationMax, 16);
+    settings.calibrationMax = doBasicSettingChanger(txtMaxCalibration, 16, 127, settings.calibrationMax, 16);
 }
 
 void doMaxZoom(){
@@ -145,23 +144,23 @@ void doMaxZoom(){
     static uint8_t count = 5;
     
     if ((0 == settings.units)||(1 == settings.units)){
-      String actions[] = { F(TXT_100_MAX), F("200"), F("300"), F("600"), F(TXT_1024_NO_ZOOM)  };
-      settings.zoom = doSettingChooser(F(TXT_ZOOM_UNITS), actions, count, (int) settings.zoom) ;
+    	const char* actions[] = { txt100Max, txt200, txt300, txt600, txt1024NoZoom  };
+      settings.zoom = doSettingChooser(txtZoomUnits, actions, count, (int) settings.zoom) ;
     }
     
     if ((2 == settings.units) || (3 == settings.units)){
-     String actions[] = { F(TXT_84_MAX), F("169.92"), F("254.88"), F("509.77"), F(TXT_870_NO_ZOOM)  };
-      settings.zoom = doSettingChooser(F(TXT_ZOOM_MILLIBAR), actions, count, (int) settings.zoom) ;
+    	const char* actions[] = { txt84Max, txt169, txt254, txt509, txt870NoZoom  };
+      settings.zoom = doSettingChooser(txtZoomMillibar, actions, count, (int) settings.zoom) ;
     }
     
     if ((4 == settings.units) || (5 == settings.units)){
-      String actions[] = { F(TXT_6_MAX), F("9.56"), F("19.12"), F("32.63"), F(TXT_65_NO_ZOOM)  };
-      settings.zoom = doSettingChooser(F(TXT_ZOOM_CM_MERCURY), actions, count, (int) settings.zoom) ;
+    	const char* actions[] = { txt6Max, txt9, txt19, txt32, txt65NoZoom  };
+      settings.zoom = doSettingChooser(txtZoomCmMercury, actions, count, (int) settings.zoom) ;
     }
     
     if ((6 == settings.units) || (7 == settings.units)){
-      String actions[] = { F(TXT_2_MAX), F("5.02"), F("7.53"), F("15.05"), F(TXT_25_NO_ZOOM)  };
-      settings.zoom = doSettingChooser(F(TXT_ZOOM_IN_MERCURY), actions, count, (int) settings.zoom) ;
+    const char*  actions[] = { txt2Max, txt5, txt7, txt15, txt25NoZoom  };
+      settings.zoom = doSettingChooser(txtZoomInMercury, actions, count, (int) settings.zoom) ;
     }
 
 }

@@ -24,54 +24,31 @@
 
 
 #include "menu.h"
-
+#include "globals.h"
 #include "lang_en_gb.h"   //include British English texts
 #include "lcdWrapper.h"
 #include "menuActions.h"
 #include "utils.h"
 
-#define SELECT 2
-#define LEFT 3
-#define RIGHT 4
-#define CANCEL 5
-#define PGMSTR(x) (__FlashStringHelper*)(x)
-#define TXT_SPACE_20 "                    "//EXACTLY 20 spaces!
-
 
 // an array of strings contains the menu titles
 // an array of function pointers, the same number and order as the above array, determines the actions to be taken when that title is selected
 // a size is passed which must be equal to the number of menu entries
-// NOTE the Arduino F() macro is used to store strings in SRAM, which saves a lot of normal RAM for real variables
-//this menu would not be possible in an Atega328 without the F macro or an equivalent trick
-//void actionDisplayMainMenu() {
-//
-//	String menu[] = {F(TXT_DISPLAY), F(TXT_CALIBRATION), F(TXT_SETTINGS), F(TXT_DATA_TRANSFER) };
-//	void (*actions[])() = {&actionDisplayContrastMenu, &actionDisplayCalibrationMenu, &actionDisplaySettingsMenu, &actionDisplayCommsMenu};
-//	uint8_t menuSize = 4;
-//
-//	handleMenu(menu, actions, menuSize);
-//}
 
-const char txtDisplay[] PROGMEM = TXT_DISPLAY;
-const char txtCalibration[] PROGMEM = TXT_CALIBRATION;
-const char txtSettings[] PROGMEM = TXT_SETTINGS;
-const char txtDataTransfer[] PROGMEM = TXT_DATA_TRANSFER;
-
-const char* const menuMain[] PROGMEM = {txtDisplay, txtCalibration, txtSettings, txtDataTransfer};
 
 void actionDisplayMainMenu() {
 
-
+	const char* menu[] = {txtDisplay, txtCalibration, txtSettings, txtDataTransfer};
 	void (*actions[])() = {&actionDisplayContrastMenu, &actionDisplayCalibrationMenu, &actionDisplaySettingsMenu, &actionDisplayCommsMenu};
 	uint8_t menuSize = 4;
 
-	handleMenu_P(menuMain, actions, menuSize);
+	handleMenu(menu, actions, menuSize);
 }
 
 
 void actionDisplaySettingsMenu() {
 
-	String menu[] = {F(TXT_SOFTWARE), F(TXT_HARDWARE), F(TXT_SAVE_SETTINGS), F(TXT_LOAD_SETTINGS), F(TXT_FACTORY_RESET)};
+	const char* const menu[] = {txtSoftware,txtHardware,txtSaveSettings, txtLoadSettings,txtFactoryReset};
 	void (*actions[])() = {&actionDisplaySoftwareSettingsMenu, &actionDisplayHardwareSettingsMenu,
 			&actionSaveSettings, &actionLoadSettings, &actionReset };
 	uint8_t menuSize = 5;
@@ -81,7 +58,7 @@ void actionDisplaySettingsMenu() {
 
 void actionDisplaySoftwareSettingsMenu() {
 
-	String menu[] = { F(TXT_DAMPING), F(TXT_RPM_DAMPING),F(TXT_SAMPLE_DELAY_US), F(TXT_THRESHOLD), F(TXT_RESPONSIVENESS)};
+	const char* const menu[] = { txtDamping, txtRpmDamping,txtSampleDelayUs, txtThreshold, txtResponsiveness};
 	void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold, &actionResponsiveness };
 	uint8_t menuSize = 5;
 
@@ -90,7 +67,7 @@ void actionDisplaySoftwareSettingsMenu() {
 
 void actionDisplayHardwareSettingsMenu() {
 
-	String menu[] = {F(TXT_CYLINDER_COUNT), F(TXT_MASTER_CYLINDER), F(TXT_BRIGHTNESS_BUTTON)};
+	const char* const menu[] = {txtCylinderCount, txtMasterCylinder, txtBrightnessButton};
 	void (*actions[])() = {&actionCylinders, &actionMaster, &actionBrightnessButton };
 	uint8_t menuSize = 3;
 
@@ -100,7 +77,7 @@ void actionDisplayHardwareSettingsMenu() {
 
 void actionDisplayCommsMenu() {
 
-	String menu[] = {F(TXT_CALIBRATION_DUMP), F(TXT_LIVE_DATA_DUMP), F(TXT_BAUD_RATE)};
+	const char* const menu[] = {txtCalibrationDump, txtLiveDataDump, txtBaudRate};
 	void (*actions[])() = {&doCalibrationDump, &doDataDump, &doBaudRate };
 	uint8_t menuSize = 3;
 
@@ -109,7 +86,7 @@ void actionDisplayCommsMenu() {
 
 void actionDisplayContrastMenu() {
 
-	String menu[] = {F(TXT_CONTRAST), F(TXT_BRIGHTNESS), F(TXT_DETAILS), F(TXT_GRAPH_TYPE), F(TXT_RPM_DISPLAY), F(TXT_UNITS), F(TXT_MAX_ZOOM_RANGE) };
+	const char* const menu[] = {txtContrast, txtBrightness, txtDetails, txtGraphType, txtRpmDisplay, txtUnits, txtMaxZoomRange};
 	void (*actions[])() = {&actionContrast, &actionBrightness, &actionSilent, &actionGraphing, &doRevs, &doUnits ,&doMaxZoom };
 	uint8_t menuSize = 7;
 
@@ -118,7 +95,7 @@ void actionDisplayContrastMenu() {
 
 void actionDisplayCalibrationMenu() {
 
-	String menu[] = {F(TXT_CALIBRATE_NOW), F(TXT_CLEAR_CALIBRATION), F(TXT_SET_CALIBRATION_MAX)};
+	const char* const menu[] = {txtCalibrateNow, txtClearCalibration, txtSetCalibrationMax};
 	void (*actions[])() = {&actionDisplayCalibrationSensorMenu, &doZeroCalibrations, &actionCalibrationMax };
 	uint8_t menuSize = 3;
 
@@ -127,7 +104,7 @@ void actionDisplayCalibrationMenu() {
 
 void actionDisplayCalibrationSensorMenu() {
 
-  String menu[] = {F(TXT_SENSOR_2), F(TXT_SENSOR_3),F(TXT_SENSOR_4)};
+	const char* const menu[] = {txtSensor2, txtSensor3, txtSensor4};
   void (*actions[])() = {&doCalibrate1, &doCalibrate2, &doCalibrate3 };
   uint8_t menuSize = 3;
 
@@ -135,13 +112,13 @@ void actionDisplayCalibrationSensorMenu() {
 }
 
 // display a basic setting change screen that does not have to call a function
-int doBasicSettingChanger(String valueName, int minimum, int maximum, int startValue, int steps ) {
+int doBasicSettingChanger(const char* valueName, int minimum, int maximum, int startValue, int steps ) {
 	return doSettingChanger( valueName, minimum, maximum, startValue, steps, NULL );
 }
 
 // display a settings change screen that calls a function every time the value changes for an immediate response
 // normally used for setting contrast and brightness
-int doSettingChanger(String valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) ) {
+int doSettingChanger(const char* valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) ) {
 	int value = startValue;
 	lcd_clear();
 	lcd_setCursor(0, 0);
@@ -205,7 +182,7 @@ int doSettingChanger(String valueName, int minimum, int maximum, int startValue,
 
 // allows the user to choose a value from an array of strings,
 // the selected array index is returned.
-int doSettingChooser(String valueName, String settings[], int count, int startIndex) {
+int doSettingChooser(const char* valueName, const char* settings[], int count, int startIndex) {
 	int index = startIndex;
 	boolean settingChanged = true;
 
@@ -259,16 +236,16 @@ int doSettingChooser(String valueName, String settings[], int count, int startIn
 	return startIndex;
 }
 
-uint8_t countMaskBits(unsigned int mask){
-	uint8_t bitCounter = 0;
-
-	for(int i=0; i<16; i++){
-		if((1<<i) & mask){
-			bitCounter++;
-		}
-	}
-	return bitCounter;
-}
+//uint8_t countMaskBits(unsigned int mask){
+//	uint8_t bitCounter = 0;
+//
+//	for(int i=0; i<16; i++){
+//		if((1<<i) & mask){
+//			bitCounter++;
+//		}
+//	}
+//	return bitCounter;
+//}
 
 //void parseMenu(String menu[], void (*func[])(), int menuSize, unsigned int mask){
 //	String parsedMenu = menu;
@@ -282,106 +259,13 @@ uint8_t countMaskBits(unsigned int mask){
 // menu[] = an array of menu option strings
 // *func[] = an array of pointers to the corresponding functions
 // menuSize = a counter to say how many values are in both arrays
-void handleMenu(String menu[], void (*func[])(), int menuSize) {
-	int cursorLine = 0;
-	int offset = 0;
-	bool refresh = true;
-
-	drawMenu( menu, menuSize, offset );
-
-	while (true) {
-
-		switch ( buttonPressed()) {
-		case SELECT:
-
-			(*func[cursorLine + offset])();
-
-			refresh = true;
-			break;
-		case LEFT:
-			if (cursorLine > 0) {
-				cursorLine -= 1;
-			} else if ((cursorLine == 0) && (offset > 0)) {
-				offset -= 1;
-			}
-			refresh = true;
-			break;
-		case RIGHT:
-			if (cursorLine < DISPLAY_ROWS-1 && cursorLine < menuSize-1) {
-				cursorLine += 1;
-			} else if ((cursorLine == DISPLAY_ROWS-1) && (offset < menuSize - 4)) {
-				offset += 1;
-			}
-			refresh = true;
-			break;
-		case CANCEL:
-			lcd_clear();
-			return;
-		}
-
-		if (refresh) {
-			drawMenu( menu, menuSize, offset );
-			drawCaret(cursorLine);
-			refresh = false;
-		}
-	}
-}
-
-
 // display the resulting menu, used by handleMenu()
-void drawMenu(String lines[], int count, int offset) {
+void drawMenu(const char* const pointerTable[], int count, int offset) {
 	lcd_clear();
 
 	for (uint8_t line = 0; ((line < count) && (line < DISPLAY_ROWS)) ; line++) {
 		lcd_setCursor(1, line);
-		lcd_print(lines[line + offset]);
-	}
-
-	if (offset > 0) {
-		byte upArrow[8] = {
-				B00100,
-				B01110,
-				B10101,
-				B00100,
-				B00100,
-				B00000,
-				B00000,
-		};
-		lcd_createChar(2, upArrow);
-		lcd_setCursor(19, 0);
-		lcd_write(byte(0x02));
-	}
-
-	if (offset < count - DISPLAY_ROWS) {
-		byte downArrow[8] = {
-
-				B00000,
-				B00000,
-				B00100,
-				B00100,
-				B10101,
-				B01110,
-				B00100,
-
-		};
-		lcd_createChar(3, downArrow);
-		lcd_setCursor(19, 3);
-		lcd_write(byte(0x03));
-	}
-
-	drawCaret(0);
-}
-
-// display the resulting menu, used by handleMenu()
-void drawMenu_P(const char* const pointerTable[], int count, int offset) {
-	lcd_clear();
-
-	char buffer[21];
-
-	for (uint8_t line = 0; ((line < count) && (line < DISPLAY_ROWS)) ; line++) {
-		lcd_setCursor(1, line);
-		strcpy_P(buffer, (char*)pgm_read_word(&(pointerTable[line + offset])));
-		lcd_print(buffer);
+		lcd_print((const char*)(pointerTable[line + offset]));
 	}
 
 	if (offset > 0) {
@@ -420,13 +304,12 @@ void drawMenu_P(const char* const pointerTable[], int count, int offset) {
 }
 
 
-
-void handleMenu_P(const char* const pointerTable[], void (*func[])(), int menuSize) {
+void handleMenu(const char* const pointerTable[], void (*func[])(), int menuSize) {
 	int cursorLine = 0;
 	int offset = 0;
 	bool refresh = true;
 
-	drawMenu_P( pointerTable, menuSize, offset );
+	drawMenu( pointerTable, menuSize, offset );
 
 	while (true) {
 
@@ -459,21 +342,19 @@ void handleMenu_P(const char* const pointerTable[], void (*func[])(), int menuSi
 		}
 
 		if (refresh) {
-			drawMenu_P( pointerTable, menuSize, offset );
+			drawMenu( pointerTable, menuSize, offset );
 			drawCaret(cursorLine);
 			refresh = false;
 		}
 	}
 }
-
-
 
 
 // puts the menu cursor in the right place
 void drawCaret(uint8_t line) {
 	for (uint8_t i = 0; i < DISPLAY_ROWS; i++) {
 		lcd_setCursor(0, i);
-		lcd_print(" ");
+		lcd_printChar(' ');
 	}
 	lcd_setCursor(0, line);
 	lcd_printChar(char(MENUCARET));//little arrow to the right

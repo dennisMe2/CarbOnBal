@@ -30,4 +30,6 @@ int getCalibrationOffset(int sensor, int value);
 void updateRpmDisplay(unsigned int rpm);
 void eepromWriteIfChanged(int address, int data);
 int detectAmbient();
-
+void demo();
+void demo2();
+void demo3();
