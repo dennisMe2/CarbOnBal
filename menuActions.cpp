@@ -60,12 +60,16 @@ void doContrast(int value) {
 }
 
 void actionSilent() {
-	const char* actions[] = {txtMore, txtLess};
+	const char* actions[] = {txtEnabled,txtDisabled};
     settings.silent = (bool) doSettingChooser(txtShowDetails, actions, 2, (int) settings.silent) ;
 }
 
+void doSplashScreen(){
+	const char* actions[] = {txtDisabled, txtEnabled};
+	    settings.splashScreen = (bool) doSettingChooser(txtSplashScreen, actions, 2, (int) settings.splashScreen) ;
+}
 void doAdvanced() {
-	const char* actions[] = {txtBasic, txtAdvanced};
+	const char* actions[] = {txtDisabled, txtEnabled};
     settings.advanced = (bool) doSettingChooser(txtAdvancedMenu, actions, 2, (int) settings.advanced) ;
 }
 
@@ -169,4 +173,5 @@ void doMaxZoom(){
     }
 
 }
+
 

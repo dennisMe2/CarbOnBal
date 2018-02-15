@@ -36,6 +36,7 @@ void actionContrast();
 void doContrast(int value) ;
 void actionSilent();
 void doAdvanced();
+void doSplashScreen();
 void actionGraphing();
 void actionReset();
 void actionDelay();

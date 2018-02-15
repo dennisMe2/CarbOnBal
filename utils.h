@@ -49,6 +49,7 @@ float responsiveEMA(float alpha, float *accumulator, float new_value);
 int delta(int first, int second);
 int maxVal( int value[]);
 int minVal( int value[]);
+int freeMemory();
 unsigned long getBaud(int index);
 
 #endif

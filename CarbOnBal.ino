@@ -75,14 +75,18 @@ void setup() {
 	alpha = calculateAlpha(settings.damping);               //prime the alpha from the settings
 	alphaRpm = calculateAlpha(settings.rpmDamping);
 	stabilityThreshold = (100 - settings.responsiveness) / 100; //responsiveness is how quickly the system responds to rapid RPM changes as opposed to smoothing the display
-	demo();
-	lcd_setCursor(4,1);
-	lcd_print(txtWelcome);
-	delay(2000);
 
-	lcd_clear();
-	demo2();
-	demo3();
+	if(settings.splashScreen){
+		demo();
+
+		lcd_setCursor(4,1);
+		lcd_print(txtWelcome);
+		delay(2000);
+
+		lcd_clear();
+		demo2();
+		demo3();
+	}
 
 }
 
@@ -194,12 +198,12 @@ void lcdBarsCenterSmooth( int value[]) {
 			}
 			if (numberOfLitBars < 10) lcd_write(byte(sensor + 2));
 
-			if (numberOfLitBars < 0) {
-				printLcdSpace(15, sensor, 5);           //clear the display in preparation of printing the readings
-			} else {
-				printLcdSpace(0, sensor, 5);
-			}
 			if (!settings.silent) {
+				if (numberOfLitBars < 0) {
+					printLcdSpace(15, sensor, 5);           //clear the display in preparation of printing the readings
+				} else {
+					printLcdSpace(0, sensor, 5);
+				}
 				lcd_printFloat(differenceToPreferredUnits(delta) );                    //display the difference between this sensor and master
 			}
 		} else {
@@ -237,14 +241,14 @@ void lcdBarsSmooth( int value[]) {
 		lcd_setCursor(numberOfLitBars, sensor);
 		lcd_write(byte(sensor + 2));
 
-		//set the cursor so the pressure readings don't interfere with the bars
-		if (numberOfLitBars <= 12) {
-			lcd_setCursor(14, sensor);
-		} else {
-			lcd_setCursor(0, sensor);
-		}
 
 		if (!settings.silent) {
+			//set the cursor so the pressure readings don't interfere with the bars
+			if (numberOfLitBars <= 12) {
+				lcd_setCursor(14, sensor);
+			} else {
+				lcd_setCursor(0, sensor);
+			}
 			float result = convertToPreferredUnits(value[sensor], ambientPressure);
 			lcd_printFloat(result);
 		}
@@ -829,24 +833,57 @@ void demo(){
 }
 
 void demo2(){
+	bool silent = settings.silent;
+	settings.silent = true;
 	int values[4];
 
-	for(int i=1024;i>=0;i-=15){
-		values[0] = i;
-		values[1] = i;
-		values[2] = i;
-		values[3] = i;
+	for(int i=0;i<=1024; i+=30){
+		for(int j = 0; j < NUM_SENSORS; j++){
+			values[j] = i;
+		}
 		lcdBarsSmooth(values);
 	}
+	for(unsigned int i=1024;i>=30;i-=30){
+		for(int j = 0; j < NUM_SENSORS; j++){
+			values[j] = i;
+		}
+		lcdBarsSmooth(values);
+	}
+
+	settings.silent = silent;
 }
 void demo3(){
 	int values[4];
+	bool silent = settings.silent;
+	uint8_t master = settings.master;
+	settings.silent = true;
 
-	for(int i=128;i>=0;i-=2){
+	for(int i=100;i>=0;i-=4){
 		values[0] = i;
 		values[1] = i;
 		values[2] = i;
 		values[3] = 128-i;
 		lcdBarsCenterSmooth(values);
 	}
+	settings.master=0;
+	for(int i=0;i<=100;i+=4){
+			values[3] = i;
+			values[1] = i;
+			values[2] = i;
+			values[1] = 128-i;
+			lcdBarsCenterSmooth(values);
+		}
+	settings.master = master;
+	settings.silent = silent;
+}
+
+void doDeviceInfo(){
+	lcd_clear();
+	lcd_setCursor(0,0);
+	lcd_print(F("Settings bytes: "));
+	lcd_printInt(sizeof(settings));
+	lcd_setCursor(0,1);
+	lcd_print(F("Free SRAM: "));
+	lcd_printInt(freeMemory());
+	waitForAnyKey();
 }

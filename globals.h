@@ -32,6 +32,8 @@
 #define RIGHT 4
 #define CANCEL 5
 
+#define P0VSENSOR 150                                             //minimum pressure reported by MAP sensor at 0V in millibar/hPa (=10x KPa value)
+#define P5VSENSOR 1020												//maximum pressure reported by sensor at 5V in millibar
 #define NUM_BUTTONS 4
 #define NUM_SENSORS 4
 #define DISPLAY_COLS 20
@@ -49,7 +51,7 @@ static const int calibrationOffset=256; //eeprom base address for calibration
 
 
 
-static const uint8_t versionUID = 17; //update when settings_t changes!
+static const uint8_t versionUID = 18; //update when settings_t changes!
 
 //this struct is used to store settings in NVRAM
 struct settings_t
@@ -74,6 +76,7 @@ struct settings_t
     uint8_t zoom;
     uint8_t calibrationMax;
     bool advanced;
+    bool splashScreen;
 };
 
 extern int readingCount[NUM_SENSORS];

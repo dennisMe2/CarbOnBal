@@ -28,6 +28,7 @@
 #include "lang_en_gb.h"   //include British English texts
 #include "lcdWrapper.h"
 #include "menuActions.h"
+#include "functions.h"
 #include "utils.h"
 
 
@@ -57,11 +58,13 @@ void actionDisplaySettingsMenu() {
 
 void actionDisplaySoftwareSettingsMenu() {
 
-	const char* const menu[] = { txtDamping, txtRpmDamping,txtSampleDelayUs, txtThreshold, txtResponsiveness};
-	void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold, &actionResponsiveness };
-	uint8_t menuSize = 5;
+	const char* const menu[] = { txtDamping, txtRpmDamping,txtSampleDelayUs, txtThreshold,
+								txtResponsiveness, txtDeviceInfo, txtSplashScreen};
+	void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold,
+								&actionResponsiveness, &doDeviceInfo, &doSplashScreen};
+	uint8_t menuSize = 7;
 
-	handleAdvancedMenu(menu, actions, menuSize, B10001);
+	handleAdvancedMenu(menu, actions, menuSize, B1000100);
 }
 
 void actionDisplayHardwareSettingsMenu() {

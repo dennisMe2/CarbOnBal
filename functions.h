@@ -33,3 +33,4 @@ int detectAmbient();
 void demo();
 void demo2();
 void demo3();
+void doDeviceInfo();

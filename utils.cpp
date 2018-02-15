@@ -27,16 +27,6 @@
 #include <Arduino.h>
 #include "globals.h"
 
-#define NUM_SENSORS 4
-#define NUM_BUTTONS 4
-#define SELECT 2
-#define LEFT 3
-#define RIGHT 4
-#define CANCEL 5
-                         
-#define P0VSENSOR 150                                             //minimum pressure reported by MAP sensor at 0V in millibar/hPa (=10x KPa value)
-#define P5VSENSOR 1020                                            //maximum pressure reported by sensor at 5V in millibar
-
 extern settings_t settings;
 
 float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversion factor to convert the arduino readings to millibars
@@ -118,6 +108,7 @@ void resetToFactoryDefaultSettings(){
     settings.zoom = 0;
     settings.calibrationMax = 16;
     settings.advanced = false;
+    settings.splashScreen = true;
 }
 
 // tests if a button was pressed and applies debounce logic
@@ -258,4 +249,21 @@ unsigned long getBaud(int index){
     return baud[index];
 }
 
+//Free memory routine from the Arduino playground
+#ifdef __arm__
+// should use uinstd.h to define sbrk but Due causes a conflict
+extern "C" char* sbrk(int incr);
+#else  // __ARM__
+extern char *__brkval;
+#endif  // __arm__
 
+int freeMemory() {
+  char top;
+#ifdef __arm__
+  return &top - reinterpret_cast<char*>(sbrk(0));
+#elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
+  return &top - __brkval;
+#else  // __arm__
+  return __brkval ? &top - __brkval : &top - __malloc_heap_start;
+#endif  // __arm__
+}
