@@ -54,6 +54,10 @@ void lcd_printInt(int integer){
 	lcd.print(String(integer));
 }
 
+void lcd_printLong(unsigned long integer){
+	lcd.print(String(integer));
+}
+
 void lcd_printFloat(float value){
 	lcd.print(String(value));
 }

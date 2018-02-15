@@ -228,11 +228,11 @@ void lcdBarsSmooth( int value[]) {
 		int numberOfLitBars = TotalNumberOfLitSegments / segmentsInCharacter;
 		int numberOfLitSegments = TotalNumberOfLitSegments % segmentsInCharacter;
 
-		if (numberOfLitBars > 14) {
-			makeBars(bars, numberOfLitBars, 4);
-		} else {
-			makeBars(bars, numberOfLitBars, 0);
-		}
+		//if (numberOfLitBars > 14) {
+		//	makeBars(bars, numberOfLitBars, 4);
+		//} else {
+			makeBars(bars, numberOfLitBars, 0);  //skip function probably no longer needed
+		//}
 		lcd_setCursor(0, sensor);
 		lcd_print(bars);
 
@@ -832,6 +832,12 @@ void demo(){
 	}
 }
 
+int measureLCDSpeed(){
+	unsigned long microseconds = micros();
+	lcd_clear();
+	return micros() - microseconds;
+}
+
 void demo2(){
 	bool silent = settings.silent;
 	settings.silent = true;
@@ -878,12 +884,15 @@ void demo3(){
 }
 
 void doDeviceInfo(){
-	lcd_clear();
+	unsigned long speed = measureLCDSpeed();
 	lcd_setCursor(0,0);
-	lcd_print(F("Settings bytes: "));
+	lcd_print(F("Settings Size B: "));
 	lcd_printInt(sizeof(settings));
 	lcd_setCursor(0,1);
-	lcd_print(F("Free SRAM: "));
+	lcd_print(F("Free SRAM B: "));
 	lcd_printInt(freeMemory());
+	lcd_setCursor(0,2);
+	lcd_print(F("LCD uS: "));
+	lcd_printLong(speed);
 	waitForAnyKey();
 }

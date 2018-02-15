@@ -36,6 +36,7 @@ void lcd_print(String str);
 void lcd_print(const char* str);
 void lcd_print(char* str);
 void lcd_printInt(int integer);
+void lcd_printLong(unsigned long integer);
 void lcd_printFloat(float value);
 
 void lcd_printChar(char chr);
