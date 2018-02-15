@@ -41,10 +41,12 @@ extern const uint8_t contrastPin;//11
 void doBaudRate(){
 	 const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200};
     settings.baudRate = doSettingChooser(txtBaudRate, actions, 13, settings.baudRate) ;
+    actionSaveSettings();
 }
 
 void actionBrightness() {
     settings.brightness = doSettingChanger(txtBrightness, 0, 255, settings.brightness, 10, &doBrightness) ;
+    actionSaveSettings();
 }
 
 void doBrightness(int value) {
@@ -53,6 +55,7 @@ void doBrightness(int value) {
 
 void actionContrast() {
     settings.contrast = doSettingChanger(txtContrast, 0, 127, settings.contrast, 1, &doContrast) ;
+    actionSaveSettings();
 }
 
 void doContrast(int value) {
@@ -62,20 +65,24 @@ void doContrast(int value) {
 void actionSilent() {
 	const char* actions[] = {txtEnabled,txtDisabled};
     settings.silent = (bool) doSettingChooser(txtShowDetails, actions, 2, (int) settings.silent) ;
+    actionSaveSettings();
 }
 
 void doSplashScreen(){
 	const char* actions[] = {txtDisabled, txtEnabled};
 	    settings.splashScreen = (bool) doSettingChooser(txtSplashScreen, actions, 2, (int) settings.splashScreen) ;
+	    actionSaveSettings();
 }
 void doAdvanced() {
 	const char* actions[] = {txtDisabled, txtEnabled};
     settings.advanced = (bool) doSettingChooser(txtAdvancedMenu, actions, 2, (int) settings.advanced) ;
+    actionSaveSettings();
 }
 
 void actionGraphing() {
 	const char* actions[] = {txtAbsoluteGraph, txtCenteredGraph};
     settings.graphType = doSettingChooser(txtSelectGraphType, actions, 2, settings.graphType) ;
+    actionSaveSettings();
 }
 
 void actionReset() {
@@ -83,35 +90,40 @@ void actionReset() {
     bool reset = doSettingChooser(txtFactoryReset, actions, 2, 0);
     if(reset){
         resetToFactoryDefaultSettings();
-        eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));     //store the data
+        actionSaveSettings();     //store the data
         asm volatile ("  jmp 0");                                 //soft reset by jumping into the arduino boot loader directly
     }
 }
 
 void actionDelay() {
     settings.delayTime = doBasicSettingChanger(txtDelayUs, 0, 1000, settings.delayTime, 10) ;
+    actionSaveSettings();
 }
 
 
 void actionResponsiveness() {
     settings.responsiveness = (uint8_t) doBasicSettingChanger(txtResponsePerc, 0, 100, settings.responsiveness, 5);
     stabilityThreshold = (100 - settings.responsiveness) / 100.00; //more than a certain % difference from the average
+    actionSaveSettings();
 }
 
 void actionDamping() {
     settings.damping = (uint8_t) doBasicSettingChanger(txtDampingPerc, 0, 100, settings.damping, 5);
     alpha = calculateAlpha(settings.damping);
+    actionSaveSettings();
 }
 
 
 void actionRPMDamping() {
     settings.rpmDamping = (uint8_t) doBasicSettingChanger(txtRpmDampingPerc, 0, 100, settings.rpmDamping, 5);
     alphaRpm = calculateAlpha(settings.rpmDamping);
+    actionSaveSettings();
 }
 
 
 void actionThreshold() {
     settings.threshold = (uint8_t) doBasicSettingChanger(txtThreshold, 0, 1023, settings.threshold, 10) ;
+    actionSaveSettings();
 }
 
 
@@ -119,11 +131,13 @@ void actionThreshold() {
 void actionCylinders() {
     settings.cylinders = (uint8_t) doBasicSettingChanger(txtCylinderCount, 1, 4, settings.cylinders, 1);
     fixMaster();
+    actionSaveSettings();
 }
 
 void actionMaster() {
     settings.master = (uint8_t) doBasicSettingChanger(txtMasterCylinder, 1, 4, settings.master, 1);
     fixMaster();
+    actionSaveSettings();
 }
 
 
@@ -136,16 +150,19 @@ void fixMaster(){
 void actionBrightnessButton(){
 	const char* actions[] = {txtBrightness, txtRpmDisplay};
     settings.button2 = doSettingChooser(txtButton2, actions, 2, (int) settings.button2) ;
+    actionSaveSettings();
 }
 
 void doUnits(){
     const char* actions[] = {txtRawValues,txtRawDescending, txtMillibarHpa, txtMillibarHpaDesc,
                         txtCmMercury, txtCmMercuryDesc, txtInchMercury, txtInchMercuryDesc};
     settings.units = doSettingChooser(txtDisplayUnits, actions, 8, (int) settings.units) ;
+    actionSaveSettings();
 }
 
 void actionCalibrationMax() {
     settings.calibrationMax = doBasicSettingChanger(txtMaxCalibration, 16, 127, settings.calibrationMax, 16);
+    actionSaveSettings();
 }
 
 void doMaxZoom(){
@@ -172,6 +189,7 @@ void doMaxZoom(){
       settings.zoom = doSettingChooser(txtZoomInMercury, actions, count, (int) settings.zoom) ;
     }
 
+    actionSaveSettings();
 }
 
 

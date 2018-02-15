@@ -258,11 +258,7 @@ void lcdBarsSmooth( int value[]) {
 
 //saves our settings struct
 void actionSaveSettings() {
-	lcd_clear();
-	lcd_setCursor(3, 1);
-	lcd_print(txtSaving);
-	eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
-	delay(500);
+	EEPROM.put(0, settings);//only saves changed bytes!
 }
 
 //handles the display for loading settings
