@@ -258,7 +258,8 @@ void lcdBarsSmooth( int value[]) {
 
 //saves our settings struct
 void actionSaveSettings() {
-	EEPROM.put(0, settings);//only saves changed bytes!
+	EEPROM.put(0, versionUID);//only saves changed bytes!
+	EEPROM.put(settingsOffset, settings);//only saves changed bytes!
 }
 
 //handles the display for loading settings
@@ -273,16 +274,15 @@ void actionLoadSettings() {
 //loads the settings from EEPROM (Flash)
 void loadSettings() {
 	uint8_t compareVersion = 0;
-	eeprom_read_block((void*)&compareVersion, (void*)0, sizeof(settings.versionID));
-
-	//only load settings if saved by the current version, otherwise reset to 'factory' defaults
-	if (compareVersion == versionUID) {
-		eeprom_read_block((void*)&settings, (void*)0, sizeof(settings));
+  EEPROM.get(0,compareVersion);
+  	
+	if (compareVersion == versionUID) { //only load settings if saved by the current version, otherwise reset to 'factory' defaults
+    EEPROM.get(settingsOffset, settings);   //settings aer stored immediately after the version UID
 	} else {
 		resetToFactoryDefaultSettings();
 	}
 
-	doContrast(settings.contrast);
+	doContrast(settings.contrast);     
 	doBrightness(settings.brightness);
 }
 
@@ -345,7 +345,6 @@ void createWaitKeyPressChar(){
 			0b11111
 		};
 		lcd_createChar(0, customChar);
-
 }
 
 void doCalibrate1() {
@@ -831,6 +830,10 @@ void demo(){
 int measureLCDSpeed(){
 	unsigned long microseconds = micros();
 	lcd_clear();
+  for(int i =0; i<1000;i++){
+    lcd_setCursor(0,1);
+    lcd_printChar(' ');
+  }
 	return micros() - microseconds;
 }
 
@@ -869,10 +872,10 @@ void demo3(){
 	}
 	settings.master=0;
 	for(int i=0;i<=100;i+=4){
-			values[3] = i;
+			values[0] = 128-i;
 			values[1] = i;
 			values[2] = i;
-			values[1] = 128-i;
+			values[3] = i;
 			lcdBarsCenterSmooth(values);
 		}
 	settings.master = master;
@@ -881,14 +884,20 @@ void demo3(){
 
 void doDeviceInfo(){
 	unsigned long speed = measureLCDSpeed();
-	lcd_setCursor(0,0);
-	lcd_print(F("Settings Size B: "));
-	lcd_printInt(sizeof(settings));
+  lcd_setCursor(0,0);
+  lcd_print(txtVersion);
+  lcd_print(F(SOFTWARE_VERSION));
+	
 	lcd_setCursor(0,1);
-	lcd_print(F("Free SRAM B: "));
-	lcd_printInt(freeMemory());
+	lcd_print(txtSettingsBytes);
+	lcd_printInt(sizeof(settings));
+	
 	lcd_setCursor(0,2);
-	lcd_print(F("LCD uS: "));
+	lcd_print(txtFreeRam);
+	lcd_printInt(freeMemory());
+	
+	lcd_setCursor(0,3);
+	lcd_print(txtLcdSpeed);
 	lcd_printLong(speed);
 	waitForAnyKey();
 }

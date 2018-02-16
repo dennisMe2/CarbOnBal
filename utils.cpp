@@ -106,7 +106,7 @@ void resetToFactoryDefaultSettings(){
     settings.responsiveness = 75;
     settings.units = 0;
     settings.zoom = 0;
-    settings.calibrationMax = 16;
+    settings.calibrationMax = 32;
     settings.advanced = false;
     settings.splashScreen = true;
 }

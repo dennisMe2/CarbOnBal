@@ -48,12 +48,11 @@ void actionDisplayMainMenu() {
 
 void actionDisplaySettingsMenu() {
 
-	const char* const menu[] = {txtSoftware,txtHardware,txtSaveSettings, txtLoadSettings,txtFactoryReset};
-	void (*actions[])() = {&actionDisplaySoftwareSettingsMenu, &actionDisplayHardwareSettingsMenu,
-			&actionSaveSettings, &actionLoadSettings, &actionReset };
-	uint8_t menuSize = 5;
+	const char* const menu[] = {txtSoftware, txtHardware, txtFactoryReset};
+	void (*actions[])() = {&actionDisplaySoftwareSettingsMenu, &actionDisplayHardwareSettingsMenu, &actionReset };
+	uint8_t menuSize = 3;
 
-	handleAdvancedMenu(menu, actions, menuSize, B11101);
+	handleAdvancedMenu(menu, actions, menuSize, B110);
 }
 
 void actionDisplaySoftwareSettingsMenu() {
