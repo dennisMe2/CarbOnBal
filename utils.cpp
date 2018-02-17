@@ -26,6 +26,7 @@
 #include "utils.h"
 #include <Arduino.h>
 #include "globals.h"
+#include "lcdWrapper.h"
 
 extern settings_t settings;
 
@@ -137,7 +138,25 @@ int buttonPressed() {
     return 0;//just don't try to connect a button to pin 0
 }
 
+//creates a special character which is stored in the display's memory
+void createWaitKeyPressChar(){
+		byte customChar[8] = {
+			0b00100,
+			0b00100,
+			0b10101,
+			0b01110,
+			0b00100,
+			0b00000,
+			0b01110,
+			0b11111
+		};
+		lcd_createChar(0, customChar);
+}
+
 void waitForAnyKey(){
+	createWaitKeyPressChar();
+		lcd_setCursor(19,0);
+		lcd_write(byte((byte) 0));
       while(!buttonPressed()){
       delay(50);
     }

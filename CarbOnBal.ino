@@ -262,14 +262,6 @@ void actionSaveSettings() {
 	EEPROM.put(settingsOffset, settings);//only saves changed bytes!
 }
 
-//handles the display for loading settings
-void actionLoadSettings() {
-	lcd_clear();
-	lcd_setCursor(3, 1);
-	lcd_print(txtLoading);
-	loadSettings();
-	delay(500);
-}
 
 //loads the settings from EEPROM (Flash)
 void loadSettings() {
@@ -292,7 +284,7 @@ void doZeroCalibrations() {
 	lcd_setCursor(3, 1);
 	lcd_print(txtWiping);
 	zeroCalibrations();
-	delay(500);
+	doConfirmation();
 }
 
 //determine where the calibration value is stored in EEPROM depending on the sample value
@@ -312,15 +304,6 @@ void eepromWriteIfChanged(int address, int data) {
 	}
 }
 
-//actually clears the flash
-void zeroCalibrations() {
-	for (uint8_t sensor = 1; sensor < (NUM_SENSORS ); sensor++) {
-		for (int i = 0; i < numberOfCalibrationValues; i++) {
-			eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i), 0); //write the data directly to EEPROM
-		}
-	}
-}
-
 //read raw data from the sensor by an effective method
 int readSensorRaw(int sensor) {
 	if (!settings.delayTime) { //if delaytime is zero, do a pre-read to prime the ADC
@@ -332,19 +315,42 @@ int readSensorRaw(int sensor) {
 	return (reading[sensor]);
 }
 
-//creates a special character which is stored in the display's memory
-void createWaitKeyPressChar(){
-		byte customChar[8] = {
-			0b00100,
-			0b00100,
-			0b10101,
-			0b01110,
-			0b00100,
-			0b00000,
-			0b01110,
-			0b11111
-		};
-		lcd_createChar(0, customChar);
+
+//clear the flash for a single sensor
+void doClearCalibration(int sensor){
+	for (int i = 0; i < numberOfCalibrationValues; i++) {
+		eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i), 0); //write the data directly to EEPROM
+	}
+}
+
+//actually clears the flash for all the sensors
+void zeroCalibrations() {
+	for (uint8_t sensor = 1; sensor < (NUM_SENSORS ); sensor++) {
+		doClearCalibration(sensor);
+	}
+}
+
+void doClearCalibration1(){
+	doClearCalibration(1);
+	doConfirmation();
+}
+void doClearCalibration2(){
+	doClearCalibration(2);
+	doConfirmation();
+}
+void doClearCalibration3(){
+	doClearCalibration(3);
+	doConfirmation();
+}
+
+void doViewCalibration1(){
+	doViewCalibration(1);
+}
+void doViewCalibration2(){
+	doViewCalibration(2);
+}
+void doViewCalibration3(){
+	doViewCalibration(3);
 }
 
 void doCalibrate1() {
@@ -362,12 +368,9 @@ void doCalibrate(int sensor) {
 	int maxValue = 0;
 	int minValue = 0;
 	int lowestCalibratedValue = 1024;
+	int readingStandard, readingSensor;
 
 	lcd_clear();
-
-	createWaitKeyPressChar();
-	lcd_setCursor(19,0);
-	lcd_write(byte((byte) 0));
 
 	lcd_setCursor(0, 0);
 	lcd_print(txtCalibrationBusy);
@@ -375,8 +378,7 @@ void doCalibrate(int sensor) {
 	lcd_setCursor(0, 1);
 	lcd_print(txtCalibrationBusy2);
 
-	lcd_setCursor(0, 2);
-	lcd_print(txtPressAnyKey);
+	//waitForAnyKey();
 
 	delay(500);//otherwise key still pressed, probably need a better solution
 
@@ -392,17 +394,17 @@ void doCalibrate(int sensor) {
 	}
 
 	while (!buttonPressed()) {
-		readSensorRaw(0);  //read master
-		readSensorRaw(sensor); //read calibration sensor
+		readingStandard = readSensorRaw(0);  //read master
+		readingSensor = readSensorRaw(sensor); //read calibration sensor
 
-		int calibrationValue = reading[0] - reading[sensor];
+		int calibrationValue = readingStandard - readingSensor;
 
 		//record some basic quality statistics
 		if (calibrationValue > maxValue) maxValue = calibrationValue;
 		if (calibrationValue < minValue) minValue = calibrationValue;
 		if (reading[sensor] < lowestCalibratedValue) lowestCalibratedValue = reading[sensor];
 
-		values[(reading[sensor] >> 2)] = intExponentialMovingAverage(shift, factor, values[(reading[sensor] >> 2)], calibrationValue);
+		values[(readingSensor >> 2)] = intExponentialMovingAverage(shift, factor, values[(readingSensor >> 2)], calibrationValue);
 	}
 
 	//post_shift the values in preparation of writing back to EEPROM
@@ -418,28 +420,33 @@ void doCalibrate(int sensor) {
 	}
 
 	lcd_clear();
-	lcd_setCursor(19,0);
-	lcd_write(byte((byte) 0));
 
 	lcd_setCursor(0, 0);
 	lcd_print(txtCalibrationDone);
 
 	lcd_setCursor(0, 1);
 	lcd_print(txtLowestPressure);
-	printLcdInteger( lowestCalibratedValue, 14, 1, 5);
+	printLcdInteger( lowestCalibratedValue, 15, 1, 4);
 	lcd_setCursor(0, 2);
 	lcd_print(txtMinAdjust);
-	printLcdInteger( minValue, 14, 2, 5);
+	printLcdInteger( minValue, 16, 2, 3);
 	lcd_setCursor(0, 3);
 	lcd_print(txtMaxAdjust);
-	printLcdInteger( maxValue, 14, 3, 5);
-
-	lcd_setCursor(19,0);
-	lcd_write(byte((byte) 0));
+	printLcdInteger( maxValue, 16, 3, 3);
 
 	waitForAnyKey();
 	displayCalibratedValues(values);
-	waitForAnyKey();
+}
+
+void doViewCalibration(int sensor){
+
+	int values[numberOfCalibrationValues];
+
+	for (int i = 0; i < numberOfCalibrationValues; i++) {
+			values[i] = (int) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i));
+	}
+
+	displayCalibratedValues(values);
 }
 
 //display indicator arrows and numeric offsets so we don't get lost in the graph of calibration values.

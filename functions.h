@@ -34,3 +34,13 @@ void demo();
 void demo2();
 void demo3();
 void doDeviceInfo();
+void doViewCalibration(int sensor);
+void doViewCalibration1();
+void doViewCalibration2();
+void doViewCalibration3();
+void doClearCalibration1();
+void doClearCalibration2();
+void doClearCalibration3();
+void doClearCalibration(int sensor);
+
+

@@ -35,39 +35,37 @@
 // an array of strings contains the menu titles
 // an array of function pointers, the same number and order as the above array, determines the actions to be taken when that title is selected
 // a size is passed which must be equal to the number of menu entries
-
-
 void actionDisplayMainMenu() {
-
-	const char* menu[] = {txtDisplay, txtCalibration, txtSettings, txtDataTransfer};
-	void (*actions[])() = {&actionDisplayContrastMenu, &actionDisplayCalibrationMenu, &actionDisplaySettingsMenu, &actionDisplayCommsMenu};
+	const char* menu[] = {txtDisplay, txtSettings, txtCalibration, txtDataTransfer};
+	void (*actions[])() = {&actionDisplayDisplayMenu, &actionDisplaySettingsMenu, &actionDisplayCalibrationMenu, &actionDisplayCommsMenu};
 	uint8_t menuSize = 4;
-	handleAdvancedMenu(menu, actions, menuSize, B1111);
+	handleMenu(menu, actions, menuSize);
 }
 
-
 void actionDisplaySettingsMenu() {
-
-	const char* const menu[] = {txtSoftware, txtHardware, txtFactoryReset};
-	void (*actions[])() = {&actionDisplaySoftwareSettingsMenu, &actionDisplayHardwareSettingsMenu, &actionReset };
+	const char* const menu[] = { txtHardware, txtSoftware, txtExtraMenu};
+	void (*actions[])() = { &actionDisplayHardwareSettingsMenu, &actionDisplaySoftwareSettingsMenu, &actionDisplayExtraMenu };
 	uint8_t menuSize = 3;
+	handleMenu(menu, actions, menuSize);
+}
 
-	handleAdvancedMenu(menu, actions, menuSize, B110);
+void actionDisplayExtraMenu(){
+	const char* const menu[] = {txtDeviceInfo, txtAdvancedMenu, txtSplashScreen, txtFactoryReset};
+		void (*actions[])() = { &doDeviceInfo, &doAdvanced, &doSplashScreen, &actionReset};
+		uint8_t menuSize = 4;
+		handleAdvancedMenu(menu, actions, menuSize, B1100);
 }
 
 void actionDisplaySoftwareSettingsMenu() {
-
-	const char* const menu[] = { txtDamping, txtRpmDamping,txtSampleDelayUs, txtThreshold,
-								txtResponsiveness, txtDeviceInfo, txtSplashScreen};
+	const char* const menu[] = { txtDamping, txtRpmDamping, txtSampleDelayUs, txtThreshold,
+								txtResponsiveness};
 	void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold,
-								&actionResponsiveness, &doDeviceInfo, &doSplashScreen};
-	uint8_t menuSize = 7;
-
-	handleAdvancedMenu(menu, actions, menuSize, B1000100);
+								&actionResponsiveness};
+	uint8_t menuSize = 5;
+	handleAdvancedMenu(menu, actions, menuSize, B10001);
 }
 
 void actionDisplayHardwareSettingsMenu() {
-
 	const char* const menu[] = {txtCylinderCount, txtMasterCylinder, txtBrightnessButton};
 	void (*actions[])() = {&actionCylinders, &actionMaster, &actionBrightnessButton };
 	uint8_t menuSize = 3;
@@ -76,38 +74,47 @@ void actionDisplayHardwareSettingsMenu() {
 
 
 void actionDisplayCommsMenu() {
-
 	const char* const menu[] = {txtCalibrationDump, txtLiveDataDump, txtBaudRate};
 	void (*actions[])() = {&doCalibrationDump, &doDataDump, &doBaudRate };
 	uint8_t menuSize = 3;
 	handleAdvancedMenu(menu, actions, menuSize, B111);
 }
 
-void actionDisplayContrastMenu() {
-
+void actionDisplayDisplayMenu() {
 	const char* const menu[] = {txtContrast, txtBrightness, txtDetails, txtGraphType,
-								txtRpmDisplay, txtUnits, txtMaxZoomRange, txtAdvancedMenu};
+								txtRpmDisplay, txtUnits, txtMaxZoomRange};
 	void (*actions[])() = {&actionContrast, &actionBrightness, &actionSilent, &actionGraphing,
-								&doRevs, &doUnits ,&doMaxZoom, &doAdvanced };
-	uint8_t menuSize = 8;
-	handleAdvancedMenu(menu, actions, menuSize, B11011001);
+								&doRevs, &doUnits ,&doMaxZoom };
+	uint8_t menuSize = 7;
+	handleAdvancedMenu(menu, actions, menuSize, B1101100);
 }
 
 void actionDisplayCalibrationMenu() {
-
-	const char* const menu[] = {txtCalibrateNow, txtClearCalibration, txtSetCalibrationMax};
-	void (*actions[])() = {&actionDisplayCalibrationSensorMenu, &doZeroCalibrations, &actionCalibrationMax };
+	const char* const menu[] = {txtViewCalibrations, txtCalibrateNow, txtClearCalibration};
+	void (*actions[])() = {&actionDisplayViewCalibrationMenu, &actionDisplayCalibrationSensorMenu, &actionDisplayClearCalibrationMenu };
 	uint8_t menuSize = 3;
 	handleAdvancedMenu(menu, actions, menuSize, B110);
 }
 
+void actionDisplayViewCalibrationMenu() {
+	const char* const menu[] = {txtSensor2, txtSensor3, txtSensor4, txtSetCalibrationMax};
+	void (*actions[])() = {&doViewCalibration1, &doViewCalibration2, &doViewCalibration3, &actionCalibrationMax };
+	uint8_t menuSize = 4;
+	handleAdvancedMenu(menu, actions, menuSize, B1110);
+}
+
+void actionDisplayClearCalibrationMenu() {
+	const char* const menu[] = {txtSensor2, txtSensor3, txtSensor4, txtClearCalibration};
+	void (*actions[])() = {&doClearCalibration1, &doClearCalibration2, &doClearCalibration3, &doZeroCalibrations };
+	uint8_t menuSize = 4;
+	handleMenu(menu, actions, menuSize);
+}
+
 void actionDisplayCalibrationSensorMenu() {
-
 	const char* const menu[] = {txtSensor2, txtSensor3, txtSensor4};
-  void (*actions[])() = {&doCalibrate1, &doCalibrate2, &doCalibrate3 };
-  uint8_t menuSize = 3;
-
-  handleMenu(menu, actions, menuSize);
+	void (*actions[])() = {&doCalibrate1, &doCalibrate2, &doCalibrate3 };
+	uint8_t menuSize = 3;
+	handleMenu(menu, actions, menuSize);
 }
 
 // display a basic setting change screen that does not have to call a function

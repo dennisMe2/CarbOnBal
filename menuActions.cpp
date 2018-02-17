@@ -27,6 +27,7 @@
 
 #include "lang_en_gb.h"   //include British English texts
 #include "menu.h"
+#include "lcdWrapper.h"
 #include "utils.h"
 
 extern settings_t settings;
@@ -37,6 +38,12 @@ extern float stabilityThreshold;
 extern const uint8_t brightnessPin;//6
 extern const uint8_t contrastPin;//11
 
+void doConfirmation(){
+	lcd_clear();
+	lcd_setCursor(7,1);
+	lcd_print(txtDone);
+	waitForAnyKey();
+}
 
 void doBaudRate(){
 	 const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200};

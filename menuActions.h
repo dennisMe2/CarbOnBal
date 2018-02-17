@@ -29,6 +29,7 @@
 #include <Arduino.h>
 #include "globals.h"
 
+void doConfirmation();
 void doBaudRate();
 void actionBrightness() ;
 void doBrightness(int value);

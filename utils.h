@@ -36,7 +36,7 @@ float convertToCmHg(int value);
 float differenceToCmHg(int value);
 float convertToInHg(int value);
 float differenceToInHg(int value);
-
+void createWaitKeyPressChar();
 void resetToFactoryDefaultSettings();
 int buttonPressed();
 void waitForAnyKey();
