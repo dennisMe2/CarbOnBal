@@ -77,15 +77,15 @@ void setup() {
 	stabilityThreshold = (100 - settings.responsiveness) / 100; //responsiveness is how quickly the system responds to rapid RPM changes as opposed to smoothing the display
 
 	if(settings.splashScreen){
-		demo();
+		doMatrixDemo();
 
 		lcd_setCursor(4,1);
 		lcd_print(txtWelcome);
 		delay(2000);
 
 		lcd_clear();
-		demo2();
-		demo3();
+		doAbsoluteDemo();
+		doRelativeDemo();
 	}
 
 }
@@ -298,9 +298,9 @@ int getCalibrationTableOffsetByPosition(int sensor, int pos) {
 }
 
 //only write if the value needs writing (saves write cycles)
-void eepromWriteIfChanged(int address, int data) {
-	if (data != (int) EEPROM.read(address)) {
-		EEPROM.write(address, data); 				//write the data to EEPROM
+void eepromWriteIfChanged(int address, int8_t data) {
+	if ((uint8_t) data !=  EEPROM.read(address)) {
+		EEPROM.write(address, (uint8_t) data); 				//write the data to EEPROM
 	}
 }
 
@@ -378,7 +378,9 @@ void doCalibrate(int sensor) {
 	lcd_setCursor(0, 1);
 	lcd_print(txtCalibrationBusy2);
 
-	//waitForAnyKey();
+	lcd_setCursor(0, 3);
+	lcd_print(txtPressAnyKey);
+	displayKeyPressPrompt();
 
 	delay(500);//otherwise key still pressed, probably need a better solution
 
@@ -390,7 +392,8 @@ void doCalibrate(int sensor) {
 	// this is needed for accuracy because EMA calculation works by adding or subtracting relatively small values
 	// which would otherwise all be truncated to '0'
 	for (int i = 0; i < numberOfCalibrationValues; i++) {
-		values[i] = ((int) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i))) << shift;
+		values[i] = (int8_t) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i));
+		values[i] <<= shift;
 	}
 
 	while (!buttonPressed()) {
@@ -411,12 +414,12 @@ void doCalibrate(int sensor) {
 	// we don't need to save the 'decimal places' because they are not needed anymore.
 	// so we lose them by shifting them out of range to the right
 	for (int i = 0; i < numberOfCalibrationValues; i++) {
-		values[i] = (values[i] >> shift);
+		values[i] >>= shift;
 	}
 
 	//save calibrations
 	for (int i = 0; i < numberOfCalibrationValues; i++) {
-		eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i) , values[i]);
+		eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i) , (int8_t) values[i]);
 	}
 
 	lcd_clear();
@@ -443,7 +446,7 @@ void doViewCalibration(int sensor){
 	int values[numberOfCalibrationValues];
 
 	for (int i = 0; i < numberOfCalibrationValues; i++) {
-			values[i] = (int) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i));
+			values[i] = (int8_t) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i));
 	}
 
 	displayCalibratedValues(values);
@@ -599,7 +602,7 @@ void doCalibrationDump() {
 			Serial.print(i);
 			Serial.print("  \t");
 			for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
-				Serial.print((int) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
+				Serial.print((int)((uint8_t)EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i))));
 				Serial.print("  \t");
 			}
 			Serial.print("\n");
@@ -796,7 +799,7 @@ int detectAmbient() {
 	return total / numberOfSamples;                         //divide the result by the number of samples for the resulting average
 }
 
-void demo(){
+void doMatrixDemo(){
 	uint8_t colspeed[20];
 	char matrix[4][20];
 
@@ -844,7 +847,7 @@ int measureLCDSpeed(){
 	return micros() - microseconds;
 }
 
-void demo2(){
+void doAbsoluteDemo(){
 	bool silent = settings.silent;
 	settings.silent = true;
 	int values[4];
@@ -864,22 +867,24 @@ void demo2(){
 
 	settings.silent = silent;
 }
-void demo3(){
+void doRelativeDemo(){
 	int values[4];
 	bool silent = settings.silent;
+	int masterValue = 500;
+	int delta = 100;
 	uint8_t master = settings.master;
 	settings.silent = true;
-
-	for(int i=100;i>=0;i-=4){
+	settings.master=4;
+	for(int i=masterValue+delta;i>=masterValue-delta;i-=4){
 		values[0] = i;
 		values[1] = i;
 		values[2] = i;
-		values[3] = 128-i;
+		values[3] = masterValue;
 		lcdBarsCenterSmooth(values);
 	}
-	settings.master=0;
-	for(int i=0;i<=100;i+=4){
-			values[0] = 128-i;
+	settings.master=1;
+	for(int i=masterValue-delta;i<=masterValue+delta;i+=4){
+			values[0] = masterValue;
 			values[1] = i;
 			values[2] = i;
 			values[3] = i;

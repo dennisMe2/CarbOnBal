@@ -153,10 +153,13 @@ void createWaitKeyPressChar(){
 		lcd_createChar(0, customChar);
 }
 
-void waitForAnyKey(){
+void displayKeyPressPrompt(){
 	createWaitKeyPressChar();
-		lcd_setCursor(19,0);
-		lcd_write(byte((byte) 0));
+			lcd_setCursor(19,0);
+			lcd_write(byte((byte) 0));
+}
+void waitForAnyKey(){
+	displayKeyPressPrompt();
       while(!buttonPressed()){
       delay(50);
     }
