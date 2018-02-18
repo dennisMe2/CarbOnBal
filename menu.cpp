@@ -97,21 +97,21 @@ void actionDisplayCalibrationMenu() {
 }
 
 void actionDisplayViewCalibrationMenu() {
-	const char* const menu[] = {txtSensor2, txtSensor3, txtSensor4, txtSetCalibrationMax};
+	const char* const menu[] = {txtViewSensor2, txtViewSensor3, txtViewSensor4, txtSetCalibrationMax};
 	void (*actions[])() = {&doViewCalibration1, &doViewCalibration2, &doViewCalibration3, &actionCalibrationMax };
 	uint8_t menuSize = 4;
 	handleAdvancedMenu(menu, actions, menuSize, B1110);
 }
 
 void actionDisplayClearCalibrationMenu() {
-	const char* const menu[] = {txtSensor2, txtSensor3, txtSensor4, txtClearCalibration};
+	const char* const menu[] = { txtClearSensor2,  txtClearSensor3,  txtClearSensor4, txtClearAllSensors};
 	void (*actions[])() = {&doClearCalibration1, &doClearCalibration2, &doClearCalibration3, &doZeroCalibrations };
 	uint8_t menuSize = 4;
 	handleMenu(menu, actions, menuSize);
 }
 
 void actionDisplayCalibrationSensorMenu() {
-	const char* const menu[] = {txtSensor2, txtSensor3, txtSensor4};
+	const char* const menu[] = {txtCalibrateSensor2, txtCalibrateSensor3, txtCalibrateSensor4};
 	void (*actions[])() = {&doCalibrate1, &doCalibrate2, &doCalibrate3 };
 	uint8_t menuSize = 3;
 	handleMenu(menu, actions, menuSize);

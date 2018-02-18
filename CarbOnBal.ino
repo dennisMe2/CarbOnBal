@@ -364,7 +364,7 @@ void doCalibrate3() {
 }
 void doCalibrate(int sensor) {
 	const int shift = 8;
-	const int factor = 3;
+	const int factor = 4;
 	int maxValue = 0;
 	int minValue = 0;
 	int lowestCalibratedValue = 1024;

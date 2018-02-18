@@ -52,20 +52,21 @@ static const int numberOfCalibrationValues=256;
 static const int calibrationOffset=256; //eeprom base address for calibration
 
 
-static const uint8_t versionUID = 19; //update when settings_t changes!
+static const uint8_t versionUID = 20; //update when settings_t changes!
 static const uint8_t settingsOffset = sizeof(versionUID);
 
 //this struct is used to store settings in NVRAM
+//does not use bit fields because these cause more writes to the same NVRAM locations
 struct settings_t
 {
-    bool usePeakAverage :1;         //bool bitfield
-    bool silent         :1;
-    bool advanced       :1;
-    bool splashScreen   :1;
-    uint8_t cylinders   :3;         //3bits max value=8
-    uint8_t master      :3;
-    uint8_t button1;                //refactor, can be boolean
-    uint8_t button2;                //refactor to bool
+    bool usePeakAverage;
+    bool silent;
+    bool advanced;
+    bool splashScreen;
+    uint8_t cylinders;
+    uint8_t master;
+    uint8_t button1;
+    uint8_t button2;
     uint8_t contrast;
     uint8_t brightness;
     uint8_t graphType;
