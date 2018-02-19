@@ -25,7 +25,8 @@
 
 #include "menu.h"
 #include "globals.h"
-#include "lang_en_gb.h"   //include British English texts
+#include LANGUAGE
+#include "lang_generic.h"
 #include "lcdWrapper.h"
 #include "menuActions.h"
 #include "functions.h"
@@ -203,9 +204,9 @@ int doSettingChooser(const char* valueName, const char* settings[], int count, i
 
 		if (settingChanged) {
 			lcd_setCursor(0, 1);
-			lcd_print(F(TXT_SPACE_20));
+			lcd_print(txtSpace20);
 			lcd_setCursor(0, 3);
-			lcd_print(F(TXT_SPACE_20));
+			lcd_print(txtSpace20);
 			if(index > 0 ){
 				lcd_setCursor(0, 3);
 				lcd_printChar(char(MENUCARET+1));           //little arrow to the left

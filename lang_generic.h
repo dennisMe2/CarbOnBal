@@ -22,34 +22,36 @@
 // You should have received a copy of the GNU General Public License
 // along with CarbOnBal.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <Arduino.h>
-void makeCenterBars(char *bars, int8_t number);
-void initRpmDisplay();
-int readSensorRaw(int sensor);
-int getCalibrationOffset(int sensor, int value);
-void updateRpmDisplay(unsigned int rpm);
-void eepromWriteIfChanged(int address, int8_t data);
-int detectAmbient();
-void lcdBarsCenterSmooth( int value[]);
-int getCalibrationTableOffsetByValue(int sensor, int value);
-void doMatrixDemo();
-void doCalibrate(int sensor);
-void displayCalibratedValues(int values[]);
-void makeCalibrationChars();
-void zeroCalibrations();
-void runningAverage();
-void loadSettings();
-void lcdBarsSmooth( int value[]);
-void doAbsoluteDemo();
-void doRelativeDemo();
-void doDeviceInfo();
-void doViewCalibration(int sensor);
-void doViewCalibration1();
-void doViewCalibration2();
-void doViewCalibration3();
-void doClearCalibration1();
-void doClearCalibration2();
-void doClearCalibration3();
-void doClearCalibration(int sensor);
+#ifndef LANG_GENERIC_INCLUDED
+#define LANG_GENERIC_INCLUDED
 
 
+// these probably won't need translating but you never know...
+const char txt200[]					PROGMEM = "200";
+const char txt300[]					PROGMEM = "300";
+const char txt600[]					PROGMEM = "600";
+const char txt1200[]				PROGMEM = "1200";
+const char txt2400[]				PROGMEM = "2400";
+const char txt4800[]				PROGMEM = "4800";
+const char txt9600[]				PROGMEM = "9600";
+const char txt14400[]				PROGMEM = "14400";
+const char txt19200[]				PROGMEM = "19200";
+const char txt28800[]				PROGMEM = "28800";
+const char txt31250[]				PROGMEM = "31250";
+const char txt38400[]				PROGMEM = "38400";
+const char txt57600[]				PROGMEM = "57600";
+const char txt115200[]				PROGMEM = "115200";
+
+const char txt169[]					PROGMEM = "169.92";
+const char txt254[]					PROGMEM = "254.88";
+const char txt509[]					PROGMEM = "509.77";
+
+const char txt9[]					PROGMEM = "9.56";
+const char txt19[]					PROGMEM = "19.12";
+const char txt32[]					PROGMEM = "32.63";
+const char txt5[]					PROGMEM = "5.02";
+const char txt7[]					PROGMEM = "7.53";
+const char txt15[]        	PROGMEM = "15.05";
+const char txtSpace20[]			PROGMEM	= "                    ";
+
+#endif

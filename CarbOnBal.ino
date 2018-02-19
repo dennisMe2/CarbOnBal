@@ -28,7 +28,8 @@
 
 #include "functions.h"
 #include "globals.h"
-#include "lang_en_gb.h"   //include British English texts
+#include LANGUAGE
+#include "lang_generic.h"
 #include "lcdWrapper.h"
 #include "menu.h"
 #include "menuActions.h"
@@ -228,11 +229,7 @@ void lcdBarsSmooth( int value[]) {
 		int numberOfLitBars = TotalNumberOfLitSegments / segmentsInCharacter;
 		int numberOfLitSegments = TotalNumberOfLitSegments % segmentsInCharacter;
 
-		//if (numberOfLitBars > 14) {
-		//	makeBars(bars, numberOfLitBars, 4);
-		//} else {
-			makeBars(bars, numberOfLitBars, 0);  //skip function probably no longer needed
-		//}
+		makeBars(bars, numberOfLitBars, 0);  //skip function probably no longer needed
 		lcd_setCursor(0, sensor);
 		lcd_print(bars);
 

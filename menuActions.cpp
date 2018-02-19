@@ -25,7 +25,8 @@
 
 #include "menuActions.h"
 
-#include "lang_en_gb.h"   //include British English texts
+#include LANGUAGE
+#include "lang_generic.h"
 #include "menu.h"
 #include "lcdWrapper.h"
 #include "utils.h"
