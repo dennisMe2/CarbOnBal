@@ -75,10 +75,10 @@ void actionDisplayHardwareSettingsMenu() {
 
 
 void actionDisplayCommsMenu() {
-	const char* const menu[] = {txtCalibrationDump, txtLiveDataDump, txtBaudRate};
-	void (*actions[])() = {&doCalibrationDump, &doDataDump, &doBaudRate };
-	uint8_t menuSize = 3;
-	handleAdvancedMenu(menu, actions, menuSize, B111);
+	const char* const menu[] = {txtCalibrationDump, txtLiveDataDump, txtBaudRate, txtArduinoMode};
+	void (*actions[])() = {&doCalibrationDump, &doDataDump, &doBaudRate, &doArduinoMode };
+	uint8_t menuSize = 4;
+	handleAdvancedMenu(menu, actions, menuSize, B1110);
 }
 
 void actionDisplayDisplayMenu() {

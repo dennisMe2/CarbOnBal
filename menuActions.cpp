@@ -87,6 +87,12 @@ void doAdvanced() {
     actionSaveSettings();
 }
 
+void doArduinoMode() {
+	const char* actions[] = {txtDisabled, txtEnabled};
+    settings.arduinoCompatible = (bool) doSettingChooser(txtArduinoMode, actions, 2, (int) settings.arduinoCompatible) ;
+    actionSaveSettings();
+}
+
 void actionGraphing() {
 	const char* actions[] = {txtAbsoluteGraph, txtCenteredGraph};
     settings.graphType = doSettingChooser(txtSelectGraphType, actions, 2, settings.graphType) ;

@@ -77,6 +77,7 @@ struct settings_t
     uint8_t units;
     uint8_t zoom;
     uint8_t calibrationMax;
+    bool arduinoCompatible;
     
 };
 

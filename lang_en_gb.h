@@ -37,6 +37,7 @@ const char txt84Max[]				PROGMEM = "84.96 = max";
 const char txt870NoZoom[]			PROGMEM = "870.00 = no zoom";
 const char txtAdvancedMenu[]		PROGMEM = "Advanced Menu";
 const char txtAbsoluteGraph[]		PROGMEM = "Absolute";
+const char txtArduinoMode[]			PROGMEM = "Arduino Mode";
 const char txtBaudRate[]			PROGMEM = "Baud Rate";
 const char txtBrightness[]			PROGMEM = "Brightness";
 const char txtBrightnessButton[]	PROGMEM = "Brightness Button";

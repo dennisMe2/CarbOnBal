@@ -39,6 +39,7 @@ void actionSilent();
 void doAdvanced();
 void doSplashScreen();
 void actionGraphing();
+void doArduinoMode() ;
 void actionReset();
 void actionDelay();
 void doDelayTime(int value);

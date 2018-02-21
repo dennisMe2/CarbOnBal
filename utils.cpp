@@ -110,6 +110,7 @@ void resetToFactoryDefaultSettings(){
     settings.calibrationMax = 32;
     settings.advanced = false;
     settings.splashScreen = true;
+    settings.arduinoCompatible = true;
 }
 
 // tests if a button was pressed and applies debounce logic

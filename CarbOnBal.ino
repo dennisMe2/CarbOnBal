@@ -635,6 +635,7 @@ void doCalibrationDump() {
 //dump calibrated sensor data directly to serial
 void doDataDump() {
 	int reading = 0;
+	unsigned long startTime = 0;
 
 	lcd_clear();
 	lcd_setCursor(0, 1);
@@ -643,12 +644,19 @@ void doDataDump() {
 	if (Serial) {
 		lcd_setCursor(0, 1);
 		lcd_print(txtDumpingSensorData);
-		Serial.println(F("0\t0\t0\t0\t0"));
-		unsigned long startTime = millis();
+		if(settings.arduinoCompatible){
+			Serial.println(F("0\t0\t0\t0"));
+		}else{
+			Serial.println(F("0\t0\t0\t0\t0"));
+			startTime = millis();
+		}
 
 		while (! (buttonPressed() == CANCEL)) {
-			Serial.print(millis() - startTime);
-			Serial.print("\t");
+			if(!settings.arduinoCompatible){
+				Serial.print(millis() - startTime);
+				Serial.print("\t");
+			}
+
 			for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
 				reading = readSensorCalibrated(sensor);
 				Serial.print(reading);
