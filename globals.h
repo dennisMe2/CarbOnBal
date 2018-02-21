@@ -40,8 +40,8 @@
 #define NUM_SENSORS 4
 #define DISPLAY_COLS 20
 #define DISPLAY_ROWS 4
-//#define LANGUAGE "lang_en_gb.h"			//select a different language file to change translations
-#define LANGUAGE "lang_nl_nl.h"
+#define LANGUAGE "lang_en_gb.h"			//select a different language file to change translations
+//#define LANGUAGE "lang_nl_nl.h"
 static const uint8_t numReadings=20;
 static const int maxValue=1024;
 static const uint8_t brightnessPin=6;
