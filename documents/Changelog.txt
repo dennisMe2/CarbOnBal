@@ -1,10 +1,12 @@
 Besides the commit comments this is a place I'll document major changes I make to the software.
 
-Release 1.4 (not yet released)
+2018 02 21 Release 1.4.1 
     -revised menu system, with 'advanced and basic' modes to avoid clutter and complication.
     -new menu for system info etc.
     -startup demos / self tests - can be switched off via the (Advanced) menu.
-    -settings are saved immediately on change, EEPROM only written for changed settings to conserve writes (100000x 'max')
+    -settings are saved immediately on change, EEPROM only written for changed settings to conserve writes (100000x )
+    -bugfixes 
+    -Dutch translation optional (needs a comment / uncomment in globals.h)
     
 2018 02 04  The initial upload for the new, redesigned, hardware: CarbOnBal Basic. It contains the following changes:
     - Using NewLiquidCrystal Library and (standard) four wire interface for the display.

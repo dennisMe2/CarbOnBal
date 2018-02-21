@@ -1,17 +1,19 @@
 /*
 This document shows the menu structure in the CarbOnBal software and gives an idea of the available settings 
 and capablilities of the software.
+updated as of version 1.4.1
+ * denotes advanced menu option not normally visible.
 */
 
 Display 
     Contrast 
-        0-255 in steps of 10
+        0-128 in steps of 1
         
     Brightness 
         0-255 in steps of 10
         
-    Details 
-         "More details", "Less details"
+    Details * 
+         "Enabled", "Disabled"
          
     Graph Type 
         "Absolute", "Centered"
@@ -19,41 +21,13 @@ Display
     RPM Display 
         Show RPM display with bar graph and numerical readout
         
-    Units 
+    Units * 
         "Raw values", "Raw, descending", "Millibar / hPa", "mBar / hPa Desc.", "cm Hg", "cm Hg Descending", "Inches of mercury", "Inch. Hg desc."
         
-    Max zoom range (values shown in the selected units)
+    Max zoom range * (values shown in the selected units)
         "100 = max", "200", "300", "600","1024 = no zoom"
-        
-Calibration
-    Calibrate Now 
-        show calibration screen and start calibration process (20 seconds)
-        
-    Save Calibration
-        Save calibration to flash memory
-        
-    Load Calibration 
-        Load previously saved calibration
-        
-    Clear Calibration
-        Wipes calibration data from memory (no effect on saved settings)
-        
+       
 Settings 
-    Software 
-        Damping 
-            0-100% in 5% increments
-            
-        RPM Damping
-            0-100% in 5% increments
-            
-        Sample Delay (us) 
-            0-1000 in steps of 10
-            
-        Threshold 
-            1-1023 in steps of 10
-            
-        Responsiveness
-            0-100% in 5% increments
 
     Hardware 
         Cylinder count 
@@ -62,17 +36,78 @@ Settings
         Master Cylinder
             1-4 (or less if less cylinders selected)
             
-        Brightness Button
+        Brightness Button *
             "Brightness", "RPM Display"
+
+    Software 
+        Damping 
+            0-100% in 5% increments
             
-    Save Settings 
-        Saves ALL settings to Flash
+        RPM Damping *
+            0-100% in 5% increments
+            
+        Sample Delay (us) * 
+            0-1000 in steps of 10, 0 = "double take" sampling, accurate and fast.
+            
+        Threshold *
+            1-1023 in steps of 10
+            
+        Responsiveness
+            0-100% in 5% increments
+
+                    
+    Extra
+    
+        Device Info
+            Gives you information on the version of the software, free memory etc
+            
+        Advanced Menu
+            "Enabled", "Disabled": allows you to hide detailed settings not needed for normal use.
         
-    Load Settings
-        Load previously saved settings from Flash
+        Splash Screen *
+            "Enabled", "Disabled"
+            
+        'Factory' reset *
+        Returns ALL settings to their default values (no effect on calibration data)
+
+Calibration
+    View Calibrations
+        View Sensor 2
+            Scrollable graph of calibration values for this sensor.
+
+            View Sensor 3
+                Scrollable graph of calibration values for this sensor.
+                
+        View Sensor 4
+            Scrollable graph of calibration values for this sensor.
+            
+        Calibration Range * 
+            (sets the vertical scale of the calibration View Graph in units)
         
-    'Factory' reset
-        Returns ALL settings to their default values
+
+    Calibrate Sensors
+        Calibrate Sensor 2
+            Updates the calibration data for this sensor. 
+            
+        Calibrate Sensor 3
+            Updates the calibration data for this sensor.
+        
+        Calibrate Sensor 4
+            Updates the calibration data for this sensor.
+            
+    Clear Calibrations *
+        Clear Sensor 2
+            Clears the calibration data for this sensor.
+            
+        Clear Sensor 3
+            Clears the calibration data for this sensor.
+        
+        Clear Sensor 4
+            Clears the calibration data for this sensor.
+            
+        Clear All Sensors
+            Wipes all calibration data at once.
+        
 
 Data Transfer
     Calibration Dump
