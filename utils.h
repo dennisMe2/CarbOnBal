@@ -44,12 +44,12 @@ void waitForAnyKey();
 void setInputActiveLow(int i);
 void setOutputHigh(int i);
 float calculateAlpha(int input);
-int intExponentialMovingAverage(int shift, int factor, int average, int input);
+int intExponentialMovingAverage(int shift, int factor, unsigned int average, unsigned int input);
 float exponentialMovingAverage(float alpha, float *accumulator, float new_value);
 float responsiveEMA(float alpha, float *accumulator, float new_value);
 int delta(int first, int second);
-int maxVal( int value[]);
-int minVal( int value[]);
+unsigned int maxVal( unsigned int value[]);
+unsigned int minVal( unsigned int value[]);
 int freeMemory();
 unsigned long getBaud(int index);
 

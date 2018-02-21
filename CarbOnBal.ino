@@ -50,12 +50,14 @@ float alphaRpm;                                             //alpha factor used 
 float stabilityThreshold;                                   //the factor used to detect when the throttle is being yanked and a response is required
 
 int readingCount[NUM_SENSORS];                              //used to store the number of captured readings for calculating a numerical average
-int average[NUM_SENSORS];                                   //used to share the current average for each sensor
-int total[NUM_SENSORS];                                     //
-int reading[NUM_SENSORS];                                   //the latest reading for each sensor
-
+unsigned int average[NUM_SENSORS];                                   //used to share the current average for each sensor
 int ambientPressure;                                        //stores current ambient pressure for negative pressure display
 unsigned long lastUpdate;
+
+unsigned int avg1[4];
+	unsigned int avg2[4];
+	unsigned int avg3[4];
+	unsigned int avg4[4];
 
 //this does the initial setup on startup.
 void setup() {
@@ -109,6 +111,8 @@ void loop() {
 
 	runningAverage(); //calculate the running averages and return asap
 
+	//intRunningAverage();
+
 	if (!freezeDisplay && ((millis() - lastUpdate) > 100)) {//only update the display every 100ms or so to prevent flickering
 		lastUpdate=millis();
 		switch ( settings.graphType) {                      //there are two types of graph. bar and centered around the value of the master carb
@@ -125,17 +129,13 @@ void loop() {
 //all the sensors are sampled and values stored then the loop returns asap so the screen can be updated in real time
 void runningAverage() {
 	unsigned long startTime = millis();
+	int value;
+
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) {       //loop over all sensors
-		readSensorRaw(sensor);
-		if (reading[sensor] <= 1023 - settings.threshold ) {            //1023 is basically normal airpressure at sea level. it can be lower, especially in the mountains
-			if (sensor != 0) { //only apply calibration for non reference sensors
-
-				sums[sensor] += reading[sensor] + (int8_t) EEPROM.read(getCalibrationTableOffsetByValue(sensor, reading[sensor])); //adds this reading adjusted for calibration
-			} else {
-				sums[sensor] += reading[sensor];                        //sensor0 is the reference sensor, no calibration needed
-			}
+		value = readSensorCalibrated(sensor);
+		if (value <= 1023 - settings.threshold ) {            			//1023 is basically normal airpressure at sea level. it can be lower, especially in the mountains
+			sums[sensor] += value;
 			readingCount[sensor]++;                                     //keeps count of the number of readings collected
-
 		} else {                                                        //above the measurement threshold
 			if (readingCount[sensor] > 0) {                             //immediately after the vacuum peak
 				//calculate the average now we've measured a whole "vacuum signal trough"
@@ -149,21 +149,39 @@ void runningAverage() {
 	timeBase = millis() - startTime;                                    //monitor how long it takes to measure 4 sensors
 }
 
+//the main measurement function which calculates a true average of all samples while the signal drops below the threshold.
+//all the sensors are sampled and values stored then the loop returns asap so the screen can be updated in real time
+void intRunningAverage() {
+	unsigned long startTime = millis();
+	unsigned int value;
+
+
+	for (int sensor = 0; sensor < settings.cylinders; sensor++) {       //loop over all sensors
+		value = readSensorCalibrated(sensor);
+		avg1[sensor] = intExponentialMovingAverage(6, 4, (avg1[sensor]), value);
+		avg2[sensor] = intExponentialMovingAverage(6, 4, (avg2[sensor]), avg1[sensor]>>6);
+		avg3[sensor] = intExponentialMovingAverage(6, 4, (avg3[sensor]), avg2[sensor]>>6);
+		avg4[sensor] = intExponentialMovingAverage(6, 4, (avg4[sensor]), avg3[sensor]>>6);
+		average[sensor] = avg4[sensor]>>6;
+	}
+	timeBase = millis() - startTime;                                    //monitor how long it takes to measure 4 sensors
+}
+
 // display centered bars, centered on the reference carb's reading, because that's the target we are aiming for
 //takes an array of current average values for all sensors as parameter
-void lcdBarsCenterSmooth( int value[]) {
+void lcdBarsCenterSmooth( unsigned int value[]) {
 	const uint8_t segmentsInCharacter = 5;                              //we need this number to make the display smooth
 
 	byte bar[4][8];                                                     //store one custom character per bar
 
 	char bars[DISPLAY_COLS + 1];                                        //store for the bar of full characters
 
-	int maximumValue = maxVal(value);                                   //determine the sensor with the highest average
-	int minimumValue = minVal(value);                                   //determine the lowest sensor average
+	unsigned int maximumValue = maxVal(value);                                   //determine the sensor with the highest average
+	unsigned int minimumValue = minVal(value);                                   //determine the lowest sensor average
 	int range;                                                          //store the range between the highest and lowest sensors
 	int zoomFactor;                                                     //store the zoom of the display
 
-	//the range depends on finding the reading furthest from the master carb reading
+	//the range depends on finding the reading farthest from the master carb reading
 	if (maximumValue - value[settings.master - 1] >= value[settings.master - 1] - minimumValue) {
 		range = maximumValue - value[settings.master - 1];
 	} else {
@@ -218,7 +236,7 @@ void lcdBarsCenterSmooth( int value[]) {
 
 
 // this is used to display four plain non-zoomed bars with absolute pressure readings
-void lcdBarsSmooth( int value[]) {
+void lcdBarsSmooth( unsigned int value[]) {
 	const uint8_t segmentsInCharacter = 5;
 
 	byte bar[4][8];
@@ -308,8 +326,14 @@ int readSensorRaw(int sensor) {
 	} else {
 		delayMicroseconds(settings.delayTime);
 	}
-	reading[sensor] = analogRead(inputPin[sensor]);
-	return (reading[sensor]);
+	return (analogRead(inputPin[sensor]));
+}
+int readSensorCalibrated(int sensor){
+	int value = readSensorRaw(sensor);
+	if(sensor > 0){ //only for the calibrated sensors, not the master
+		value += (int8_t) EEPROM.read(getCalibrationTableOffsetByValue(sensor, value)); //adds this reading adjusted for calibration
+	}
+	return value;
 }
 
 
@@ -402,7 +426,7 @@ void doCalibrate(int sensor) {
 		//record some basic quality statistics
 		if (calibrationValue > maxValue) maxValue = calibrationValue;
 		if (calibrationValue < minValue) minValue = calibrationValue;
-		if (reading[sensor] < lowestCalibratedValue) lowestCalibratedValue = reading[sensor];
+		if (readingSensor < lowestCalibratedValue) lowestCalibratedValue = readingSensor;
 
 		values[(readingSensor >> 2)] = intExponentialMovingAverage(shift, factor, values[(readingSensor >> 2)], calibrationValue);
 	}
@@ -599,7 +623,7 @@ void doCalibrationDump() {
 			Serial.print(i);
 			Serial.print("  \t");
 			for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
-				Serial.print((int)((uint8_t)EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i))));
+				Serial.print((int)((int8_t)EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i))));
 				Serial.print("  \t");
 			}
 			Serial.print("\n");
@@ -626,13 +650,7 @@ void doDataDump() {
 			Serial.print(millis() - startTime);
 			Serial.print("\t");
 			for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
-
-				if (sensor != 0) {  //only apply calibration for non reference sensors
-					reading = readSensorRaw(sensor) + (int) EEPROM.read(getCalibrationTableOffsetByValue(sensor, reading));
-				} else {
-					reading = readSensorRaw(sensor);
-				}
-
+				reading = readSensorCalibrated(sensor);
 				Serial.print(reading);
 				Serial.print("\t");
 			}
@@ -847,7 +865,7 @@ int measureLCDSpeed(){
 void doAbsoluteDemo(){
 	bool silent = settings.silent;
 	settings.silent = true;
-	int values[4];
+	unsigned int values[4];
 
 	for(int i=0;i<=1024; i+=30){
 		for(int j = 0; j < NUM_SENSORS; j++){
@@ -865,7 +883,7 @@ void doAbsoluteDemo(){
 	settings.silent = silent;
 }
 void doRelativeDemo(){
-	int values[4];
+	unsigned int values[4];
 	bool silent = settings.silent;
 	int masterValue = 500;
 	int delta = 100;

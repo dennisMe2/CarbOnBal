@@ -200,7 +200,7 @@ float exponentialMovingAverage(float alpha, float *accumulator, float new_value)
 // average is a value in which to store the moving average; 
 //    NOTE that this value is stored shifted 'shift' bits to the left and must be unshifted before use
 //    NOTE2 the shift WILL truncate if you overdo it, best used on 8-bit Bytes etc.
-int intExponentialMovingAverage(int shift, int factor, int average, int input) {
+int intExponentialMovingAverage(int shift, int factor,unsigned int average, unsigned int input) {
     average += ((input<<shift) - average)>>factor;
     return(average);
 }
@@ -230,7 +230,7 @@ int delta(int first, int second){
 }
 
 // return the highest value from a given array
-int maxVal( int value[]) {
+unsigned int maxVal( unsigned int value[]) {
     int maxValue = 0;
     for (int index = 0 ; index < NUM_SENSORS; index++) {
         if (value[index] > maxValue) {
@@ -241,7 +241,7 @@ int maxVal( int value[]) {
 }
 
 // return the lowest value from a given array
-int minVal( int value[]) {
+unsigned int minVal( unsigned int value[]) {
     int minValue = 20000;
     for (int index = 0 ; index < NUM_SENSORS; index++) {
         if (value[index] < minValue) {
