@@ -77,7 +77,7 @@ void setup() {
 	ambientPressure = detectAmbient();                      //set ambient pressure (important because it varies with weather and altitude)
 	alpha = calculateAlpha(settings.damping);               //prime the alpha from the settings
 	alphaRpm = calculateAlpha(settings.rpmDamping);
-	stabilityThreshold = (100 - settings.responsiveness) / 100; //responsiveness is how quickly the system responds to rapid RPM changes as opposed to smoothing the display
+	stabilityThreshold = (100 - settings.responsiveness) / 100.00; //more than a certain % difference from the average
 
 	if(settings.splashScreen){
 		doMatrixDemo();

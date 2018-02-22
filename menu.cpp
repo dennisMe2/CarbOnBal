@@ -32,11 +32,13 @@
 #include "functions.h"
 #include "utils.h"
 
+bool quitMenu = false;
 
 // an array of strings contains the menu titles
 // an array of function pointers, the same number and order as the above array, determines the actions to be taken when that title is selected
 // a size is passed which must be equal to the number of menu entries
 void actionDisplayMainMenu() {
+  quitMenu = false;
 	const char* menu[] = {txtDisplay, txtSettings, txtCalibration, txtDataTransfer};
 	void (*actions[])() = {&actionDisplayDisplayMenu, &actionDisplaySettingsMenu, &actionDisplayCalibrationMenu, &actionDisplayCommsMenu};
 	uint8_t menuSize = 4;
@@ -299,7 +301,7 @@ void handleMenu(const char* const pointerTable[], void (*func[])(), int menuSize
 
 	drawMenu( pointerTable, menuSize, offset );
 
-	while (true) {
+	while (!quitMenu) {
 
 		switch ( buttonPressed()) {
 		case SELECT:

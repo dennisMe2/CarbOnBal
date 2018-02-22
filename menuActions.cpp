@@ -35,7 +35,7 @@ extern settings_t settings;
 extern float alpha;
 extern float alphaRpm;
 extern float stabilityThreshold;
-
+extern bool quitMenu;
 extern const uint8_t brightnessPin;//6
 extern const uint8_t contrastPin;//11
 
@@ -82,9 +82,13 @@ void doSplashScreen(){
 	    actionSaveSettings();
 }
 void doAdvanced() {
+  bool oldAdvanced = settings.advanced;
 	const char* actions[] = {txtDisabled, txtEnabled};
     settings.advanced = (bool) doSettingChooser(txtAdvancedMenu, actions, 2, (int) settings.advanced) ;
     actionSaveSettings();
+    if(oldAdvanced != settings.advanced){
+      quitMenu = true;
+    }
 }
 
 void doArduinoMode() {
