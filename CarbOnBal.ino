@@ -59,6 +59,9 @@ unsigned int avg1[4];
 	unsigned int avg3[4];
 	unsigned int avg4[4];
 
+uint8_t labelPosition = 0;
+
+
 //this does the initial setup on startup.
 void setup() {
 	lcd_begin(DISPLAY_COLS, DISPLAY_ROWS);
@@ -181,6 +184,8 @@ void lcdBarsCenterSmooth( unsigned int value[]) {
 	int range;                                                          //store the range between the highest and lowest sensors
 	int zoomFactor;                                                     //store the zoom of the display
 
+	const uint8_t hysteresis = 4;
+
 	//the range depends on finding the reading farthest from the master carb reading
 	if (maximumValue - value[settings.master - 1] >= value[settings.master - 1] - minimumValue) {
 		range = maximumValue - value[settings.master - 1];
@@ -217,12 +222,11 @@ void lcdBarsCenterSmooth( unsigned int value[]) {
 			}
 			if (numberOfLitBars < 10) lcd_write(byte(sensor + 2));
 
+			//hysteresis gives the display more stability and prevents the labels from flipping from side to side constantly.
 			if (!settings.silent) {
-				if (numberOfLitBars < 0) {
-					printLcdSpace(15, sensor, 5);           //clear the display in preparation of printing the readings
-				} else {
-					printLcdSpace(0, sensor, 5);
-				}
+				if (numberOfLitBars < -hysteresis) labelPosition = 15;
+				if (numberOfLitBars > hysteresis) labelPosition = 0;
+				printLcdSpace(labelPosition, sensor, 5);
 				lcd_printFloat(differenceToPreferredUnits(delta) );                    //display the difference between this sensor and master
 			}
 		} else {
@@ -238,6 +242,7 @@ void lcdBarsCenterSmooth( unsigned int value[]) {
 // this is used to display four plain non-zoomed bars with absolute pressure readings
 void lcdBarsSmooth( unsigned int value[]) {
 	const uint8_t segmentsInCharacter = 5;
+	const uint8_t hysteresis = 4;
 
 	byte bar[4][8];
 	char bars[DISPLAY_COLS + 1];
@@ -258,12 +263,9 @@ void lcdBarsSmooth( unsigned int value[]) {
 
 
 		if (!settings.silent) {
-			//set the cursor so the pressure readings don't interfere with the bars
-			if (numberOfLitBars <= 12) {
-				lcd_setCursor(14, sensor);
-			} else {
-				lcd_setCursor(0, sensor);
-			}
+			if (numberOfLitBars < 10-hysteresis) labelPosition = 15;
+			if (numberOfLitBars > 10+hysteresis) labelPosition = 0;
+			printLcdSpace(labelPosition, sensor, 5);
 			float result = convertToPreferredUnits(value[sensor], ambientPressure);
 			lcd_printFloat(result);
 		}
@@ -618,12 +620,12 @@ void doCalibrationDump() {
 	if (Serial) {
 
 		Serial.println(txtSerialHeader);
-
+		Serial.println(unitsAsText());
 		for (int i = 0; i < numberOfCalibrationValues; i++) {
 			Serial.print(i);
 			Serial.print("  \t");
 			for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
-				Serial.print((int)((int8_t)EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i))));
+				Serial.print(differenceToPreferredUnits((int)((int8_t)EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)))));
 				Serial.print("  \t");
 			}
 			Serial.print("\n");
@@ -641,6 +643,7 @@ void doDataDump() {
 	lcd_setCursor(0, 1);
 	lcd_print(txtConnectSerial);
 	Serial.begin(getBaud(settings.baudRate));
+	//Serial.begin(230400);
 	if (Serial) {
 		lcd_setCursor(0, 1);
 		lcd_print(txtDumpingSensorData);
@@ -648,6 +651,7 @@ void doDataDump() {
 			Serial.println(F("0\t0\t0\t0"));
 		}else{
 			Serial.println(F("0\t0\t0\t0\t0"));
+			Serial.println(unitsAsText());
 			startTime = millis();
 		}
 
@@ -659,7 +663,7 @@ void doDataDump() {
 
 			for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
 				reading = readSensorCalibrated(sensor);
-				Serial.print(reading);
+				Serial.print(convertToPreferredUnits(reading, ambientPressure));
 				Serial.print("\t");
 			}
 			Serial.print("\n");

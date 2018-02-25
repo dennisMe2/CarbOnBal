@@ -26,6 +26,7 @@
 #include "utils.h"
 #include <Arduino.h>
 #include "globals.h"
+#include LANGUAGE
 #include "lcdWrapper.h"
 
 extern settings_t settings;
@@ -60,6 +61,18 @@ float differenceToPreferredUnits(int value){
   if (6 == settings.units) return differenceToInHg(value);
   if (7 == settings.units) return differenceToInHg(value);
   return 0; //error
+}
+
+const char* unitsAsText(){
+	 if (0 == settings.units) return txtRawValues;
+	 if (1 == settings.units) return txtRawDescending;
+	 if (2 == settings.units) return txtMillibarHpa;
+	 if (3 == settings.units) return txtMillibarHpaDesc;
+	 if (4 == settings.units) return txtCmMercury;
+	 if (5 == settings.units) return txtCmMercuryDesc;
+	 if (6 == settings.units) return txtInchMercury;
+	 if (7 == settings.units) return txtInchMercuryDesc;
+	 return 0;
 }
 
 //convert the arduino reading to millibars for display
@@ -232,7 +245,7 @@ int delta(int first, int second){
 
 // return the highest value from a given array
 unsigned int maxVal( unsigned int value[]) {
-    int maxValue = 0;
+    unsigned int maxValue = 0;
     for (int index = 0 ; index < NUM_SENSORS; index++) {
         if (value[index] > maxValue) {
             maxValue = value[index];
@@ -243,7 +256,7 @@ unsigned int maxVal( unsigned int value[]) {
 
 // return the lowest value from a given array
 unsigned int minVal( unsigned int value[]) {
-    int minValue = 20000;
+    unsigned int minValue = 20000;
     for (int index = 0 ; index < NUM_SENSORS; index++) {
         if (value[index] < minValue) {
             minValue = value[index];

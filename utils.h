@@ -36,6 +36,7 @@ float convertToCmHg(int value);
 float differenceToCmHg(int value);
 float convertToInHg(int value);
 float differenceToInHg(int value);
+const char* unitsAsText();
 void createWaitKeyPressChar();
 void displayKeyPressPrompt();
 void resetToFactoryDefaultSettings();
