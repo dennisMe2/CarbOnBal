@@ -214,7 +214,7 @@ float exponentialMovingAverage(float alpha, float *accumulator, float new_value)
 // average is a value in which to store the moving average; 
 //    NOTE that this value is stored shifted 'shift' bits to the left and must be unshifted before use
 //    NOTE2 the shift WILL truncate if you overdo it, best used on 8-bit Bytes etc.
-int intExponentialMovingAverage(int shift, int factor,unsigned int average, unsigned int input) {
+int intExponentialMovingAverage(int shift, int factor, int average, int input) {
     average += ((input<<shift) - average)>>factor;
     return(average);
 }

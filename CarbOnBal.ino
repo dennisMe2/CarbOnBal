@@ -388,8 +388,8 @@ void doCalibrate3() {
 void doCalibrate(int sensor) {
 	const int shift = 8;
 	const int factor = 4;
-	int maxValue = 0;
-	int minValue = 0;
+	int maxValue = -127;
+	int minValue = 127;
 	int lowestCalibratedValue = 1024;
 	int readingStandard, readingSensor;
 
