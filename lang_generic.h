@@ -54,4 +54,7 @@ const char txt7[]					PROGMEM = "7.53";
 const char txt15[]        	PROGMEM = "15.05";
 const char txtSpace20[]			PROGMEM	= "                    ";
 
+const char txtEmaShift[]			PROGMEM = "EMA Shift";
+const char txtEmaFactor[]			PROGMEM = "EMA Factor";
+
 #endif

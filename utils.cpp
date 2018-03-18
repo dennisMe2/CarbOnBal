@@ -124,6 +124,9 @@ void resetToFactoryDefaultSettings(){
     settings.advanced = false;
     settings.splashScreen = true;
     settings.arduinoCompatible = true;
+    settings.averagingMethod = 0;
+    settings.emaShift = 12;
+    settings.emaFactor = 9;
 }
 
 // tests if a button was pressed and applies debounce logic
@@ -218,6 +221,12 @@ int intExponentialMovingAverage(int shift, int factor, int average, int input) {
     average += ((input<<shift) - average)>>factor;
     return(average);
 }
+
+long longExponentialMovingAverage(int shift, int factor, long average, int input) {
+    average += (((long)input<<(long)shift) - average)>>(long)factor;
+    return(average);
+}
+
 
 // version of the Exponential Moving Average that deliberately stops smoothing
 // if the value changes more than a certain "percentage", the global 'stabilityThreshold' which is precalculated to save an expensive FP division.

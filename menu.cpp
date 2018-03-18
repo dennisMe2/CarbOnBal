@@ -61,11 +61,11 @@ void actionDisplayExtraMenu(){
 
 void actionDisplaySoftwareSettingsMenu() {
 	const char* const menu[] = { txtDamping, txtRpmDamping, txtSampleDelayUs, txtThreshold,
-								txtResponsiveness};
+								txtResponsiveness, txtAveragingMethod, txtEmaShift, txtEmaFactor};
 	void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold,
-								&actionResponsiveness};
-	uint8_t menuSize = 5;
-	handleAdvancedMenu(menu, actions, menuSize, B10001);
+								&actionResponsiveness, &actionAveragingMethod, &actionEmaShift, &actionEmaFactor};
+	uint8_t menuSize = 8;
+	handleAdvancedMenu(menu, actions, menuSize, B10001111);
 }
 
 void actionDisplayHardwareSettingsMenu() {

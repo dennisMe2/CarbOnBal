@@ -38,6 +38,7 @@ const char txt870NoZoom[]			PROGMEM = "870.00 = geen zoom";
 const char txtAbsoluteGraph[]		PROGMEM = "Absoluut";
 const char txtAdvancedMenu[]		PROGMEM = "Geavanceerd Menu";
 const char txtArduinoMode[]			PROGMEM = "Arduino Modus";
+const char txtAveragingMethod[]		PROGMEM = "Middelingsmethode";
 const char txtBaudRate[]			PROGMEM = "Baud Snelheid";
 const char txtBrightness[]			PROGMEM = "Helderheid";
 const char txtBrightnessButton[]	PROGMEM = "Helderheid Knop";
@@ -127,6 +128,13 @@ const char txtZoomCmMercury[]		PROGMEM = "Zoom in cm Kwik:";
 const char txtZoomInMercury[]		PROGMEM = "Zoom in inch Kwik:";
 const char txtZoomMillibar[]		PROGMEM = "Zoom millibar:";
 const char txtZoomUnits[]			PROGMEM = "Zoom Eenheden:";
+
+
+const char txtPeakAverage[]			PROGMEM = "Piek Gem. (std)";
+const char txtThresholdAverage[]	PROGMEM = "Drempel Gem.";
+const char txtIIRAverage[]			PROGMEM = "IIR Gem.";
+const char txtRunningAverage[]		PROGMEM = "Lopend Gem.";
+const char txtIntRunningAverage[]	PROGMEM = "Int Lopend Gem.";
 
 
 #endif

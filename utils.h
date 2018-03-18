@@ -25,7 +25,7 @@
 
 #ifndef UTILS_H_INCLUDED
 #define UTILS_H_INCLUDED
-
+#include <Arduino.h>
 
 
 float convertToPreferredUnits(int value, int ambient);
@@ -46,6 +46,7 @@ void setInputActiveLow(int i);
 void setOutputHigh(int i);
 float calculateAlpha(int input);
 int intExponentialMovingAverage(int shift, int factor,int average, int input);
+long longExponentialMovingAverage(int shift, int factor, long average, int input);
 float exponentialMovingAverage(float alpha, float *accumulator, float new_value);
 float responsiveEMA(float alpha, float *accumulator, float new_value);
 int delta(int first, int second);

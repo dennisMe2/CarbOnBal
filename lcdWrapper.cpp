@@ -28,6 +28,8 @@
 
 
 #include "utils.h"
+#include "globals.h"
+
 //  Order of parameters: RS, E, D4, D5, D6, D7
 LiquidCrystal lcd(13,12,10,9,8,7);
 
@@ -60,6 +62,32 @@ void lcd_printLong(unsigned long integer){
 
 void lcd_printFloat(float value){
 	lcd.print(String(value));
+}
+
+void lcd_printFormatted(float value){
+	float fractionalPart = value - (long)value;
+
+
+	if ((0 == settings.units)|| (1 == settings.units)){
+		lcd.print(String((int)value));
+	}
+
+	if ((2 == settings.units)|| (3 == settings.units)){
+		lcd.print(String((int)value));
+		lcd.print('.');
+		lcd.print((int)(fractionalPart * 10.0));
+	}
+
+	if ((4 == settings.units)|| (5 == settings.units)){
+			lcd.print(String((int)value));
+			lcd.print('.');
+			lcd.print((int)(fractionalPart * 10.0));
+		}
+
+	if ((6 == settings.units)|| (7 == settings.units)){
+			lcd.print(String(value));
+		}
+
 }
 
 void lcd_printChar(char chr){

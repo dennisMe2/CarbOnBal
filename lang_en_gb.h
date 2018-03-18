@@ -38,6 +38,7 @@ const char txt84Max[]				PROGMEM = "84.96 = max";
 const char txt870NoZoom[]			PROGMEM = "870.00 = no zoom";
 const char txtAbsoluteGraph[]		PROGMEM = "Absolute";
 const char txtAdvancedMenu[]		PROGMEM = "Advanced Menu";
+const char txtAveragingMethod[]		PROGMEM = "Averaging Method";
 const char txtArduinoMode[]			PROGMEM = "Arduino Mode";
 const char txtBaudRate[]			PROGMEM = "Baud Rate";
 const char txtBrightness[]			PROGMEM = "Brightness";
@@ -128,6 +129,12 @@ const char txtZoomCmMercury[]		PROGMEM = "Zoom in cm Mercury:";
 const char txtZoomInMercury[]		PROGMEM = "Zoom in in Mercury:";
 const char txtZoomMillibar[]		PROGMEM = "Zoom millibar:";
 const char txtZoomUnits[]			PROGMEM = "Zoom Units:";
+
+const char txtPeakAverage[]			PROGMEM = "Peak Avg. (std)";
+const char txtThresholdAverage[]	PROGMEM = "Threshold Avg.";
+const char txtIIRAverage[]			PROGMEM = "IIR Avg.";
+const char txtRunningAverage[]		PROGMEM = "Running Avg.";
+const char txtIntRunningAverage[]	PROGMEM = "Int Running Avg.";
 
 
 #endif

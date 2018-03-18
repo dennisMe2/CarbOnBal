@@ -50,14 +50,11 @@ float alphaRpm;                                             //alpha factor used 
 float stabilityThreshold;                                   //the factor used to detect when the throttle is being yanked and a response is required
 
 int readingCount[NUM_SENSORS];                              //used to store the number of captured readings for calculating a numerical average
-unsigned int average[NUM_SENSORS];                                   //used to share the current average for each sensor
+unsigned int average[NUM_SENSORS];                           //used to share the current average for each sensor
 int ambientPressure;                                        //stores current ambient pressure for negative pressure display
 unsigned long lastUpdate;
 
-unsigned int avg1[4];
-	unsigned int avg2[4];
-	unsigned int avg3[4];
-	unsigned int avg4[4];
+long avg[20][NUM_SENSORS];
 
 uint8_t labelPosition = 0;
 
@@ -112,9 +109,15 @@ void loop() {
 	case CANCEL: freezeDisplay = !freezeDisplay; break; //toggle the freezeDisplay option
 	}
 
-	runningAverage(); //calculate the running averages and return asap
+	switch ( settings.averagingMethod) {
+		//txtPeakAverage, txtThresholdAverage, txtIIRAverage, txtRunningAverage, txtIntRunningAverage
+		case 0:  thresholdAverage(); break;		//calculate the running averages and return asap
+		case 1:  thresholdAverage(); break;
+		case 2:  thresholdAverage(); break;
+		case 3:  thresholdAverage(); break;
+		case 4:  intRunningAverage(); break;
+	}
 
-	//intRunningAverage();
 
 	if (!freezeDisplay && ((millis() - lastUpdate) > 100)) {//only update the display every 100ms or so to prevent flickering
 		lastUpdate=millis();
@@ -130,7 +133,7 @@ void loop() {
 
 //the main measurement function which calculates a true average of all samples while the signal drops below the threshold.
 //all the sensors are sampled and values stored then the loop returns asap so the screen can be updated in real time
-void runningAverage() {
+void thresholdAverage() {
 	unsigned long startTime = millis();
 	int value;
 
@@ -152,20 +155,24 @@ void runningAverage() {
 	timeBase = millis() - startTime;                                    //monitor how long it takes to measure 4 sensors
 }
 
-//the main measurement function which calculates a true average of all samples while the signal drops below the threshold.
-//all the sensors are sampled and values stored then the loop returns asap so the screen can be updated in real time
+// Alternative basic algorithm using only integer arithmetic and averaging the averages a number of times
+// depending on the damping setting
+//
 void intRunningAverage() {
 	unsigned long startTime = millis();
-	unsigned int value;
-
+	int value;
+	int iterations = settings.damping / 20;
+	int shift = settings.emaShift;
+	int factor = settings.emaFactor;
 
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) {       //loop over all sensors
 		value = readSensorCalibrated(sensor);
-		avg1[sensor] = intExponentialMovingAverage(6, 4, (avg1[sensor]), value);
-		avg2[sensor] = intExponentialMovingAverage(6, 4, (avg2[sensor]), avg1[sensor]>>6);
-		avg3[sensor] = intExponentialMovingAverage(6, 4, (avg3[sensor]), avg2[sensor]>>6);
-		avg4[sensor] = intExponentialMovingAverage(6, 4, (avg4[sensor]), avg3[sensor]>>6);
-		average[sensor] = avg4[sensor]>>6;
+
+		for(int iteration = 0 ; iteration < iterations; iteration++){
+			avg[iteration][sensor] = longExponentialMovingAverage(shift, factor, avg[iteration][sensor], value);
+			value = avg[iteration][sensor]>>shift;
+		}
+		average[sensor] = (int)value;
 	}
 	timeBase = millis() - startTime;                                    //monitor how long it takes to measure 4 sensors
 }
@@ -233,7 +240,7 @@ void lcdBarsCenterSmooth( unsigned int value[]) {
 			float result = convertToPreferredUnits(value[sensor], ambientPressure);
 			printLcdFloat(result, 0, sensor, 5);   //print the absolute value of the reference carb
 			printLcdInteger(timeBase, 10, sensor, 4);       //show how long it took to measure four sensors
-			printLcdFloat(differenceToPreferredUnits(range * 2), 15, sensor, 5);        //show the zoom range
+			printLcdFloat(differenceToPreferredUnits(range * 2), 14, sensor, 5);        //show the zoom range
 		}
 	}
 }
@@ -263,11 +270,11 @@ void lcdBarsSmooth( unsigned int value[]) {
 
 
 		if (!settings.silent) {
-			if (numberOfLitBars < 10-hysteresis) labelPosition = 15;
+			if (numberOfLitBars < 10-hysteresis) labelPosition = 14;
 			if (numberOfLitBars > 10+hysteresis) labelPosition = 0;
 			printLcdSpace(labelPosition, sensor, 5);
 			float result = convertToPreferredUnits(value[sensor], ambientPressure);
-			lcd_printFloat(result);
+			lcd_printFormatted(result);
 		}
 	}
 }

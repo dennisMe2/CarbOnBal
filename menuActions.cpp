@@ -81,6 +81,11 @@ void doSplashScreen(){
 	    settings.splashScreen = (bool) doSettingChooser(txtSplashScreen, actions, 2, (int) settings.splashScreen) ;
 	    actionSaveSettings();
 }
+void actionAveragingMethod(){
+	const char* actions[] = {txtPeakAverage, txtThresholdAverage, txtIIRAverage, txtRunningAverage, txtIntRunningAverage};
+		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 5, settings.averagingMethod) ;
+		    actionSaveSettings();
+}
 void doAdvanced() {
   bool oldAdvanced = settings.advanced;
 	const char* actions[] = {txtDisabled, txtEnabled};
@@ -135,6 +140,16 @@ void actionDamping() {
 void actionRPMDamping() {
     settings.rpmDamping = (uint8_t) doBasicSettingChanger(txtRpmDampingPerc, 0, 100, settings.rpmDamping, 5);
     alphaRpm = calculateAlpha(settings.rpmDamping);
+    actionSaveSettings();
+}
+
+void actionEmaShift() {
+    settings.emaShift = (uint8_t) doBasicSettingChanger(txtEmaShift, 0, 21, settings.emaShift, 1);
+    actionSaveSettings();
+}
+
+void actionEmaFactor() {
+    settings.emaFactor = (uint8_t) doBasicSettingChanger(txtEmaFactor, 0, 20, settings.emaFactor, 1);
     actionSaveSettings();
 }
 

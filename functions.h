@@ -38,7 +38,7 @@ void doCalibrate(int sensor);
 void displayCalibratedValues(int values[]);
 void makeCalibrationChars();
 void zeroCalibrations();
-void runningAverage();
+void thresholdAverage();
 void intRunningAverage();
 void loadSettings();
 void lcdBarsSmooth( int value[]);
