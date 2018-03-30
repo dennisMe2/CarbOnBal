@@ -5,7 +5,9 @@ This is an Arduino based project for balancing carbs and throttle body syncing.
 Its relatively easy to build the hardware, it was designed with DIY in mind. 
 I'm sure its suited as a first Arduino plus hardware project if you have some basic skills.
 
-The software should be easy enough using the Arduino IDE (or of course your favorite IDE if you have a favorite).
+The software should be easy enough to upload using the Arduino IDE (or of course your favorite IDE if you have a favorite).
+Please note that, should you choose to download a .zip file, you will need to rename the unzipped folder to "CarbOnBal". That is, strip off any extensions such as a release number or "-master", otherwise the Arduino IDE won't recognize it. Thanks TheRedOne51 for the tip!
+
 The hardware consists mainly of an Arduino (or clone), HD54470 Display with 4 lines of 20 characters. 
 4 cheap MAP sensors (in my case) and four buttons (OK, < >, CANCEL) to navigate the menu system.
 The display displays bar graphs that indicate how well the throttle bodies or carbs are in sync.
