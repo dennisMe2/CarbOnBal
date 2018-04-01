@@ -61,18 +61,18 @@ void actionDisplayExtraMenu(){
 
 void actionDisplaySoftwareSettingsMenu() {
 	const char* const menu[] = { txtDamping, txtRpmDamping, txtSampleDelayUs, txtThreshold,
-								txtResponsiveness, txtAveragingMethod, txtEmaShift, txtEmaFactor};
+								txtResponsiveness, txtAveragingMethod, txtEmaShift, txtEmaFactor, txtEmaCount};
 	void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold,
-								&actionResponsiveness, &actionAveragingMethod, &actionEmaShift, &actionEmaFactor};
-	uint8_t menuSize = 8;
-	handleAdvancedMenu(menu, actions, menuSize, B10001111);
+								&actionResponsiveness, &actionAveragingMethod, &actionEmaShift, &actionEmaFactor, &actionEmaCount};
+	uint8_t menuSize = 9;
+	handleAdvancedMenu(menu, actions, menuSize, 0b100011111);
 }
 
 void actionDisplayHardwareSettingsMenu() {
-	const char* const menu[] = {txtCylinderCount, txtMasterCylinder, txtBrightnessButton};
-	void (*actions[])() = {&actionCylinders, &actionMaster, &actionBrightnessButton };
-	uint8_t menuSize = 3;
-	handleAdvancedMenu(menu, actions, menuSize, B110);
+	const char* const menu[] = {txtCylinderCount, txtMasterCylinder, txtContrastButton, txtBrightnessButton};
+	void (*actions[])() = {&actionCylinders, &actionMaster, &actionContrastButton, &actionBrightnessButton };
+	uint8_t menuSize = 4;
+	handleAdvancedMenu(menu, actions, menuSize, B1100);
 }
 
 

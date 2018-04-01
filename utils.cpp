@@ -30,15 +30,33 @@
 #include "lcdWrapper.h"
 
 extern settings_t settings;
+extern float accumulator[NUM_SENSORS];
+extern long sums[NUM_SENSORS];
+extern int readingCount[NUM_SENSORS];
+extern unsigned int average[NUM_SENSORS];
+extern long avg[20][NUM_SENSORS];
 
 float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversion factor to convert the arduino readings to millibars
 
 byte buttonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH}; //array for recording the state of buttons
 byte lastButtonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH};//array for recording the previous state of buttons
-unsigned long lastDebounceTime[NUM_BUTTONS]; //array for recording when the buttonpress was first seen
+unsigned long lastDebounceTime[NUM_BUTTONS]; //array for recording when the button press was first seen
 unsigned long lastEntry = 0 ;
 
 uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
+
+void resetAverages(){
+	for(int i=0; i< NUM_SENSORS; i++){
+		accumulator[i] = {1000.0};
+		sums[i] = 0;
+		readingCount[i] = 0;
+		average[i] = 0;
+
+		for(int j=0; j<20 ;j++){
+			avg[j][i] = 0;
+		}
+	}
+}
 
 float convertToPreferredUnits(int value, int ambient){
   if (0 == settings.units) return value;
@@ -126,7 +144,8 @@ void resetToFactoryDefaultSettings(){
     settings.arduinoCompatible = true;
     settings.averagingMethod = 0;
     settings.emaShift = 12;
-    settings.emaFactor = 9;
+    settings.emaFactor = 8;
+    settings.emaCount = 5;
 }
 
 // tests if a button was pressed and applies debounce logic

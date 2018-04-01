@@ -53,7 +53,7 @@ void lcd_print(char* str){
 }
 
 void lcd_printInt(int integer){
-	lcd.print(String(integer));
+	lcd.print(integer);
 }
 
 void lcd_printLong(unsigned long integer){
@@ -65,8 +65,9 @@ void lcd_printFloat(float value){
 }
 
 void lcd_printFormatted(float value){
-	float fractionalPart = value - (long)value;
+	float fractionalPart = abs(value) - (long)abs(value);
 
+	if(value < 0.0) lcd.print('-');
 
 	if ((0 == settings.units)|| (1 == settings.units)){
 		lcd.print(String((int)value));

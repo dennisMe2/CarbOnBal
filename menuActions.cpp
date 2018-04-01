@@ -82,8 +82,8 @@ void doSplashScreen(){
 	    actionSaveSettings();
 }
 void actionAveragingMethod(){
-	const char* actions[] = {txtPeakAverage, txtThresholdAverage, txtIIRAverage, txtRunningAverage, txtIntRunningAverage};
-		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 5, settings.averagingMethod) ;
+	const char* actions[] = { txtRunningAverage, txtIntRunningAverage};
+		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 2, settings.averagingMethod) ;
 		    actionSaveSettings();
 }
 void doAdvanced() {
@@ -153,6 +153,10 @@ void actionEmaFactor() {
     actionSaveSettings();
 }
 
+void actionEmaCount() {
+    settings.emaCount = (uint8_t) doBasicSettingChanger(txtEmaFactor, 1, 10, settings.emaCount, 1);
+    actionSaveSettings();
+}
 
 void actionThreshold() {
     settings.threshold = (uint8_t) doBasicSettingChanger(txtThreshold, 0, 1023, settings.threshold, 10) ;
@@ -185,6 +189,13 @@ void actionBrightnessButton(){
     settings.button2 = doSettingChooser(txtButton2, actions, 2, (int) settings.button2) ;
     actionSaveSettings();
 }
+
+void actionContrastButton(){
+	const char* actions[] = {txtContrast, txtResetMeasurements};
+    settings.button1 = doSettingChooser(txtContrast, actions, 2, (int) settings.button1) ;
+    actionSaveSettings();
+}
+
 
 void doUnits(){
     const char* actions[] = {txtRawValues,txtRawDescending, txtMillibarHpa, txtMillibarHpaDesc,
