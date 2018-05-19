@@ -27,7 +27,7 @@
 #define GLOBALS_H_INCLUDED
 #include <Arduino.h>
 
-#define SOFTWARE_VERSION "1.4.5"
+#define SOFTWARE_VERSION "1.5.0"
 
 #define SELECT 2
 #define LEFT 3

@@ -57,5 +57,6 @@ const char txtSpace20[]			PROGMEM	= "                    ";
 const char txtEmaShift[]			PROGMEM = "EMA Shift";
 const char txtEmaFactor[]			PROGMEM = "EMA Factor";
 const char txtEmaCount[]			PROGMEM = "EMA Count";
+const char txtResponsiveRA[]		PROGMEM = "Responsive RA";
 
 #endif

@@ -34,7 +34,7 @@ extern float accumulator[NUM_SENSORS];
 extern long sums[NUM_SENSORS];
 extern int readingCount[NUM_SENSORS];
 extern unsigned int average[NUM_SENSORS];
-extern long avg[20][NUM_SENSORS];
+extern long avg[6][NUM_SENSORS];
 
 float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversion factor to convert the arduino readings to millibars
 
@@ -46,14 +46,14 @@ unsigned long lastEntry = 0 ;
 uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
 
 void resetAverages(){
-	for(int i=0; i< NUM_SENSORS; i++){
-		accumulator[i] = {1000.0};
-		sums[i] = 0;
-		readingCount[i] = 0;
-		average[i] = 0;
+	for(int sensor=0; sensor< NUM_SENSORS; sensor++){
+		accumulator[sensor] = {1000.0};
+		sums[sensor] = 0;
+		readingCount[sensor] = 0;
+		average[sensor] = 0;
 
-		for(int j=0; j<20 ;j++){
-			avg[j][i] = 0;
+		for(int j=0; j < 6 ;j++){
+			avg[j][sensor] = 0;
 		}
 	}
 }

@@ -80,6 +80,7 @@ const char txtExtraMenu[]    		PROGMEM = "Extra";
 const char txtFactoryReset[]		PROGMEM = "'Fabrieks' reset";
 const char txtFreeRam[]    			PROGMEM = "Vrij RAM (B): ";
 const char txtGraphType[]			PROGMEM = "Type Grafiek";
+const char txtDiagnostic[]			PROGMEM = "Diagnostisch";
 const char txtHardware[]   			PROGMEM = "Hardware";
 const char txtInchMercury[]			PROGMEM = "Inches kwik";
 const char txtInchMercuryDesc[]		PROGMEM = "Inch. Hg dalend.";

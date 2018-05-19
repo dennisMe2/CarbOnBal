@@ -55,6 +55,7 @@ const char txtCalibrationBusy2[]	PROGMEM = "apply vacuum!";
 const char txtCalibrationDone[]		PROGMEM = "Calibration Done";
 const char txtCalibrationDump[]		PROGMEM = "Calibration Dump";
 const char txtCenteredGraph[]		PROGMEM = "Centered";
+const char txtDiagnostic[]			PROGMEM = "Diagnostic";
 const char txtClearAllSensors[]		PROGMEM = "Clear All Sensors";
 const char txtClearCalibration[]  	PROGMEM = "Clear Calibrations";
 const char txtClearSensor2[]		PROGMEM = "Clear Sensor 2";

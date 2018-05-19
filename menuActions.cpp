@@ -82,8 +82,8 @@ void doSplashScreen(){
 	    actionSaveSettings();
 }
 void actionAveragingMethod(){
-	const char* actions[] = { txtRunningAverage, txtIntRunningAverage};
-		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 2, settings.averagingMethod) ;
+	const char* actions[] = { txtRunningAverage, txtIntRunningAverage, txtResponsiveRA};
+		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 3, settings.averagingMethod) ;
 		    actionSaveSettings();
 }
 void doAdvanced() {
@@ -103,8 +103,8 @@ void doArduinoMode() {
 }
 
 void actionGraphing() {
-	const char* actions[] = {txtAbsoluteGraph, txtCenteredGraph};
-    settings.graphType = doSettingChooser(txtSelectGraphType, actions, 2, settings.graphType) ;
+	const char* actions[] = {txtAbsoluteGraph, txtCenteredGraph, txtDiagnostic};
+    settings.graphType = doSettingChooser(txtSelectGraphType, actions, 3, settings.graphType) ;
     actionSaveSettings();
 }
 

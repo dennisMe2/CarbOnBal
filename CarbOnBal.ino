@@ -53,7 +53,7 @@ unsigned int average[NUM_SENSORS]; //used to share the current average for each 
 int ambientPressure; //stores current ambient pressure for negative pressure display
 unsigned long lastUpdate;
 
-long avg[10][NUM_SENSORS];
+long avg[6][NUM_SENSORS]; //can be much less than 10
 
 uint8_t labelPosition = 0;
 
@@ -125,6 +125,10 @@ void loop() {
 	case 1:
 		intRunningAverage();
 		break;
+	case 2:
+			responsiveRA();
+			break;
+
 	}
 
 	if (!freezeDisplay && ((millis() - lastUpdate) > 100)) {//only update the display every 100ms or so to prevent flickering
@@ -135,6 +139,9 @@ void loop() {
 			break;          //these functions both draw a graph and return asap
 		case 1:
 			lcdBarsCenterSmooth(average);
+			break;    //
+		case 2:
+			lcdDiagnosticDisplay(average);
 			break;    //
 		}
 	} else if (freezeDisplay) {
@@ -185,6 +192,85 @@ void intRunningAverage() {
 			avg[iteration][sensor] = longExponentialMovingAverage(shift, factor,
 					avg[iteration][sensor], value);
 			value = avg[iteration][sensor] >> shift;
+		}
+		average[sensor] = (int) value;
+	}
+	timeBase = millis() - startTime; //monitor how long it takes to measure 4 sensors
+}
+
+
+/*
+ * Compares the average time between threshold crossings as a measure of RPM
+ * To the actual time and returns false if there is more than 25% difference
+ * between the averaged value and the current value. This happens mainly when revving the engine
+ * it works because the average values trail the actual values allowing the difference to accrue
+ */
+int previousValue;
+long averageDeltaMs;
+unsigned long previousThresholdCrossing;
+
+bool areWeStable(int value){
+	unsigned long thresholdCrossing;
+	int threshold = 1023 - settings.threshold;
+	unsigned long deltaMs;
+	bool areWeStable = true;
+	int shift = 12;
+	unsigned int unshiftedAverage;
+	unsigned int hysteresis;
+
+
+	//detect the moment we cross the threshold while descending
+	if (value <= threshold && previousValue > threshold) {
+		thresholdCrossing = millis();
+
+		deltaMs = thresholdCrossing - previousThresholdCrossing;
+		unshiftedAverage = averageDeltaMs >> shift;
+		hysteresis = unshiftedAverage >> 2; // >>2 = 25%
+
+		if ((deltaMs > (unshiftedAverage + hysteresis)) || (deltaMs < (unshiftedAverage - hysteresis)) ){
+			areWeStable = false;
+		}
+
+		averageDeltaMs = longExponentialMovingAverage(shift, 7,
+				averageDeltaMs, deltaMs);
+
+		previousThresholdCrossing = thresholdCrossing;
+	}
+	previousValue = value;
+
+	return areWeStable;
+}
+
+
+// Alternative basic algorithm using only integer arithmetic and averaging the averages a number of times
+// depending on the damping setting
+// this version overrides the user selected damping when the RPMs are not stable
+//
+void responsiveRA() {
+	unsigned long startTime = millis();
+	int value;
+	int iterations = settings.emaCount;
+	int shift = settings.emaShift;
+	int factor = settings.emaFactor;
+
+	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
+		value = readSensorCalibrated(sensor);
+
+		//override the damping used for normal measurement while we are revving the engine
+		//to give us a way to reset
+		if (sensor == 0 && !areWeStable(value)) {
+			iterations = 1;
+		}
+
+		for (int iteration = 0; iteration < iterations; iteration++) {
+			avg[iteration][sensor] = longExponentialMovingAverage(shift, factor,
+					avg[iteration][sensor], value);
+			value = avg[iteration][sensor] >> shift;
+		}
+
+		//fill the skipped values with more sensible data than 'random' previous content
+		for(int iteration = iterations; iteration <10; iteration++){
+			avg[iteration][sensor] = avg[iteration-1][sensor];
 		}
 		average[sensor] = (int) value;
 	}
@@ -301,6 +387,20 @@ void lcdBarsSmooth(unsigned int value[]) {
 			lcd_printFormatted(result);
 		}
 	}
+}
+
+void lcdDiagnosticDisplay(unsigned int value[]){
+	for (int sensor = 0; sensor < settings.cylinders; sensor++) {
+		float result = convertToPreferredUnits(value[sensor], ambientPressure);
+		printLcdSpace(0, sensor, 5);
+		lcd_printFormatted(result);
+
+		printLcdSpace(8, sensor, 5);
+		int delta = value[sensor] - value[settings.master - 1];
+		lcd_printFormatted(differenceToPreferredUnits(delta));
+	}
+	printLcdInteger(timeBase, 15, 0, 5); //time base
+
 }
 
 //saves our settings struct
