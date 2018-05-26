@@ -53,7 +53,7 @@ unsigned int average[NUM_SENSORS]; //used to share the current average for each 
 int ambientPressure; //stores current ambient pressure for negative pressure display
 unsigned long lastUpdate;
 
-long avg[6][NUM_SENSORS]; //can be much less than 10
+long avg[NUM_SENSORS];
 
 uint8_t labelPosition = 0;
 
@@ -175,24 +175,17 @@ void thresholdAverage() {
 	timeBase = millis() - startTime; //monitor how long it takes to measure 4 sensors
 }
 
-// Alternative basic algorithm using only integer arithmetic and averaging the averages a number of times
-// depending on the damping setting
-//
+// Alternative basic algorithm using only long integer arithmetic
 void intRunningAverage() {
 	unsigned long startTime = millis();
 	int value;
-	int iterations = settings.emaCount;
 	int shift = settings.emaShift;
 	int factor = settings.emaFactor;
 
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
 		value = readSensorCalibrated(sensor);
-
-		for (int iteration = 0; iteration < iterations; iteration++) {
-			avg[iteration][sensor] = longExponentialMovingAverage(shift, factor,
-					avg[iteration][sensor], value);
-			value = avg[iteration][sensor] >> shift;
-		}
+		avg[sensor] = longExponentialMovingAverage(shift, factor, avg[sensor], value);
+		value = avg[sensor] >> shift;
 		average[sensor] = (int) value;
 	}
 	timeBase = millis() - startTime; //monitor how long it takes to measure 4 sensors
@@ -242,36 +235,27 @@ bool areWeStable(int value){
 }
 
 
-// Alternative basic algorithm using only integer arithmetic and averaging the averages a number of times
+// Alternative basic algorithm using only integer arithmetic
 // depending on the damping setting
 // this version overrides the user selected damping when the RPMs are not stable
 //
 void responsiveRA() {
 	unsigned long startTime = millis();
 	int value;
-	int iterations = settings.emaCount;
 	int shift = settings.emaShift;
 	int factor = settings.emaFactor;
 
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
 		value = readSensorCalibrated(sensor);
 
-		//override the damping used for normal measurement while we are revving the engine
-		//to give us a way to reset
+		//temporarily override the damping used for normal measurement while we are revving the engine
+		//to give us a more dynamic display
 		if (sensor == 0 && !areWeStable(value)) {
-			iterations = 1;
+			factor = 1;
 		}
 
-		for (int iteration = 0; iteration < iterations; iteration++) {
-			avg[iteration][sensor] = longExponentialMovingAverage(shift, factor,
-					avg[iteration][sensor], value);
-			value = avg[iteration][sensor] >> shift;
-		}
-
-		//fill the skipped values with more sensible data than 'random' previous content
-		for(int iteration = iterations; iteration <10; iteration++){
-			avg[iteration][sensor] = avg[iteration-1][sensor];
-		}
+		avg[sensor] = longExponentialMovingAverage(shift, factor, avg[sensor], value);
+		value = avg[sensor] >> shift;
 		average[sensor] = (int) value;
 	}
 	timeBase = millis() - startTime; //monitor how long it takes to measure 4 sensors
