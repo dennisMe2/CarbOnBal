@@ -27,7 +27,7 @@
 #define GLOBALS_H_INCLUDED
 #include <Arduino.h>
 
-#define SOFTWARE_VERSION "1.5.0"
+#define SOFTWARE_VERSION "1.5.1"
 
 #define SELECT 2
 #define LEFT 3
@@ -50,7 +50,7 @@ static const int numberOfCalibrationValues=256;
 static const int calibrationOffset=256; //eeprom base address for calibration
 
 
-static const uint8_t versionUID = 22; //update when settings_t changes!
+static const uint8_t versionUID = 23; //update when settings_t changes!
 static const uint8_t settingsOffset = sizeof(versionUID);
 
 //this struct is used to store settings in NVRAM
@@ -81,7 +81,8 @@ struct settings_t
     uint8_t averagingMethod;
     uint8_t emaShift;
     uint8_t emaFactor;
-    uint8_t emaCount;
+    uint8_t emaCorrection;
+    uint8_t emaRpmSensitivity;
 };
 
 extern int readingCount[NUM_SENSORS];

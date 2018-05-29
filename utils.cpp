@@ -34,7 +34,7 @@ extern float accumulator[NUM_SENSORS];
 extern long sums[NUM_SENSORS];
 extern int readingCount[NUM_SENSORS];
 extern unsigned int average[NUM_SENSORS];
-extern long avg[6][NUM_SENSORS];
+extern long avg[NUM_SENSORS];
 
 float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversion factor to convert the arduino readings to millibars
 
@@ -51,10 +51,6 @@ void resetAverages(){
 		sums[sensor] = 0;
 		readingCount[sensor] = 0;
 		average[sensor] = 0;
-
-		for(int j=0; j < 6 ;j++){
-			avg[j][sensor] = 0;
-		}
 	}
 }
 
@@ -145,7 +141,8 @@ void resetToFactoryDefaultSettings(){
     settings.averagingMethod = 0;
     settings.emaShift = 12;
     settings.emaFactor = 8;
-    settings.emaCount = 5;
+    settings.emaCorrection = 6;
+    settings.emaRpmSensitivity = 2;
 }
 
 // tests if a button was pressed and applies debounce logic
@@ -308,7 +305,8 @@ unsigned long getBaud(int index){
         31250,
         38400,
         57600,
-        115200
+        115200,
+		230400
     };
     return baud[index];
 }

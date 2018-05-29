@@ -47,8 +47,8 @@ void doConfirmation(){
 }
 
 void doBaudRate(){
-	 const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200};
-    settings.baudRate = doSettingChooser(txtBaudRate, actions, 13, settings.baudRate) ;
+	 const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200, txt230400};
+    settings.baudRate = doSettingChooser(txtBaudRate, actions, 14, settings.baudRate) ;
     actionSaveSettings();
 }
 
@@ -82,8 +82,8 @@ void doSplashScreen(){
 	    actionSaveSettings();
 }
 void actionAveragingMethod(){
-	const char* actions[] = { txtRunningAverage, txtIntRunningAverage, txtResponsiveRA};
-		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 3, settings.averagingMethod) ;
+	const char* actions[] = { txtRunningAverage, txtIntRunningAverage, txtResponsiveRA, txtDescendingAverage};
+		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 4, settings.averagingMethod) ;
 		    actionSaveSettings();
 }
 void doAdvanced() {
@@ -153,11 +153,14 @@ void actionEmaFactor() {
     actionSaveSettings();
 }
 
-void actionEmaCount() {
-    settings.emaCount = (uint8_t) doBasicSettingChanger(txtEmaFactor, 1, 10, settings.emaCount, 1);
+void actionEmaCorrection() {
+    settings.emaCorrection = (uint8_t) doBasicSettingChanger(txtEmaCorrection, 0, settings.emaFactor, settings.emaCorrection, 1);
     actionSaveSettings();
 }
-
+void actionEmaRpmSensitivity() {
+    settings.emaRpmSensitivity = (uint8_t) doBasicSettingChanger(txtEmaRpmSensitivity, 0, 8, settings.emaRpmSensitivity, 1);
+    actionSaveSettings();
+}
 void actionThreshold() {
     settings.threshold = (uint8_t) doBasicSettingChanger(txtThreshold, 0, 1023, settings.threshold, 10) ;
     actionSaveSettings();
