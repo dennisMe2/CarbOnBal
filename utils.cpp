@@ -51,6 +51,7 @@ void resetAverages(){
 		sums[sensor] = 0;
 		readingCount[sensor] = 0;
 		average[sensor] = 0;
+		avg[sensor] = 0;
 	}
 }
 

@@ -47,8 +47,8 @@ void doConfirmation(){
 }
 
 void doBaudRate(){
-	 const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200, txt230400};
-    settings.baudRate = doSettingChooser(txtBaudRate, actions, 14, settings.baudRate) ;
+	const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200, txt230400};
+	settings.baudRate = doSettingChooser(txtBaudRate, actions, 14, settings.baudRate) ;
     actionSaveSettings();
 }
 
@@ -85,6 +85,7 @@ void actionAveragingMethod(){
 	const char* actions[] = { txtRunningAverage, txtIntRunningAverage, txtResponsiveRA, txtDescendingAverage};
 		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 4, settings.averagingMethod) ;
 		    actionSaveSettings();
+		    resetAverages();
 }
 void doAdvanced() {
   bool oldAdvanced = settings.advanced;
