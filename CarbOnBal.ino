@@ -62,6 +62,7 @@ uint8_t labelPosition = 0;
 unsigned int serialValues[] = { 0, 0, 0, 0 };
 unsigned long packetCounter = 0;
 unsigned long startTime;
+bool useLaptop = false;
 
 //this does the initial setup on startup.
 void setup() {
@@ -123,7 +124,8 @@ void doSerialRead() {
 
 void loop() {
 	startTime = micros();
-	doSerialRead();
+
+	if(useLaptop) doSerialRead();
 
 	switch (buttonPressed()) {					//test if a button was pressed
 	case SELECT:
@@ -526,14 +528,14 @@ int readSensorRaw(int sensor) {
 }
 int readSensorCalibrated(int sensor) {
 
-	return (int) serialValues[sensor];
+	if(useLaptop) return (int) serialValues[sensor];
 
-//	int value = readSensorRaw(sensor);
-//	if (sensor > 0) { //only for the calibrated sensors, not the master
-//		value += (int8_t) EEPROM.read(
-//				getCalibrationTableOffsetByValue(sensor, value)); //adds this reading adjusted for calibration
-//	}
-//	return value;
+	int value = readSensorRaw(sensor);
+	if (sensor > 0) { //only for the calibrated sensors, not the master
+		value += (int8_t) EEPROM.read(
+				getCalibrationTableOffsetByValue(sensor, value)); //adds this reading adjusted for calibration
+	}
+	return value;
 }
 
 //clear the flash for a single sensor
