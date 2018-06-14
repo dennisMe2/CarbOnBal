@@ -36,16 +36,13 @@
 settings_t settings;
 
 // The software uses a lot of global variables. This may not be elegant but its one way of writing non-blocking code
-float accumulator[NUM_SENSORS] = { 1000.0, 1000.0, 1000.0, 1000.0 }; //used to track the average values per sensor
 int inputPin[NUM_SENSORS] = { A0, A1, A2, A3 }; //used as a means to access the sensor pins using a counter
 int timeBase = 0; //allows us to calculate how long it took to measure and update the display (only used for testing)
 long sums[NUM_SENSORS] = { 0, 0, 0, 0 }; //tracks totals for calculating a numerical average
 
 bool freezeDisplay = false; //used to tell when a user wants to freeze the display
 unsigned int rpm;                                       //stores the current RPM
-float alpha; //alpha is the math term for the weighting factor used to calculate
-//EMA Exponentially weighted moving average. Using this we save a lot of precious memory
-float alphaRpm;                    //alpha factor used to smooth the RPM display
+
 float stabilityThreshold; //the factor used to detect when the throttle is being yanked and a response is required
 
 int readingCount[NUM_SENSORS]; //used to store the number of captured readings for calculating a numerical average
@@ -80,8 +77,6 @@ void setup() {
 	analogWrite(contrastPin, settings.contrast); //contrast is PWM with smoothing (R/C network) to prevent flicker
 
 	ambientPressure = detectAmbient(); //set ambient pressure (important because it varies with weather and altitude)
-	alpha = calculateAlpha(settings.damping); //prime the alpha from the settings
-	alphaRpm = calculateAlpha(settings.rpmDamping);
 	stabilityThreshold = (100 - settings.responsiveness) / 100.00; //more than a certain % difference from the average
 
 	if (settings.splashScreen) {
@@ -154,18 +149,11 @@ void loop() {
 	switch (settings.averagingMethod) {
 
 	case 0:
-		thresholdAverage();
+		intRunningAverage();
 		break;		//calculate the averages and return asap
 	case 1:
-		intRunningAverage();
-		break;
-	case 2:
-		responsiveRA();
-		break;
-	case 3:
 		descendingAverage();
 		break;
-
 	}
 
 	if (!freezeDisplay
@@ -201,29 +189,7 @@ void loop() {
 	timeBase = micros() - startTime; //monitor how long it takes to traverse the main loop
 }
 
-//the main measurement function which calculates a true average of all samples while the signal drops below the threshold.
-//all the sensors are sampled and values stored then the loop returns asap so the screen can be updated in real time
-void thresholdAverage() {
 
-	int value;
-
-	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
-		value = readSensorCalibrated(sensor);
-		if (value <= 1023 - settings.threshold) { //1023 is basically normal airpressure at sea level. it can be lower, especially in the mountains
-			sums[sensor] += value;
-			readingCount[sensor]++; //keeps count of the number of readings collected
-		} else {                               //above the measurement threshold
-			if (readingCount[sensor] > 0) {  //immediately after the vacuum peak
-				//calculate the average now we've measured a whole "vacuum signal trough"
-				average[sensor] = responsiveEMA(alpha, &accumulator[sensor],
-						sums[sensor] / readingCount[sensor]);
-			}
-			//done the calcs, now reset everything ready to start over when the signal drops below threshold
-			sums[sensor] = 0;
-			readingCount[sensor] = 0;
-		}
-	}
-}
 
 // Alternative basic algorithm using only long integer arithmetic
 void intRunningAverage() {
@@ -281,36 +247,6 @@ bool isRPMStable(int sensor) {
 	return stableRPM;
 }
 
-// Alternative basic algorithm using only integer arithmetic
-// depending on the damping setting
-// this version overrides the user selected damping when the RPMs are not stable
-//
-int prevValue;
-void responsiveRA() {
-	int value;
-	int threshold = 1023 - settings.threshold;
-	int shift = settings.emaShift;
-	int factor = settings.emaFactor;
-
-	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
-		value = readSensorCalibrated(sensor);
-
-		//temporarily override the damping used for normal measurement while we are revving the engine
-		//to give us a more dynamic display
-		if ((sensor == 0) && (value <= threshold) && (prevValue > threshold)) {
-			if (!isRPMStable(sensor)) {
-				factor = settings.emaCorrection;
-			}
-		}
-		prevValue = value;
-		avg[sensor] = longExponentialMovingAverage(shift, factor, avg[sensor],
-				value);
-		value = avg[sensor] >> shift;
-		average[sensor] = (int) value;
-	}
-
-}
-
 //only measures the vacuum 'suck'(intake) not the release(compression, work & exhaust) phase, this greatly simplifies the logic and
 // shouldn't affect the average negatively
 void descendingAverage() {
@@ -325,9 +261,6 @@ void descendingAverage() {
 			readingCount[sensor]++; //keeps count of the number of readings collected
 		} else {                       //above the previous value or equal to it
 			if (readingCount[sensor] > 1) {
-				if (!isRPMStable(sensor)) {
-					factor = settings.emaCorrection; //temporary reset of factor
-				}
 				//calculate the average now we've measured a whole "vacuum signal flank"
 				avg[sensor] = longExponentialMovingAverage(shift, factor,
 						avg[sensor], sums[sensor] / readingCount[sensor]);
@@ -517,13 +450,9 @@ void eepromWriteIfChanged(int address, int8_t data) {
 	}
 }
 
-//read raw data from the sensor by an effective method
 int readSensorRaw(int sensor) {
-	if (!settings.delayTime) { //if delaytime is zero, do a pre-read to prime the ADC
-		analogRead(inputPin[sensor]);
-	} else {
-		delayMicroseconds(settings.delayTime);
-	}
+	//dummy read primes the input capacitors, makes for a more accurate reading
+	analogRead(inputPin[sensor]);
 	return (analogRead(inputPin[sensor]));
 }
 int readSensorCalibrated(int sensor) {
@@ -970,7 +899,7 @@ void doRevs() {
 	int descentCount = 0;
 	int ascentCount = 0;
 
-	float rpmAverage;
+	unsigned long rpmAverage;
 
 	initRpmDisplay();
 
@@ -1005,9 +934,8 @@ void doRevs() {
 			if (delta < 1) {
 				rpm = 0;
 			} else {
-				rpm = exponentialMovingAverage(alphaRpm, &rpmAverage,
-						120000 / delta);
-
+				rpmAverage = longExponentialMovingAverage(6,4, rpmAverage, 120000 / delta);
+				rpm = rpmAverage >> 4;
 			}
 			previousPeak = peak;
 		}

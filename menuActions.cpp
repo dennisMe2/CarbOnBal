@@ -32,9 +32,6 @@
 #include "utils.h"
 
 extern settings_t settings;
-extern float alpha;
-extern float alphaRpm;
-extern float stabilityThreshold;
 extern bool quitMenu;
 extern const uint8_t brightnessPin;//6
 extern const uint8_t contrastPin;//11
@@ -82,8 +79,8 @@ void doSplashScreen(){
 	    actionSaveSettings();
 }
 void actionAveragingMethod(){
-	const char* actions[] = { txtRunningAverage, txtIntRunningAverage, txtResponsiveRA, txtDescendingAverage};
-		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 4, settings.averagingMethod) ;
+	const char* actions[] = {txtIntRunningAverage, txtDescendingAverage};
+		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 2, settings.averagingMethod) ;
 		    actionSaveSettings();
 		    resetAverages();
 }
@@ -119,31 +116,6 @@ void actionReset() {
     }
 }
 
-void actionDelay() {
-    settings.delayTime = doBasicSettingChanger(txtDelayUs, 0, 1000, settings.delayTime, 10) ;
-    actionSaveSettings();
-}
-
-
-void actionResponsiveness() {
-    settings.responsiveness = (uint8_t) doBasicSettingChanger(txtResponsePerc, 0, 100, settings.responsiveness, 5);
-    stabilityThreshold = (100 - settings.responsiveness) / 100.00; //more than a certain % difference from the average
-    actionSaveSettings();
-}
-
-void actionDamping() {
-    settings.damping = (uint8_t) doBasicSettingChanger(txtDampingPerc, 0, 100, settings.damping, 5);
-    alpha = calculateAlpha(settings.damping);
-    actionSaveSettings();
-}
-
-
-void actionRPMDamping() {
-    settings.rpmDamping = (uint8_t) doBasicSettingChanger(txtRpmDampingPerc, 0, 100, settings.rpmDamping, 5);
-    alphaRpm = calculateAlpha(settings.rpmDamping);
-    actionSaveSettings();
-}
-
 void actionEmaShift() {
     settings.emaShift = (uint8_t) doBasicSettingChanger(txtEmaShift, 0, 21, settings.emaShift, 1);
     actionSaveSettings();
@@ -153,20 +125,6 @@ void actionEmaFactor() {
     settings.emaFactor = (uint8_t) doBasicSettingChanger(txtEmaFactor, 0, 20, settings.emaFactor, 1);
     actionSaveSettings();
 }
-
-void actionEmaCorrection() {
-    settings.emaCorrection = (uint8_t) doBasicSettingChanger(txtEmaCorrection, 0, settings.emaFactor, settings.emaCorrection, 1);
-    actionSaveSettings();
-}
-void actionEmaRpmSensitivity() {
-    settings.emaRpmSensitivity = (uint8_t) doBasicSettingChanger(txtEmaRpmSensitivity, 0, 8, settings.emaRpmSensitivity, 1);
-    actionSaveSettings();
-}
-void actionThreshold() {
-    settings.threshold = (uint8_t) doBasicSettingChanger(txtThreshold, 0, 1023, settings.threshold, 10) ;
-    actionSaveSettings();
-}
-
 
 
 void actionCylinders() {

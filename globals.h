@@ -27,7 +27,7 @@
 #define GLOBALS_H_INCLUDED
 #include <Arduino.h>
 
-#define SOFTWARE_VERSION "1.5.1"
+#define SOFTWARE_VERSION "1.5.2"
 
 #define SELECT 2
 #define LEFT 3
@@ -74,7 +74,7 @@ struct settings_t
     uint8_t graphType;
     int baudRate;
     uint8_t damping;
-    int delayTime;
+    int delayTime;		//removed
     int threshold;
     uint8_t rpmDamping;
     uint8_t responsiveness;
@@ -102,9 +102,6 @@ extern unsigned int rpm;
 
 
 extern settings_t settings;
-extern float alpha;
-extern float alphaRpm;
-extern float stabilityThreshold;
 extern int ambientPressure;
 
 #endif
