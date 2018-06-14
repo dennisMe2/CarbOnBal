@@ -60,12 +60,10 @@ void actionDisplayExtraMenu(){
 }
 
 void actionDisplaySoftwareSettingsMenu() {
-	const char* const menu[] = { txtDamping, txtRpmDamping, txtSampleDelayUs, txtThreshold,
-								txtResponsiveness, txtAveragingMethod, txtEmaShift, txtEmaFactor, txtEmaCount};
-	void (*actions[])() = {&actionDamping, &actionRPMDamping, &actionDelay, &actionThreshold,
-								&actionResponsiveness, &actionAveragingMethod, &actionEmaShift, &actionEmaFactor, &actionEmaCount};
-	uint8_t menuSize = 9;
-	handleAdvancedMenu(menu, actions, menuSize, 0b100011111);
+	const char* const menu[] = { txtAveragingMethod, txtEmaShift, txtEmaFactor};
+	void (*actions[])() = { &actionAveragingMethod, &actionEmaShift, &actionEmaFactor};
+	uint8_t menuSize = 3;
+	handleAdvancedMenu(menu, actions, menuSize, 0b100);
 }
 
 void actionDisplayHardwareSettingsMenu() {

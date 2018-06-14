@@ -27,7 +27,7 @@
 #define GLOBALS_H_INCLUDED
 #include <Arduino.h>
 
-#define SOFTWARE_VERSION "1.4.5"
+#define SOFTWARE_VERSION "1.5.2"
 
 #define SELECT 2
 #define LEFT 3
@@ -40,6 +40,10 @@
 #define NUM_SENSORS 4
 #define DISPLAY_COLS 20
 #define DISPLAY_ROWS 4
+
+#define START_PACKET 0xfe
+#define REQUEST_PACKET 0xfd
+
 #define LANGUAGE "lang_en_gb.h"			//select a different language file to change translations
 //#define LANGUAGE "lang_nl_nl.h"
 static const uint8_t numReadings=20;
@@ -50,7 +54,7 @@ static const int numberOfCalibrationValues=256;
 static const int calibrationOffset=256; //eeprom base address for calibration
 
 
-static const uint8_t versionUID = 22; //update when settings_t changes!
+static const uint8_t versionUID = 23; //update when settings_t changes!
 static const uint8_t settingsOffset = sizeof(versionUID);
 
 //this struct is used to store settings in NVRAM
@@ -70,7 +74,7 @@ struct settings_t
     uint8_t graphType;
     int baudRate;
     uint8_t damping;
-    int delayTime;
+    int delayTime;		//removed
     int threshold;
     uint8_t rpmDamping;
     uint8_t responsiveness;
@@ -81,7 +85,8 @@ struct settings_t
     uint8_t averagingMethod;
     uint8_t emaShift;
     uint8_t emaFactor;
-    uint8_t emaCount;
+    uint8_t emaCorrection;
+    uint8_t emaRpmSensitivity;
 };
 
 extern int readingCount[NUM_SENSORS];
@@ -97,9 +102,6 @@ extern unsigned int rpm;
 
 
 extern settings_t settings;
-extern float alpha;
-extern float alphaRpm;
-extern float stabilityThreshold;
 extern int ambientPressure;
 
 #endif

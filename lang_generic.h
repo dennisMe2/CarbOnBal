@@ -41,6 +41,8 @@ const char txt31250[]				PROGMEM = "31250";
 const char txt38400[]				PROGMEM = "38400";
 const char txt57600[]				PROGMEM = "57600";
 const char txt115200[]				PROGMEM = "115200";
+const char txt230400[]				PROGMEM = "230400";
+
 
 const char txt169[]					PROGMEM = "169.92";
 const char txt254[]					PROGMEM = "254.88";
@@ -51,11 +53,14 @@ const char txt19[]					PROGMEM = "19.12";
 const char txt32[]					PROGMEM = "32.63";
 const char txt5[]					PROGMEM = "5.02";
 const char txt7[]					PROGMEM = "7.53";
-const char txt15[]        	PROGMEM = "15.05";
-const char txtSpace20[]			PROGMEM	= "                    ";
+const char txt15[]        			PROGMEM = "15.05";
+const char txtSpace20[]				PROGMEM	= "                    ";
 
 const char txtEmaShift[]			PROGMEM = "EMA Shift";
 const char txtEmaFactor[]			PROGMEM = "EMA Factor";
-const char txtEmaCount[]			PROGMEM = "EMA Count";
+const char txtEmaCorrection[]		PROGMEM = "EMA Correction";
+const char txtEmaRpmSensitivity[]   PROGMEM = "EMA RPM Sensitivity";
+const char txtResponsiveRA[]		PROGMEM = "Responsive RA";
+const char txtDescendingAverage[]   PROGMEM = "Descending RA";
 
 #endif

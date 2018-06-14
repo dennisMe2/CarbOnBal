@@ -30,11 +30,9 @@
 #include "lcdWrapper.h"
 
 extern settings_t settings;
-extern float accumulator[NUM_SENSORS];
 extern long sums[NUM_SENSORS];
 extern int readingCount[NUM_SENSORS];
 extern unsigned int average[NUM_SENSORS];
-extern long avg[20][NUM_SENSORS];
 
 float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversion factor to convert the arduino readings to millibars
 
@@ -46,15 +44,10 @@ unsigned long lastEntry = 0 ;
 uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
 
 void resetAverages(){
-	for(int i=0; i< NUM_SENSORS; i++){
-		accumulator[i] = {1000.0};
-		sums[i] = 0;
-		readingCount[i] = 0;
-		average[i] = 0;
-
-		for(int j=0; j<20 ;j++){
-			avg[j][i] = 0;
-		}
+	for(int sensor=0; sensor< NUM_SENSORS; sensor++){
+		sums[sensor] = 0;
+		readingCount[sensor] = 0;
+		average[sensor] = 0;
 	}
 }
 
@@ -145,7 +138,8 @@ void resetToFactoryDefaultSettings(){
     settings.averagingMethod = 0;
     settings.emaShift = 12;
     settings.emaFactor = 8;
-    settings.emaCount = 5;
+    settings.emaCorrection = 6;
+    settings.emaRpmSensitivity = 2;
 }
 
 // tests if a button was pressed and applies debounce logic
@@ -213,22 +207,6 @@ void setOutputHigh(int i) {
     digitalWrite(i, HIGH);  // turn on internal pullups
 }
 
-// calculates the smoothing factor 'alpha' used by the Exponential moving average
-// this takes a percentage as input and uses an exponential function to make the settings more sensitive
-float calculateAlpha(int input){
-    int reverse = 100-input;
-    return pow((float) reverse / 100.0, 5);
-}
-
-// calculate Exponentially weighted moving average for smoothing
-// alpha is how much weight is given to new values vs the stored average: 0 = 0%  - 1 = 100%
-// accumulator is a pointer to a global value in which to store the average
-// new value is the new data measurement
-float exponentialMovingAverage(float alpha, float *accumulator, float new_value) {
-    *accumulator += alpha * (new_value - *accumulator);
-    return(*accumulator);
-}
-
 // calculate Extremely Fast Integer Exponentially weighted moving average for smoothing.
 // factor is how much weight is given to new values vs the stored average as a power of 2.
 //    ie: 0 = 1:1 and 4 = 1/16th
@@ -241,26 +219,11 @@ int intExponentialMovingAverage(int shift, int factor, int average, int input) {
     return(average);
 }
 
+//slower than the int version but extremely accurate / sensitive
 long longExponentialMovingAverage(int shift, int factor, long average, int input) {
     average += (((long)input<<(long)shift) - average)>>(long)factor;
     return(average);
 }
-
-
-// version of the Exponential Moving Average that deliberately stops smoothing
-// if the value changes more than a certain "percentage", the global 'stabilityThreshold' which is precalculated to save an expensive FP division.
-// this is needed to get a stable readout, yet respond quickly when the gas is tweaked.
-// not technically needed but convinces the user the system is working as expected!
-float responsiveEMA(float alpha, float *accumulator, float new_value) {
-
-    if(new_value > (*accumulator * (1 + stabilityThreshold)) || new_value < (*accumulator * (1-stabilityThreshold))){
-      *accumulator = new_value;//short out the EMA if our value is changing fast
-      }
-
-    *accumulator += alpha * (new_value - *accumulator);
-    return(*accumulator);
-}
-
 
 // calculate the absolute difference between two integers
 int delta(int first, int second){
@@ -308,7 +271,8 @@ unsigned long getBaud(int index){
         31250,
         38400,
         57600,
-        115200
+        115200,
+		230400
     };
     return baud[index];
 }

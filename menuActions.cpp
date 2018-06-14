@@ -32,9 +32,6 @@
 #include "utils.h"
 
 extern settings_t settings;
-extern float alpha;
-extern float alphaRpm;
-extern float stabilityThreshold;
 extern bool quitMenu;
 extern const uint8_t brightnessPin;//6
 extern const uint8_t contrastPin;//11
@@ -47,8 +44,8 @@ void doConfirmation(){
 }
 
 void doBaudRate(){
-	 const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200};
-    settings.baudRate = doSettingChooser(txtBaudRate, actions, 13, settings.baudRate) ;
+	const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200, txt230400};
+	settings.baudRate = doSettingChooser(txtBaudRate, actions, 14, settings.baudRate) ;
     actionSaveSettings();
 }
 
@@ -82,9 +79,10 @@ void doSplashScreen(){
 	    actionSaveSettings();
 }
 void actionAveragingMethod(){
-	const char* actions[] = { txtRunningAverage, txtIntRunningAverage};
+	const char* actions[] = {txtIntRunningAverage, txtDescendingAverage};
 		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 2, settings.averagingMethod) ;
 		    actionSaveSettings();
+		    resetAverages();
 }
 void doAdvanced() {
   bool oldAdvanced = settings.advanced;
@@ -103,8 +101,8 @@ void doArduinoMode() {
 }
 
 void actionGraphing() {
-	const char* actions[] = {txtAbsoluteGraph, txtCenteredGraph};
-    settings.graphType = doSettingChooser(txtSelectGraphType, actions, 2, settings.graphType) ;
+	const char* actions[] = {txtAbsoluteGraph, txtCenteredGraph, txtDiagnostic};
+    settings.graphType = doSettingChooser(txtSelectGraphType, actions, 3, settings.graphType) ;
     actionSaveSettings();
 }
 
@@ -118,31 +116,6 @@ void actionReset() {
     }
 }
 
-void actionDelay() {
-    settings.delayTime = doBasicSettingChanger(txtDelayUs, 0, 1000, settings.delayTime, 10) ;
-    actionSaveSettings();
-}
-
-
-void actionResponsiveness() {
-    settings.responsiveness = (uint8_t) doBasicSettingChanger(txtResponsePerc, 0, 100, settings.responsiveness, 5);
-    stabilityThreshold = (100 - settings.responsiveness) / 100.00; //more than a certain % difference from the average
-    actionSaveSettings();
-}
-
-void actionDamping() {
-    settings.damping = (uint8_t) doBasicSettingChanger(txtDampingPerc, 0, 100, settings.damping, 5);
-    alpha = calculateAlpha(settings.damping);
-    actionSaveSettings();
-}
-
-
-void actionRPMDamping() {
-    settings.rpmDamping = (uint8_t) doBasicSettingChanger(txtRpmDampingPerc, 0, 100, settings.rpmDamping, 5);
-    alphaRpm = calculateAlpha(settings.rpmDamping);
-    actionSaveSettings();
-}
-
 void actionEmaShift() {
     settings.emaShift = (uint8_t) doBasicSettingChanger(txtEmaShift, 0, 21, settings.emaShift, 1);
     actionSaveSettings();
@@ -152,17 +125,6 @@ void actionEmaFactor() {
     settings.emaFactor = (uint8_t) doBasicSettingChanger(txtEmaFactor, 0, 20, settings.emaFactor, 1);
     actionSaveSettings();
 }
-
-void actionEmaCount() {
-    settings.emaCount = (uint8_t) doBasicSettingChanger(txtEmaFactor, 1, 10, settings.emaCount, 1);
-    actionSaveSettings();
-}
-
-void actionThreshold() {
-    settings.threshold = (uint8_t) doBasicSettingChanger(txtThreshold, 0, 1023, settings.threshold, 10) ;
-    actionSaveSettings();
-}
-
 
 
 void actionCylinders() {
