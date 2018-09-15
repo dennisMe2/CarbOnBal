@@ -63,6 +63,12 @@ void actionContrast() {
     actionSaveSettings();
 }
 
+void actionDamping() {
+    settings.damping = doBasicSettingChanger(txtDamping, 0, 100, settings.damping, 1) ;
+    actionSaveSettings();
+    calculateDamping();
+}
+
 void doContrast(int value) {
     analogWrite(contrastPin, value);
 }
@@ -79,8 +85,8 @@ void doSplashScreen(){
 	    actionSaveSettings();
 }
 void actionAveragingMethod(){
-	const char* actions[] = {txtIntRunningAverage, txtDescendingAverage};
-		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 2, settings.averagingMethod) ;
+	const char* actions[] = {txtIntRunningAverage, txtDescendingAverage, txtRunningAverage};
+		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 3, settings.averagingMethod) ;
 		    actionSaveSettings();
 		    resetAverages();
 }

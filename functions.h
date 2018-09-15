@@ -44,6 +44,7 @@ void zeroCalibrations();
 void intRunningAverage();
 bool isRPMStable(int sensor);
 void descendingAverage();
+void crawlingAverage();
 void loadSettings();
 void lcdBarsSmooth( int value[]);
 void doDataDumpChars();

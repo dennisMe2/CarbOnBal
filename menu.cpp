@@ -60,10 +60,10 @@ void actionDisplayExtraMenu(){
 }
 
 void actionDisplaySoftwareSettingsMenu() {
-	const char* const menu[] = { txtAveragingMethod, txtEmaShift, txtEmaFactor};
-	void (*actions[])() = { &actionAveragingMethod, &actionEmaShift, &actionEmaFactor};
-	uint8_t menuSize = 3;
-	handleAdvancedMenu(menu, actions, menuSize, 0b100);
+	const char* const menu[] = { txtAveragingMethod, txtEmaShift, txtEmaFactor, txtDamping};
+	void (*actions[])() = { &actionAveragingMethod, &actionEmaShift, &actionEmaFactor, &actionDamping};
+	uint8_t menuSize = 4;
+	handleAdvancedMenu(menu, actions, menuSize, 0b1000);
 }
 
 void actionDisplayHardwareSettingsMenu() {

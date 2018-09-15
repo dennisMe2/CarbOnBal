@@ -104,4 +104,6 @@ extern unsigned int rpm;
 extern settings_t settings;
 extern int ambientPressure;
 
+extern float damping;
+
 #endif

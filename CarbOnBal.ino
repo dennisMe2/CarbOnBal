@@ -52,7 +52,8 @@ int ambientPressure; //stores current ambient pressure for negative pressure dis
 unsigned long lastUpdate;
 int packetRequestCount = 0;
 
-long avg[NUM_SENSORS];
+unsigned long avg[NUM_SENSORS];
+float damping;
 
 uint8_t labelPosition = 0;
 
@@ -90,6 +91,8 @@ void setup() {
 		doAbsoluteDemo();
 		doRelativeDemo();
 	}
+
+	calculateDamping(); //pre-calculate real floating point value from percentage in settings
 
 }
 
@@ -154,6 +157,8 @@ void loop() {
 	case 1:
 		descendingAverage();
 		break;
+	case 2:
+		crawlingAverage();
 	}
 
 	if (!freezeDisplay
@@ -190,7 +195,6 @@ void loop() {
 }
 
 
-
 // Alternative basic algorithm using only long integer arithmetic
 void intRunningAverage() {
 	int value;
@@ -203,6 +207,20 @@ void intRunningAverage() {
 				value);
 		value = avg[sensor] >> shift;
 		average[sensor] = (int) value;
+	}
+}
+
+
+// DIY algorithm using integer arithmetic. Simulates a gauge with restricted flow.
+void crawlingAverage() {
+	unsigned int value;
+	unsigned int factor = settings.emaFactor;
+
+	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
+		value = (unsigned int) readSensorCalibrated(sensor);
+		avg[sensor] = crawlingAverage(factor, avg[sensor], value);
+
+		average[sensor] = avg[sensor] >>factor;
 	}
 }
 

@@ -219,10 +219,40 @@ int intExponentialMovingAverage(int shift, int factor, int average, int input) {
     return(average);
 }
 
+//This is a pseudo-average, which constantly moves slowly in the direction of the real signal
+// in effect it does exactly what a gauge with restricted airflow does.
+// but it does so slowly, the factor is a divisor which allows the speed to be slowed to a crawl
+//it is not proportional to the input signal, only the direction matters and the speed factor
+//which dictates the size of the step it can take on each invocation
+unsigned long crawlingAverage(unsigned int factor, unsigned long average, unsigned int input) {
+    if(((unsigned long)input)<<factor > average){
+    	average++;
+    } else if(input != average){
+    	average--;
+    }
+    return(average);
+}
+
 //slower than the int version but extremely accurate / sensitive
 long longExponentialMovingAverage(int shift, int factor, long average, int input) {
     average += (((long)input<<(long)shift) - average)>>(long)factor;
     return(average);
+}
+
+long mulExponentialMovingAverage( long average, int input) {
+	long weight = 1000;
+	average += (((long)input * 1000) - average) / weight;
+    return(average);
+}
+
+//need a performance benchmark
+float floatExponentialMovingAverage(float weight, float average, int input){
+	average += ((float)input - average) / weight;
+	return (average);
+}
+
+void calculateDamping(){
+	damping = settings.damping * (float) 10.0;
 }
 
 // calculate the absolute difference between two integers
