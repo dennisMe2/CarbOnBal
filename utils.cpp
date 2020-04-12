@@ -225,11 +225,11 @@ int intExponentialMovingAverage(int shift, int factor, int average, int input) {
 //it is not proportional to the input signal, only the direction matters and the speed factor
 //which dictates the size of the step it can take on each invocation
 unsigned long crawlingAverage(unsigned int factor, unsigned long average, unsigned int input) {
-    if(((unsigned long)input)<<factor > average){
-    	average++;
-    } else if(input != average){
-    	average--;
-    }
+	int delta = input - (average>>factor);
+	int step = delta>>2;
+
+	average+= step;//note that step is added to the shifted average, so the steps tend to remain small
+
     return(average);
 }
 

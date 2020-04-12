@@ -63,8 +63,8 @@ int doSettingChooser(const char* valueName, const char* settings[], int count, i
 void drawCaret(uint8_t line);
 
 void drawMenu( const char* const pointerTable[], int count, int offset);
-void handleMenu( const char* const pointerTable[], void (*func[])(), int menuSize);
-void handleAdvancedMenu(const char* const pointerTable[], void (*func[])(), int menuSize, uint16_t mask);
+void handleMenu( const char* const pointerTable[], void (*func[])(), int menuSize, uint8_t menuLine);
+void handleAdvancedMenu(const char* const pointerTable[], void (*func[])(), int menuSize, uint16_t mask, uint8_t menuLine);
 void makeChar(byte *character, int value);
 void makeBars(char *bars, uint8_t number, uint8_t skip) ;
 

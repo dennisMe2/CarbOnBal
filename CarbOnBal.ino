@@ -1,5 +1,5 @@
 // This software, known as CarbOnBal is
-// Copyright, 2017 L.L.M. (Dennis) Meulensteen. dennis@meulensteen.nl
+// Copyright, 2017-2020 L.L.M. (Dennis) Meulensteen. dennis@meulensteen.nl
 //
 // This file is part of CarbOnBal. A combination of software and hardware.
 // I hope it may be of some help to you in balancing your carburetors and throttle bodies.

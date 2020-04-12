@@ -33,6 +33,17 @@
 #include "utils.h"
 
 bool quitMenu = false;
+uint8_t mainMenuLine = 0;
+uint8_t settingsMenuLine = 0;
+uint8_t displayClearCalibrationMenuLine = 0;
+uint8_t displayCalibrationSensorMenuLine = 0;
+uint8_t displayExtraMenuLine = 0;
+uint8_t displaySoftwareSettingsMenuLine = 0;
+uint8_t displayHardwareSettingsMenuLine = 0;
+uint8_t displayCommsMenuLine = 0;
+uint8_t displayDisplayMenuLine = 0;
+uint8_t displayCalibrationMenuLine = 0;
+uint8_t displayViewCalibrationMenuLine = 0;
 
 // an array of strings contains the menu titles
 // an array of function pointers, the same number and order as the above array, determines the actions to be taken when that title is selected
@@ -42,35 +53,35 @@ void actionDisplayMainMenu() {
 	const char* menu[] = {txtDisplay, txtSettings, txtCalibration, txtDataTransfer};
 	void (*actions[])() = {&actionDisplayDisplayMenu, &actionDisplaySettingsMenu, &actionDisplayCalibrationMenu, &actionDisplayCommsMenu};
 	uint8_t menuSize = 4;
-	handleMenu(menu, actions, menuSize);
+	handleMenu(menu, actions, menuSize, mainMenuLine);
 }
 
 void actionDisplaySettingsMenu() {
-	const char* const menu[] = { txtHardware, txtSoftware, txtExtraMenu};
-	void (*actions[])() = { &actionDisplayHardwareSettingsMenu, &actionDisplaySoftwareSettingsMenu, &actionDisplayExtraMenu };
+	const char* const menu[] = {  txtSoftware, txtHardware, txtExtraMenu};
+	void (*actions[])() = { &actionDisplaySoftwareSettingsMenu, &actionDisplayHardwareSettingsMenu,  &actionDisplayExtraMenu };
 	uint8_t menuSize = 3;
-	handleMenu(menu, actions, menuSize);
+	handleMenu(menu, actions, menuSize, settingsMenuLine);
 }
 
 void actionDisplayExtraMenu(){
 	const char* const menu[] = {txtDeviceInfo, txtAdvancedMenu, txtSplashScreen, txtFactoryReset};
 		void (*actions[])() = { &doDeviceInfo, &doAdvanced, &doSplashScreen, &actionReset};
 		uint8_t menuSize = 4;
-		handleAdvancedMenu(menu, actions, menuSize, B1100);
+		handleAdvancedMenu(menu, actions, menuSize, B1100, displayExtraMenuLine);
 }
 
 void actionDisplaySoftwareSettingsMenu() {
 	const char* const menu[] = { txtAveragingMethod, txtEmaShift, txtEmaFactor, txtDamping};
 	void (*actions[])() = { &actionAveragingMethod, &actionEmaShift, &actionEmaFactor, &actionDamping};
 	uint8_t menuSize = 4;
-	handleAdvancedMenu(menu, actions, menuSize, 0b1000);
+	handleAdvancedMenu(menu, actions, menuSize, 0b1000, displaySoftwareSettingsMenuLine);
 }
 
 void actionDisplayHardwareSettingsMenu() {
 	const char* const menu[] = {txtCylinderCount, txtMasterCylinder, txtContrastButton, txtBrightnessButton};
 	void (*actions[])() = {&actionCylinders, &actionMaster, &actionContrastButton, &actionBrightnessButton };
 	uint8_t menuSize = 4;
-	handleAdvancedMenu(menu, actions, menuSize, B1100);
+	handleAdvancedMenu(menu, actions, menuSize, B1100, displayHardwareSettingsMenuLine);
 }
 
 
@@ -78,44 +89,44 @@ void actionDisplayCommsMenu() {
 	const char* const menu[] = {txtCalibrationDump, txtLiveDataDump, txtBaudRate, txtArduinoMode};
 	void (*actions[])() = {&doCalibrationDump, &doDataDump, &doBaudRate, &doArduinoMode };
 	uint8_t menuSize = 4;
-	handleAdvancedMenu(menu, actions, menuSize, B1110);
+	handleAdvancedMenu(menu, actions, menuSize, B1110, displayCommsMenuLine);
 }
 
 void actionDisplayDisplayMenu() {
-	const char* const menu[] = {txtContrast, txtBrightness, txtDetails, txtGraphType,
+	const char* const menu[] = {txtGraphType, txtContrast, txtBrightness, txtDetails,
 								txtRpmDisplay, txtUnits, txtMaxZoomRange};
-	void (*actions[])() = {&actionContrast, &actionBrightness, &actionSilent, &actionGraphing,
+	void (*actions[])() = {&actionGraphing, &actionContrast, &actionBrightness, &actionSilent,
 								&doRevs, &doUnits ,&doMaxZoom };
 	uint8_t menuSize = 7;
-	handleAdvancedMenu(menu, actions, menuSize, B1101100);
+	handleAdvancedMenu(menu, actions, menuSize, B1110100, displayDisplayMenuLine);
 }
 
 void actionDisplayCalibrationMenu() {
 	const char* const menu[] = {txtViewCalibrations, txtCalibrateNow, txtClearCalibration};
 	void (*actions[])() = {&actionDisplayViewCalibrationMenu, &actionDisplayCalibrationSensorMenu, &actionDisplayClearCalibrationMenu };
 	uint8_t menuSize = 3;
-	handleAdvancedMenu(menu, actions, menuSize, B110);
+	handleAdvancedMenu(menu, actions, menuSize, B110, displayCalibrationMenuLine);
 }
 
 void actionDisplayViewCalibrationMenu() {
 	const char* const menu[] = {txtViewSensor2, txtViewSensor3, txtViewSensor4, txtSetCalibrationMax};
 	void (*actions[])() = {&doViewCalibration1, &doViewCalibration2, &doViewCalibration3, &actionCalibrationMax };
 	uint8_t menuSize = 4;
-	handleAdvancedMenu(menu, actions, menuSize, B1110);
+	handleAdvancedMenu(menu, actions, menuSize, B1110 ,displayViewCalibrationMenuLine);
 }
 
 void actionDisplayClearCalibrationMenu() {
 	const char* const menu[] = { txtClearSensor2,  txtClearSensor3,  txtClearSensor4, txtClearAllSensors};
 	void (*actions[])() = {&doClearCalibration1, &doClearCalibration2, &doClearCalibration3, &doZeroCalibrations };
 	uint8_t menuSize = 4;
-	handleMenu(menu, actions, menuSize);
+	handleMenu(menu, actions, menuSize, displayClearCalibrationMenuLine);
 }
 
 void actionDisplayCalibrationSensorMenu() {
 	const char* const menu[] = {txtCalibrateSensor2, txtCalibrateSensor3, txtCalibrateSensor4};
 	void (*actions[])() = {&doCalibrate1, &doCalibrate2, &doCalibrate3 };
 	uint8_t menuSize = 3;
-	handleMenu(menu, actions, menuSize);
+	handleMenu(menu, actions, menuSize, displayCalibrationSensorMenuLine);
 }
 
 // display a basic setting change screen that does not have to call a function
@@ -292,9 +303,9 @@ void drawMenu(const char* const pointerTable[], int count, int offset) {
 }
 
 
-void handleMenu(const char* const pointerTable[], void (*func[])(), int menuSize) {
-	int cursorLine = 0;
-	int offset = 0;
+void handleMenu(const char* const pointerTable[], void (*func[])(), int menuSize, uint8_t menuLine) {
+	int cursorLine = menuLine % 4;
+	int offset = menuLine/4;
 	bool refresh = true;
 
 	drawMenu( pointerTable, menuSize, offset );
@@ -303,7 +314,7 @@ void handleMenu(const char* const pointerTable[], void (*func[])(), int menuSize
 
 		switch ( buttonPressed()) {
 		case SELECT:
-
+			menuLine = cursorLine + offset;
 			(*func[cursorLine + offset])();
 
 			refresh = true;
@@ -337,9 +348,9 @@ void handleMenu(const char* const pointerTable[], void (*func[])(), int menuSize
 	}
 }
 
-void handleAdvancedMenu(const char* const pointerTable[], void (*func[])(), int menuSize, unsigned int mask){
+void handleAdvancedMenu(const char* const pointerTable[], void (*func[])(), int menuSize, unsigned int mask, uint8_t menuLine){
 	if(settings.advanced){
-		handleMenu(pointerTable, func, menuSize);
+		handleMenu(pointerTable, func, menuSize, menuLine);
 	}else {
 		const char* menu[16];
 		void (*actions[16])();
@@ -352,7 +363,7 @@ void handleAdvancedMenu(const char* const pointerTable[], void (*func[])(), int 
 				menuIndex++;
 			}
 		}
-		handleMenu(menu,actions,menuIndex);
+		handleMenu(menu,actions,menuIndex, menuLine);
 	}
 }
 
