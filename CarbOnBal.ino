@@ -52,7 +52,7 @@ int ambientPressure; //stores current ambient pressure for negative pressure dis
 unsigned long lastUpdate;
 int packetRequestCount = 0;
 
-unsigned long avg[NUM_SENSORS];
+volatile unsigned long avg[NUM_SENSORS];
 float damping;
 
 uint8_t labelPosition = 0;
@@ -60,7 +60,12 @@ uint8_t labelPosition = 0;
 unsigned int serialValues[] = { 0, 0, 0, 0 };
 unsigned long packetCounter = 0;
 unsigned long startTime;
-bool useLaptop = false;
+bool useLaptopForDataInput = false;
+volatile unsigned long lastInterrupt = micros();
+volatile unsigned long periodUs = 0;
+volatile unsigned long interruptDurationUs = 0;
+volatile bool isSerialAllowed = true;
+
 
 //this does the initial setup on startup.
 void setup() {
@@ -94,6 +99,22 @@ void setup() {
 
 	calculateDamping(); //pre-calculate real floating point value from percentage in settings
 
+	if(!useLaptopForDataInput){
+		//set timer1 interrupt at 1Hz
+		  TCCR1A = 0;// set entire TCCR1A register to 0
+		  TCCR1B = 0;// same for TCCR1B
+		  TCNT1  = 0;//initialize counter value to 0
+		  // set compare match register for 1hz increments
+		  OCR1A = 249;// = (16*10^6) / (1*1024) - 1 (must be <65536)
+		  // turn on CTC mode
+		  TCCR1B |= (1 << WGM12);
+		  // Set CS10 and CS11 bits for 64 prescaler
+		  TCCR1B |= (1 << CS11) | (1 << CS10);
+		  // enable timer compare interrupt
+		  TIMSK1 |= (1 << OCIE1A);
+		setInterrupt(true);
+	}
+
 }
 
 void doSerialRead() {
@@ -123,7 +144,7 @@ void doSerialRead() {
 void loop() {
 	startTime = micros();
 
-	if(useLaptop) doSerialRead();
+	if(useLaptopForDataInput) doSerialRead();
 
 	switch (buttonPressed()) {					//test if a button was pressed
 	case SELECT:
@@ -149,18 +170,6 @@ void loop() {
 		break; //toggle the freezeDisplay option
 	}
 
-	switch (settings.averagingMethod) {
-
-	case 0:
-		intRunningAverage();
-		break;		//calculate the averages and return asap
-	case 1:
-		descendingAverage();
-		break;
-	case 2:
-		crawlingAverage();
-	}
-
 	if (!freezeDisplay
 			&& (settings.graphType == 2 || (millis() - lastUpdate) > 100)) {//only update the display every 100ms or so to prevent flickering
 
@@ -175,11 +184,13 @@ void loop() {
 			break;    //
 		case 2: //in diagnostic mode we output the values via the serial port for display or analysis on a PC
 
-			if (settings.arduinoCompatible) {
+			if (isSerialAllowed & settings.arduinoCompatible) {
 				serialOut(average);
 			} else {
 				serialOutBytes(average);
 			}
+			isSerialAllowed = false;
+
 			if ((millis() - lastUpdate) > 100) {
 				lcdDiagnosticDisplay(average);
 				lastUpdate = millis();
@@ -415,8 +426,10 @@ void lcdDiagnosticDisplay(unsigned int value[]) {
 		lcd_printFormatted(differenceToPreferredUnits(delta));  //delta value
 	}
 	printLcdInteger(timeBase, 15, 0, 5); //time base
-	printLcdInteger(stableRPM, 15, 1, 5); //stable RPM
-	printLcdInteger(packetCounter, 15, 2, 5);
+	printLcdInteger(periodUs, 15, 1, 5); //interrupt freq in uS
+	//printLcdInteger(stableRPM, 15, 2, 5); //stable RPM
+	printLcdInteger(interruptDurationUs, 15, 2, 5);
+	printLcdInteger(packetCounter, 15, 3, 5); //serial packetrs sent
 
 }
 
@@ -470,12 +483,12 @@ void eepromWriteIfChanged(int address, int8_t data) {
 
 int readSensorRaw(int sensor) {
 	//dummy read primes the input capacitors, makes for a more accurate reading
-	analogRead(inputPin[sensor]);
+	//analogRead(inputPin[sensor]);
 	return (analogRead(inputPin[sensor]));
 }
 int readSensorCalibrated(int sensor) {
 
-	if(useLaptop) return (int) serialValues[sensor];
+	//if(useLaptop) return (int) serialValues[sensor];
 
 	int value = readSensorRaw(sensor);
 	if (sensor > 0) { //only for the calibrated sensors, not the master
@@ -538,6 +551,8 @@ void doCalibrate(int sensor) {
 	int minValue = 127;
 	int lowestCalibratedValue = 1024;
 	int readingStandard, readingSensor;
+
+	setInterrupt(false);
 
 	lcd_clear();
 
@@ -614,10 +629,11 @@ void doCalibrate(int sensor) {
 
 	waitForAnyKey();
 	displayCalibratedValues(values);
+	setInterrupt(true);
 }
 
 void doViewCalibration(int sensor) {
-
+	setInterrupt(false);
 	int values[numberOfCalibrationValues];
 
 	for (int i = 0; i < numberOfCalibrationValues; i++) {
@@ -626,6 +642,7 @@ void doViewCalibration(int sensor) {
 	}
 
 	displayCalibratedValues(values);
+	setInterrupt(true);
 }
 
 //display indicator arrows and numeric offsets so we don't get lost in the graph of calibration values.
@@ -777,6 +794,7 @@ void makeCalibrationChars() {
 
 //dump the calibration array to the serial port for review
 void doCalibrationDump() {
+	setInterrupt(false);
 	lcd_clear();
 	lcd_setCursor(0, 1);
 	lcd_print(txtConnectSerial);
@@ -801,6 +819,7 @@ void doCalibrationDump() {
 		}
 		Serial.print(txtSerialFooter);
 	}
+	setInterrupt(true);
 }
 
 void serialOut(unsigned int value[]) {
@@ -904,6 +923,7 @@ void doDataDumpBinary() {
 }
 
 void doRevs() {
+	setInterrupt(false);
 	bool descending = false;
 	bool previousDescending = false;
 
@@ -969,6 +989,8 @@ void doRevs() {
 			lastUpdateTime = millis();
 		}
 	}
+	lcd_clear();
+	setInterrupt(true);
 }
 
 void initRpmDisplay() {
@@ -1173,4 +1195,23 @@ void doDeviceInfo() {
 	lcd_print(txtLcdSpeed);
 	lcd_printLong(speed);
 	waitForAnyKey();
+}
+
+ISR(TIMER1_COMPA_vect){
+	unsigned long microSecond = micros();
+	periodUs = microSecond - lastInterrupt;
+	lastInterrupt = microSecond;
+
+	switch (settings.averagingMethod) {
+		case 0:
+			intRunningAverage();
+			break;		//calculate the averages and return asap
+		case 1:
+			descendingAverage();
+			break;
+		case 2:
+			crawlingAverage();
+	}
+	interruptDurationUs = micros() - microSecond;
+	isSerialAllowed = true;
 }

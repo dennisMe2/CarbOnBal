@@ -43,6 +43,14 @@ unsigned long lastEntry = 0 ;
 
 uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
 
+void setInterrupt(bool enabled){
+	if(enabled) {
+		TIMSK1 |= (1 << OCIE1A);
+	}else{
+		TIMSK1 |= (0 << OCIE1A);
+	}
+}
+
 void resetAverages(){
 	for(int sensor=0; sensor< NUM_SENSORS; sensor++){
 		sums[sensor] = 0;

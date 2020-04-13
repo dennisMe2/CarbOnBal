@@ -27,6 +27,7 @@
 #define UTILS_H_INCLUDED
 #include <Arduino.h>
 
+void setInterrupt(bool enabled);
 void resetAverages();
 float convertToPreferredUnits(int value, int ambient);
 float differenceToPreferredUnits(int value);

@@ -52,6 +52,7 @@ void doBaudRate(){
 void actionBrightness() {
     settings.brightness = doSettingChanger(txtBrightness, 0, 255, settings.brightness, 10, &doBrightness) ;
     actionSaveSettings();
+    lcd_clear();
 }
 
 void doBrightness(int value) {
@@ -61,6 +62,7 @@ void doBrightness(int value) {
 void actionContrast() {
     settings.contrast = doSettingChanger(txtContrast, 0, 127, settings.contrast, 1, &doContrast) ;
     actionSaveSettings();
+    lcd_clear();
 }
 
 void actionDamping() {

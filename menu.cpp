@@ -49,11 +49,13 @@ uint8_t displayViewCalibrationMenuLine = 0;
 // an array of function pointers, the same number and order as the above array, determines the actions to be taken when that title is selected
 // a size is passed which must be equal to the number of menu entries
 void actionDisplayMainMenu() {
-  quitMenu = false;
+	setInterrupt(false);
+	quitMenu = false;
 	const char* menu[] = {txtDisplay, txtSettings, txtCalibration, txtDataTransfer};
 	void (*actions[])() = {&actionDisplayDisplayMenu, &actionDisplaySettingsMenu, &actionDisplayCalibrationMenu, &actionDisplayCommsMenu};
 	uint8_t menuSize = 4;
 	handleMenu(menu, actions, menuSize, mainMenuLine);
+	setInterrupt(true);
 }
 
 void actionDisplaySettingsMenu() {

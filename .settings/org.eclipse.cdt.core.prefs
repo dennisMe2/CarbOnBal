@@ -160,13 +160,13 @@ environment/project/io.sloeber.core.toolChain.release.752246648/A.ESP8266.NETWOR
 environment/project/io.sloeber.core.toolChain.release.752246648/A.ESP8266.NETWORK.UPLOAD.TOOL/value=esp8266OTA
 environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.DTS/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.DTS/operation=replace
-environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.DTS/value=0
+environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.DTS/value=3600
 environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.LOCAL/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.LOCAL/operation=replace
-environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.LOCAL/value=1517866505
+environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.LOCAL/value=1586781594
 environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.UTC/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.UTC/operation=replace
-environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.UTC/value=1517862905
+environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.UTC/value=1586774394
 environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.ZONE/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.ZONE/operation=replace
 environment/project/io.sloeber.core.toolChain.release.752246648/A.EXTRA.TIME.ZONE/value=3600
@@ -454,7 +454,7 @@ environment/project/io.sloeber.core.toolChain.release.752246648/JANTJE.BOARD_NAM
 environment/project/io.sloeber.core.toolChain.release.752246648/JANTJE.BOARD_NAME/value=Arduino Nano
 environment/project/io.sloeber.core.toolChain.release.752246648/JANTJE.COM_PORT/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.752246648/JANTJE.COM_PORT/operation=replace
-environment/project/io.sloeber.core.toolChain.release.752246648/JANTJE.COM_PORT/value=/dev/ttyUSB0
+environment/project/io.sloeber.core.toolChain.release.752246648/JANTJE.COM_PORT/value=/dev/ttyUSB1
 environment/project/io.sloeber.core.toolChain.release.752246648/JANTJE.ECLIPSE_LOCATION/delimiter=\:
 environment/project/io.sloeber.core.toolChain.release.752246648/JANTJE.ECLIPSE_LOCATION/operation=replace
 environment/project/io.sloeber.core.toolChain.release.752246648/JANTJE.ECLIPSE_LOCATION/value=
