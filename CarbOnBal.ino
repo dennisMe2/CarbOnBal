@@ -43,8 +43,6 @@ long sums[NUM_SENSORS] = { 0, 0, 0, 0 }; //tracks totals for calculating a numer
 bool freezeDisplay = false; //used to tell when a user wants to freeze the display
 unsigned int rpm;                                       //stores the current RPM
 
-float stabilityThreshold; //the factor used to detect when the throttle is being yanked and a response is required
-
 int readingCount[NUM_SENSORS]; //used to store the number of captured readings for calculating a numerical average
 int previousValue[NUM_SENSORS]; //stores the previous sensor value to determine ascending v. descending pressures
 unsigned int average[NUM_SENSORS]; //used to share the current average for each sensor
@@ -52,8 +50,8 @@ int ambientPressure; //stores current ambient pressure for negative pressure dis
 unsigned long lastUpdate;
 int packetRequestCount = 0;
 
-volatile unsigned long avg[NUM_SENSORS];
-float damping;
+
+volatile longAverages avg[NUM_SENSORS];
 
 uint8_t labelPosition = 0;
 
@@ -65,6 +63,7 @@ volatile unsigned long lastInterrupt = micros();
 volatile unsigned long periodUs = 0;
 volatile unsigned long interruptDurationUs = 0;
 volatile bool isSerialAllowed = true;
+bool dataDumpMode = false;
 
 
 //this does the initial setup on startup.
@@ -83,7 +82,6 @@ void setup() {
 	analogWrite(contrastPin, settings.contrast); //contrast is PWM with smoothing (R/C network) to prevent flicker
 
 	ambientPressure = detectAmbient(); //set ambient pressure (important because it varies with weather and altitude)
-	stabilityThreshold = (100 - settings.responsiveness) / 100.00; //more than a certain % difference from the average
 
 	if (settings.splashScreen) {
 		doMatrixDemo();
@@ -96,8 +94,6 @@ void setup() {
 		doAbsoluteDemo();
 		doRelativeDemo();
 	}
-
-	calculateDamping(); //pre-calculate real floating point value from percentage in settings
 
 	if(!useLaptopForDataInput){
 		//set timer1 interrupt at 1Hz
@@ -184,9 +180,9 @@ void loop() {
 			break;    //
 		case 2: //in diagnostic mode we output the values via the serial port for display or analysis on a PC
 
-			if (isSerialAllowed & settings.arduinoCompatible) {
+			if (isSerialAllowed && settings.arduinoCompatible) {
 				serialOut(average);
-			} else {
+			} else if (isSerialAllowed ) {
 				serialOutBytes(average);
 			}
 			isSerialAllowed = false;
@@ -207,33 +203,18 @@ void loop() {
 
 
 // Alternative basic algorithm using only long integer arithmetic
+// now the definitive algorithm
 void intRunningAverage() {
-	int value;
-	int shift = settings.emaShift;
+	unsigned int value;
 	int factor = settings.emaFactor;
 
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
-		value = readSensorCalibrated(sensor);
-		avg[sensor] = longExponentialMovingAverage(shift, factor, avg[sensor],
-				value);
-		value = avg[sensor] >> shift;
-		average[sensor] = (int) value;
-	}
-}
-
-
-// DIY algorithm using integer arithmetic. Simulates a gauge with restricted flow.
-void crawlingAverage() {
-	unsigned int value;
-	unsigned int factor = settings.emaFactor;
-
-	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
 		value = (unsigned int) readSensorCalibrated(sensor);
-		avg[sensor] = crawlingAverage(factor, avg[sensor], value);
-
-		average[sensor] = avg[sensor] >>factor;
+		avg[sensor].longVal = longExponentialMovingAverage( factor, avg[sensor].longVal, value);
+		average[sensor] = avg[sensor].intVal[1];
 	}
 }
+
 
 /*
  * uses the average ms between calls to this function as a trigger as a measure of RPM
@@ -268,8 +249,9 @@ bool isRPMStable(int sensor) {
 			stableRPM = true;
 		}
 
-		averageDeltaMs = longExponentialMovingAverage(shift, 12, averageDeltaMs,
-				deltaMs);
+		//todo fix up
+		//averageDeltaMs = longExponentialMovingAverage(shift, 12, averageDeltaMs, deltaMs);
+
 		previousTriggerTime = triggerTime;
 	}
 
@@ -280,7 +262,6 @@ bool isRPMStable(int sensor) {
 // shouldn't affect the average negatively
 void descendingAverage() {
 	int value;
-	int shift = settings.emaShift;
 	int factor = settings.emaFactor;
 
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
@@ -291,9 +272,8 @@ void descendingAverage() {
 		} else {                       //above the previous value or equal to it
 			if (readingCount[sensor] > 1) {
 				//calculate the average now we've measured a whole "vacuum signal flank"
-				avg[sensor] = longExponentialMovingAverage(shift, factor,
-						avg[sensor], sums[sensor] / readingCount[sensor]);
-				average[sensor] = (int) (avg[sensor] >> shift);
+				avg[sensor].longVal = longExponentialMovingAverage( factor, avg[sensor].longVal, sums[sensor] / readingCount[sensor]);
+				average[sensor] = avg[sensor].intVal[1];
 			}
 			//done the calculations, now reset everything ready to start over when the signal drops again
 			sums[sensor] = 0;
@@ -482,8 +462,7 @@ void eepromWriteIfChanged(int address, int8_t data) {
 }
 
 int readSensorRaw(int sensor) {
-	//dummy read primes the input capacitors, makes for a more accurate reading
-	//analogRead(inputPin[sensor]);
+	//dummy read did nothing measurable, skip that nonsense
 	return (analogRead(inputPin[sensor]));
 }
 int readSensorCalibrated(int sensor) {
@@ -545,13 +524,12 @@ void doCalibrate3() {
 	doCalibrate(3);
 }
 void doCalibrate(int sensor) {
-	const int shift = 6;
+	const int shift = 5;
 	const int factor = 4;
 	int maxValue = -127;
 	int minValue = 127;
 	int lowestCalibratedValue = 1024;
-	int readingStandard, readingSensor;
-
+	int readingStandardPre, readingSensor, readingStandardPost;
 	setInterrupt(false);
 
 	lcd_clear();
@@ -582,9 +560,11 @@ void doCalibrate(int sensor) {
 	}
 
 	while (!buttonPressed()) {
-		readingStandard = readSensorRaw(0);  //read master
+		readingStandardPre = readSensorRaw(0);  //read master
 		readingSensor = readSensorRaw(sensor); //read calibration sensor
+		readingStandardPost = readSensorRaw(0);  //read master again
 
+		int readingStandard = (readingStandardPre + readingStandardPost) >> 1; //average both to increase accuracy on slopes
 		int calibrationValue = readingStandard - readingSensor;
 
 		//record some basic quality statistics
@@ -824,7 +804,7 @@ void doCalibrationDump() {
 
 void serialOut(unsigned int value[]) {
 
-	Serial.begin(getBaud(settings.baudRate));
+	if(!Serial.availableForWrite()) Serial.begin(getBaud(settings.baudRate));
 	for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
 		Serial.print(convertToPreferredUnits(value[sensor], ambientPressure));
 		Serial.print("\t");
@@ -846,7 +826,7 @@ void serialWriteInteger(unsigned int value) {
 }
 
 void serialOutBytes(unsigned int value[]) {
-
+	if(!Serial.availableForWrite()) Serial.begin(getBaud(settings.baudRate));
 	serialWriteHeader();
 
 	for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
@@ -856,11 +836,13 @@ void serialOutBytes(unsigned int value[]) {
 
 //dump calibrated sensor data directly to serial
 void doDataDump() {
+	dataDumpMode = true;
 	if (settings.arduinoCompatible) {
 		doDataDumpChars();
 	} else {
 		doDataDumpBinary();
 	}
+	dataDumpMode = false;
 }
 
 void doDataDumpChars() {
@@ -890,7 +872,6 @@ void doDataDumpChars() {
 	}
 }
 void doDataDumpBinary() {
-	int reading = 0;
 	unsigned long startTime = 0;
 	unsigned int millisecond = 0;
 
@@ -898,28 +879,35 @@ void doDataDumpBinary() {
 	lcd_setCursor(0, 1);
 	lcd_print(txtConnectSerial);
 	Serial.begin(getBaud(settings.baudRate));
+	setInterrupt(true);
 
 	if (Serial) {
 		lcd_setCursor(0, 1);
 		lcd_print(txtDumpingSensorData);
 		startTime = millis();
 
-		while (!(buttonPressed() == CANCEL)) {
-			millisecond = millis() - startTime;
-			if (millisecond >= 1000) {
-				startTime = millis();
-				millisecond = 0;
-			}
+		while (!(buttonPressed() == CANCEL)) {//loop while interrupt routine gathers data
 
-			serialWriteHeader();
-			serialWriteInteger(millisecond);
+			if(isSerialAllowed){
+				millisecond = millis() - startTime;
+				if (millisecond >= 1000) {
+					startTime = millis();
+					millisecond = 0;
+				}
 
-			for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
-				reading = readSensorCalibrated(sensor);
-				serialWriteInteger(reading);
+				serialWriteHeader();
+				serialWriteInteger(millisecond);
+
+				for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
+					serialWriteInteger(average[sensor]);
+				}
+
 			}
+			isSerialAllowed = false;
 		}
+
 	}
+	setInterrupt(false);
 }
 
 void doRevs() {
@@ -936,8 +924,8 @@ void doRevs() {
 	int previous = 1024;
 	int descentCount = 0;
 	int ascentCount = 0;
-
-	unsigned long rpmAverage;
+	int factor = settings.emaFactor;
+	longAverages rpmAverage;
 
 	initRpmDisplay();
 
@@ -972,8 +960,8 @@ void doRevs() {
 			if (delta < 1) {
 				rpm = 0;
 			} else {
-				rpmAverage = longExponentialMovingAverage(6,4, rpmAverage, 120000 / delta);
-				rpm = rpmAverage >> 4;
+				rpmAverage.longVal = longExponentialMovingAverage( factor, rpmAverage.longVal, 120000 / delta);
+				rpm = rpmAverage.intVal[1];
 			}
 			previousPeak = peak;
 		}
@@ -1202,15 +1190,19 @@ ISR(TIMER1_COMPA_vect){
 	periodUs = microSecond - lastInterrupt;
 	lastInterrupt = microSecond;
 
-	switch (settings.averagingMethod) {
-		case 0:
-			intRunningAverage();
-			break;		//calculate the averages and return asap
-		case 1:
-			descendingAverage();
-			break;
-		case 2:
-			crawlingAverage();
+	if(dataDumpMode){
+		for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
+			average[sensor] = readSensorCalibrated(sensor);
+		}
+	} else {
+		switch (settings.averagingMethod) {
+			case 0:
+				intRunningAverage();
+				break;		//calculate the averages and return asap
+			case 1:
+				descendingAverage();
+				break;
+		}
 	}
 	interruptDurationUs = micros() - microSecond;
 	isSerialAllowed = true;

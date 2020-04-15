@@ -124,7 +124,7 @@ float differenceToInHg(int value){
 void resetToFactoryDefaultSettings(){
     settings.brightness = 255;
     settings.contrast = 10;
-    settings.damping = 85;
+    settings.damping = 85;//obsolete
     settings.delayTime = 0;
     settings.graphType = 0;
     settings.usePeakAverage = false;
@@ -227,23 +227,12 @@ int intExponentialMovingAverage(int shift, int factor, int average, int input) {
     return(average);
 }
 
-//This is a pseudo-average, which constantly moves slowly in the direction of the real signal
-// in effect it does exactly what a gauge with restricted airflow does.
-// but it does so slowly, the factor is a divisor which allows the speed to be slowed to a crawl
-//it is not proportional to the input signal, only the direction matters and the speed factor
-//which dictates the size of the step it can take on each invocation
-unsigned long crawlingAverage(unsigned int factor, unsigned long average, unsigned int input) {
-	int delta = input - (average>>factor);
-	int step = delta>>2;
-
-	average+= step;//note that step is added to the shifted average, so the steps tend to remain small
-
-    return(average);
-}
-
 //slower than the int version but extremely accurate / sensitive
-long longExponentialMovingAverage(int shift, int factor, long average, int input) {
-    average += (((long)input<<(long)shift) - average)>>(long)factor;
+long longExponentialMovingAverage( int factor,  long average,  int input) {
+    longAverages longValue; //this insane union is used to save CPU cycles, instead of shifting bits 16x we just load the upper int in one go
+    longValue.intVal[0] = 0;
+    longValue.intVal[1] = input;
+    average += (longValue.longVal - average) >> factor;
     return(average);
 }
 
@@ -257,10 +246,6 @@ long mulExponentialMovingAverage( long average, int input) {
 float floatExponentialMovingAverage(float weight, float average, int input){
 	average += ((float)input - average) / weight;
 	return (average);
-}
-
-void calculateDamping(){
-	damping = settings.damping * (float) 10.0;
 }
 
 // calculate the absolute difference between two integers

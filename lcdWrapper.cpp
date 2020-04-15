@@ -67,7 +67,7 @@ void lcd_printFloat(float value){
 void lcd_printFormatted(float value){
 	float fractionalPart = abs(value) - (long)abs(value);
 
-	if(value < 0.0) lcd.print('-');
+	//if(value < 0.0) lcd.print('-');
 
 	if ((0 == settings.units)|| (1 == settings.units)){
 		lcd.print(String((int)value));

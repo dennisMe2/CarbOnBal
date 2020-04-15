@@ -65,12 +65,6 @@ void actionContrast() {
     lcd_clear();
 }
 
-void actionDamping() {
-    settings.damping = doBasicSettingChanger(txtDamping, 0, 100, settings.damping, 1) ;
-    actionSaveSettings();
-    calculateDamping();
-}
-
 void doContrast(int value) {
     analogWrite(contrastPin, value);
 }
@@ -87,8 +81,8 @@ void doSplashScreen(){
 	    actionSaveSettings();
 }
 void actionAveragingMethod(){
-	const char* actions[] = {txtIntRunningAverage, txtDescendingAverage, txtRunningAverage};
-		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 3, settings.averagingMethod) ;
+	const char* actions[] = {txtIntRunningAverage, txtDescendingAverage};
+		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 2, settings.averagingMethod) ;
 		    actionSaveSettings();
 		    resetAverages();
 }
@@ -124,13 +118,9 @@ void actionReset() {
     }
 }
 
-void actionEmaShift() {
-    settings.emaShift = (uint8_t) doBasicSettingChanger(txtEmaShift, 0, 21, settings.emaShift, 1);
-    actionSaveSettings();
-}
 
 void actionEmaFactor() {
-    settings.emaFactor = (uint8_t) doBasicSettingChanger(txtEmaFactor, 0, 20, settings.emaFactor, 1);
+    settings.emaFactor = (uint8_t) doBasicSettingChanger(txtEmaFactor, 0, 15, settings.emaFactor, 1);
     actionSaveSettings();
 }
 

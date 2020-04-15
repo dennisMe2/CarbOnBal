@@ -75,7 +75,7 @@ struct settings_t
     int baudRate;
     uint8_t damping;
     int delayTime;		//removed
-    int threshold;
+    int threshold;      //removed
     uint8_t rpmDamping;
     uint8_t responsiveness;
     uint8_t units;
@@ -87,6 +87,11 @@ struct settings_t
     uint8_t emaFactor;
     uint8_t emaCorrection;
     uint8_t emaRpmSensitivity;
+};
+
+union longAverages{
+	long longVal;
+	int intVal[2];
 };
 
 extern int readingCount[NUM_SENSORS];

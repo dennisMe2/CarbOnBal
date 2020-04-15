@@ -73,10 +73,10 @@ void actionDisplayExtraMenu(){
 }
 
 void actionDisplaySoftwareSettingsMenu() {
-	const char* const menu[] = { txtAveragingMethod, txtEmaShift, txtEmaFactor, txtDamping};
-	void (*actions[])() = { &actionAveragingMethod, &actionEmaShift, &actionEmaFactor, &actionDamping};
-	uint8_t menuSize = 4;
-	handleAdvancedMenu(menu, actions, menuSize, 0b1000, displaySoftwareSettingsMenuLine);
+	const char* const menu[] = { txtAveragingMethod, txtDamping};
+	void (*actions[])() = { &actionAveragingMethod, &actionEmaFactor};
+	uint8_t menuSize = 2;
+	handleAdvancedMenu(menu, actions, menuSize, 0b10, displaySoftwareSettingsMenuLine);
 }
 
 void actionDisplayHardwareSettingsMenu() {
@@ -85,7 +85,6 @@ void actionDisplayHardwareSettingsMenu() {
 	uint8_t menuSize = 4;
 	handleAdvancedMenu(menu, actions, menuSize, B1100, displayHardwareSettingsMenuLine);
 }
-
 
 void actionDisplayCommsMenu() {
 	const char* const menu[] = {txtCalibrationDump, txtLiveDataDump, txtBaudRate, txtArduinoMode};
