@@ -62,7 +62,7 @@ bool useLaptopForDataInput = false;
 volatile unsigned long lastInterrupt = micros();
 volatile unsigned long periodUs = 0;
 volatile unsigned long interruptDurationUs = 0;
-volatile bool isSerialAllowed = true;
+volatile bool isSerialAllowed = false;
 bool dataDumpMode = false;
 
 
@@ -113,26 +113,10 @@ void setup() {
 
 }
 
-void doSerialRead() {
-	unsigned int readInt;
-
-	// request a number of consecutive packets to populate the built in hardware serial cache
-	while (packetRequestCount <= 15) {
-		Serial.write(REQUEST_PACKET); //request a packet
-		packetRequestCount++;
-	}
-	for(int i=0; i<10; i++){//max ten attempts to read a valid packet to avoid hanging up the UI
-
-		if ((Serial.available() > 8) && (Serial.read() == START_PACKET)) {
-
-			for (int i = 0; i < 4; i++) {
-				readInt = ((uint8_t) Serial.read()) << 7; //only using lower 7 bits for payload!
-				readInt |= ((uint8_t) Serial.read());
-				serialValues[i] = readInt;
-			}
-			packetCounter++;
-			packetRequestCount--;
-			break;
+void doSerialReadCommand() {
+	if(isSerialAllowed && (Serial.available() >= 1)){
+		if ((uint8_t) Serial.read() == 0xFC){
+			doDataDump();
 		}
 	}
 }
@@ -140,7 +124,7 @@ void doSerialRead() {
 void loop() {
 	startTime = micros();
 
-	if(useLaptopForDataInput) doSerialRead();
+	doSerialReadCommand(); //reads commands from serial
 
 	switch (buttonPressed()) {					//test if a button was pressed
 	case SELECT:
@@ -466,9 +450,6 @@ int readSensorRaw(int sensor) {
 	return (analogRead(inputPin[sensor]));
 }
 int readSensorCalibrated(int sensor) {
-
-	//if(useLaptop) return (int) serialValues[sensor];
-
 	int value = readSensorRaw(sensor);
 	if (sensor > 0) { //only for the calibrated sensors, not the master
 		value += (int8_t) EEPROM.read(
@@ -816,21 +797,19 @@ void serialWriteHeader() {
 	Serial.write(START_PACKET);
 }
 
-void serialWriteInteger(unsigned int value) {
-	uint16_t lowByteMask = 0b01111111;
-	uint8_t bigEnd = value >> 7; //shift the upper byte down into the lower byte
-	uint8_t littleEnd = value & lowByteMask; //blank out the upper byte
-
-	Serial.write(bigEnd); //big endian in serial comms means the high byte comes first
-	Serial.write(littleEnd);
+void serialWriteInteger(intByteUnion value) {
+	Serial.write(value.byteVal[1]);
+	Serial.write(value.byteVal[0]);
 }
 
 void serialOutBytes(unsigned int value[]) {
+	intByteUnion intByte;
 	if(!Serial.availableForWrite()) Serial.begin(getBaud(settings.baudRate));
 	serialWriteHeader();
 
 	for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
-		serialWriteInteger(value[sensor]);
+		intByte.intVal = value[sensor];
+		serialWriteInteger(intByte);
 	}
 }
 
@@ -872,8 +851,7 @@ void doDataDumpChars() {
 	}
 }
 void doDataDumpBinary() {
-	unsigned long startTime = 0;
-	unsigned int millisecond = 0;
+	intByteUnion intVals;
 
 	lcd_clear();
 	lcd_setCursor(0, 1);
@@ -881,31 +859,22 @@ void doDataDumpBinary() {
 	Serial.begin(getBaud(settings.baudRate));
 	setInterrupt(true);
 
-	if (Serial) {
+	if (Serial.availableForWrite()) {
 		lcd_setCursor(0, 1);
 		lcd_print(txtDumpingSensorData);
-		startTime = millis();
 
 		while (!(buttonPressed() == CANCEL)) {//loop while interrupt routine gathers data
-
 			if(isSerialAllowed){
-				millisecond = millis() - startTime;
-				if (millisecond >= 1000) {
-					startTime = millis();
-					millisecond = 0;
-				}
-
-				serialWriteHeader();
-				serialWriteInteger(millisecond);
+				//serialWriteHeader();
 
 				for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
-					serialWriteInteger(average[sensor]);
+					intVals.intVal = average[sensor];
+					serialWriteInteger(intVals);
 				}
-
+				Serial.write(REQUEST_PACKET);
 			}
 			isSerialAllowed = false;
 		}
-
 	}
 	setInterrupt(false);
 }
