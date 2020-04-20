@@ -1,13 +1,13 @@
 // This software, known as CarbOnBal is
-// Copyright, 2017 L.L.M. (Dennis) Meulensteen. dennis@meulensteen.nl
+// Copyright, 2017-2020 L.L.M. (Dennis) Meulensteen. dennis@meulensteen.nl
 //
 // This file is part of CarbOnBal. A combination of software and hardware.
 // I hope it may be of some help to you in balancing your carburetors and throttle bodies.
 // Always be careful when working on a vehicle or electronic project like this.
 // Your life and health are your sole responsibility, use wisely.
 //
-// CarbOnBal hardware is covered by the Cern Open Hardware License v1.2
-// a copy of the text is incuded with the source code.
+// CarbOnBal hardware is covered by the CERN Open Hardware License v1.2
+// a copy of the text is included with the source code.
 //
 // CarbOnBal is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
