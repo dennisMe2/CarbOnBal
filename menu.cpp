@@ -35,6 +35,7 @@
 bool quitMenu = false;
 uint8_t mainMenuLine = 0;
 uint8_t settingsMenuLine = 0;
+uint8_t buttonsMenuLine = 0;
 uint8_t displayClearCalibrationMenuLine = 0;
 uint8_t displayCalibrationSensorMenuLine = 0;
 uint8_t displayExtraMenuLine = 0;
@@ -59,10 +60,17 @@ void actionDisplayMainMenu() {
 }
 
 void actionDisplaySettingsMenu() {
-	const char* const menu[] = {  txtSoftware, txtHardware, txtExtraMenu};
-	void (*actions[])() = { &actionDisplaySoftwareSettingsMenu, &actionDisplayHardwareSettingsMenu,  &actionDisplayExtraMenu };
-	uint8_t menuSize = 3;
+	const char* const menu[] = {  txtSoftware, txtHardware, txtButtons, txtExtraMenu};
+	void (*actions[])() = { &actionDisplaySoftwareSettingsMenu, &actionDisplayHardwareSettingsMenu, &actionDisplayButtonsMenu, &actionDisplayExtraMenu };
+	uint8_t menuSize = 4;
 	handleMenu(menu, actions, menuSize, settingsMenuLine);
+}
+
+void actionDisplayButtonsMenu() {
+	const char* const menu[] = {txtContrastButton, txtBrightnessButton, txtCancelButton};
+	void (*actions[])() = { &actionContrastButton, &actionBrightnessButton, &actionCancelButton };
+	uint8_t menuSize = 3;
+	handleMenu(menu, actions, menuSize, buttonsMenuLine);
 }
 
 void actionDisplayExtraMenu(){
@@ -73,17 +81,17 @@ void actionDisplayExtraMenu(){
 }
 
 void actionDisplaySoftwareSettingsMenu() {
-	const char* const menu[] = { txtAveragingMethod, txtDamping};
-	void (*actions[])() = { &actionAveragingMethod, &actionEmaFactor};
+	const char* const menu[] = {  txtDamping, txtRpmDamping};
+	void (*actions[])() = { &actionEmaFactor, &actionRpmEmaFactor};
 	uint8_t menuSize = 2;
-	handleAdvancedMenu(menu, actions, menuSize, 0b10, displaySoftwareSettingsMenuLine);
+	handleMenu(menu, actions, menuSize, displaySoftwareSettingsMenuLine);
 }
 
 void actionDisplayHardwareSettingsMenu() {
-	const char* const menu[] = {txtCylinderCount, txtMasterCylinder, txtContrastButton, txtBrightnessButton};
-	void (*actions[])() = {&actionCylinders, &actionMaster, &actionContrastButton, &actionBrightnessButton };
-	uint8_t menuSize = 4;
-	handleAdvancedMenu(menu, actions, menuSize, B1100, displayHardwareSettingsMenuLine);
+	const char* const menu[] = {txtCylinderCount, txtMasterCylinder};
+	void (*actions[])() = {&actionCylinders, &actionMaster };
+	uint8_t menuSize = 2;
+	handleMenu(menu, actions, menuSize,  displayHardwareSettingsMenuLine);
 }
 
 void actionDisplayCommsMenu() {
@@ -135,9 +143,14 @@ int doBasicSettingChanger(const char* valueName, int minimum, int maximum, int s
 	return doSettingChanger( valueName, minimum, maximum, startValue, steps, NULL );
 }
 
+int doSettingChanger(const char* valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) ) {
+	return  doSettingChangerDelay(valueName, minimum, maximum, startValue, steps, func, 0) ;
+}
+
 // display a settings change screen that calls a function every time the value changes for an immediate response
 // normally used for setting contrast and brightness
-int doSettingChanger(const char* valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) ) {
+int doSettingChangerDelay(const char* valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i),unsigned int delayMs ) {
+	unsigned long startTime = millis();
 	int value = startValue;
 	lcd_clear();
 	lcd_setCursor(0, 0);
@@ -146,7 +159,7 @@ int doSettingChanger(const char* valueName, int minimum, int maximum, int startV
 	lcd_printInt(startValue);
 
 	while (true) {
-
+		if((delayMs > 0) && ((millis() - startTime) >= delayMs ) ) break;
 		int segmentsInCharacter = 5;
 		int TotalNumberOfLitSegments = 100000L/maximum * value/1000;
 		int numberOfLitBars = TotalNumberOfLitSegments / segmentsInCharacter;
@@ -181,6 +194,7 @@ int doSettingChanger(const char* valueName, int minimum, int maximum, int startV
 		} else {
 			value = maximum;
 		}
+		startTime = millis();
 		if(func)(*func)(value);
 		break;
 
@@ -189,6 +203,7 @@ int doSettingChanger(const char* valueName, int minimum, int maximum, int startV
 		} else {
 			value = minimum;
 		}
+		startTime = millis();
 		if(func)(*func)(value);
 		break;
 		case CANCEL: if(func)(*func)(startValue); return startValue;
@@ -196,6 +211,7 @@ int doSettingChanger(const char* valueName, int minimum, int maximum, int startV
 
 		delay(50);
 	}
+	lcd_clear();
 	return startValue;
 }
 

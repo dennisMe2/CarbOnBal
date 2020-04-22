@@ -27,7 +27,7 @@
 #define GLOBALS_H_INCLUDED
 #include <Arduino.h>
 
-#define SOFTWARE_VERSION "1.5.4"
+#define SOFTWARE_VERSION "2.0.0"
 
 #define SELECT 2
 #define LEFT 3
@@ -54,7 +54,7 @@ static const int numberOfCalibrationValues=256;
 static const int calibrationOffset=256; //eeprom base address for calibration
 
 
-static const uint8_t versionUID = 23; //update when settings_t changes!
+static const uint8_t versionUID = 24; //update when settings_t changes!
 static const uint8_t settingsOffset = sizeof(versionUID);
 
 //this struct is used to store settings in NVRAM
@@ -69,6 +69,7 @@ struct settings_t
     uint8_t master;
     uint8_t button1;
     uint8_t button2;
+    uint8_t button3;
     uint8_t contrast;
     uint8_t brightness;
     uint8_t graphType;

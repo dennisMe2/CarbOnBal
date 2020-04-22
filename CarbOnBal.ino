@@ -49,8 +49,8 @@ unsigned int average[NUM_SENSORS]; //used to share the current average for each 
 int ambientPressure; //stores current ambient pressure for negative pressure display
 unsigned long lastUpdate;
 int packetRequestCount = 0;
-
-
+int emaTarget = -1;
+unsigned long emaMillis = 0;
 volatile longAverages avg[NUM_SENSORS];
 
 uint8_t labelPosition = 0;
@@ -58,7 +58,6 @@ uint8_t labelPosition = 0;
 unsigned int serialValues[] = { 0, 0, 0, 0 };
 unsigned long packetCounter = 0;
 unsigned long startTime;
-bool useLaptopForDataInput = false;
 volatile unsigned long lastInterrupt = micros();
 volatile unsigned long periodUs = 0;
 volatile unsigned long interruptDurationUs = 0;
@@ -95,22 +94,20 @@ void setup() {
 		doRelativeDemo();
 	}
 
-	if(!useLaptopForDataInput){
-		//set timer1 interrupt at 1Hz
-		  TCCR1A = 0;// set entire TCCR1A register to 0
-		  TCCR1B = 0;// same for TCCR1B
-		  TCNT1  = 0;//initialize counter value to 0
-		  // set compare match register for 1hz increments
-		  OCR1A = 249;// = (16*10^6) / (1*1024) - 1 (must be <65536)
-		  // turn on CTC mode
-		  TCCR1B |= (1 << WGM12);
-		  // Set CS10 and CS11 bits for 64 prescaler
-		  TCCR1B |= (1 << CS11) | (1 << CS10);
-		  // enable timer compare interrupt
-		  TIMSK1 |= (1 << OCIE1A);
-		setInterrupt(true);
-	}
 
+	//set timer1 interrupt at 1Hz
+	TCCR1A = 0;// set entire TCCR1A register to 0
+	TCCR1B = 0;// same for TCCR1B
+	TCNT1  = 0;//initialize counter value to 0
+	// set compare match register for 1hz increments
+	OCR1A = 249;// = (16*10^6) / (1*1024) - 1 (must be <65536)
+	// turn on CTC mode
+	TCCR1B |= (1 << WGM12);
+	// Set CS10 and CS11 bits for 64 prescaler
+	TCCR1B |= (1 << CS11) | (1 << CS10);
+	// enable timer compare interrupt
+	TIMSK1 |= (1 << OCIE1A);
+	setInterrupt(true);
 }
 
 void doSerialReadCommand() {
@@ -121,8 +118,25 @@ void doSerialReadCommand() {
 	}
 }
 
+void doResetAveraging(){
+	emaTarget = settings.emaFactor;
+	settings.emaFactor = 0;
+	emaMillis = millis();
+}
+
 void loop() {
 	startTime = micros();
+
+	if(emaTarget >= 0){
+		if((millis() - emaMillis) >= 125){
+			if(emaTarget > settings.emaFactor){
+				settings.emaFactor++;
+			}else{
+				emaTarget = -1;
+			}
+			emaMillis = millis();
+		}
+	}
 
 	doSerialReadCommand(); //reads commands from serial
 
@@ -131,23 +145,35 @@ void loop() {
 		actionDisplayMainMenu();
 		break;        //the menu is the only function that does not return asap
 	case LEFT:
-		if (settings.button1 == 0) { // there are two modes for this pin, user settable
+		if (settings.button1 == 0) { // there are three modes for this pin, user settable
 			actionContrast();
+		} else if(settings.button1 == 2){ //DECREASE DAMPING
+			if (settings.emaFactor > 0) settings.emaFactor--;
+			doSettingChangerDelay(txtDampingPerc, 0, 100, settings.emaFactor*6, 6, &doEmaFactor, 750);
 		} else {
-			resetAverages();
+			doResetAveraging();
 		}
 		break;
 	case RIGHT:
-		if (settings.button2 == 0) { // there are two modes for this pin, user settable
+		if (settings.button2 == 0) { // there are three modes for this pin, user settable
 			actionBrightness();
+		} else if(settings.button2 == 2){ //INCREASE DAMPING
+			if (settings.emaFactor < 14) settings.emaFactor++;
+			 doSettingChangerDelay(txtDampingPerc, 0, 100, settings.emaFactor * 6, 6, &doEmaFactor, 750);
 		} else {
 			doRevs();
 		}
 		break;
 
 	case CANCEL:
-		freezeDisplay = !freezeDisplay;
-		break; //toggle the freezeDisplay option
+		if (settings.button3 == 0) { // there are three modes for this pin, user settable
+			freezeDisplay = !freezeDisplay;	//toggle the freezeDisplay option
+		} else if(settings.button3 == 1){ //INCREASE DAMPING
+			doResetAveraging();
+		} else {
+			doRevs();
+		}
+		break;
 	}
 
 	if (!freezeDisplay
@@ -196,74 +222,6 @@ void intRunningAverage() {
 		value = (unsigned int) readSensorCalibrated(sensor);
 		avg[sensor].longVal = longExponentialMovingAverage( factor, avg[sensor].longVal, value);
 		average[sensor] = avg[sensor].intVal[1];
-	}
-}
-
-
-/*
- * uses the average ms between calls to this function as a trigger as a measure of RPM
- * To the actual time and returns false if there is more than 25% difference
- * between the averaged value and the current value. This happens mainly when revving the engine
- * it works because the average values trail the actual values allowing the difference to accrue
- * just take care to only call it from a single well-defined place
- */
-
-bool stableRPM = true;
-long averageDeltaMs;
-unsigned long previousTriggerTime;
-unsigned long unstableTime;
-
-bool isRPMStable(int sensor) {
-	unsigned long triggerTime = millis();
-	unsigned long deltaMs;
-	int shift = 16;
-	unsigned int unshiftedAverage;
-	unsigned int hysteresis;
-
-	if (sensor == 0) {
-		deltaMs = triggerTime - previousTriggerTime;
-		unshiftedAverage = averageDeltaMs >> shift;
-		hysteresis = unshiftedAverage >> settings.emaRpmSensitivity; // >>2 = 25% difference in RPM from the average
-
-		if ((deltaMs > (unshiftedAverage + hysteresis))
-				|| (deltaMs < (unshiftedAverage - hysteresis))) {
-			stableRPM = false;
-			unstableTime = triggerTime;
-		} else if (triggerTime - unstableTime > 500) {
-			stableRPM = true;
-		}
-
-		//todo fix up
-		//averageDeltaMs = longExponentialMovingAverage(shift, 12, averageDeltaMs, deltaMs);
-
-		previousTriggerTime = triggerTime;
-	}
-
-	return stableRPM;
-}
-
-//only measures the vacuum 'suck'(intake) not the release(compression, work & exhaust) phase, this greatly simplifies the logic and
-// shouldn't affect the average negatively
-void descendingAverage() {
-	int value;
-	int factor = settings.emaFactor;
-
-	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
-		value = readSensorCalibrated(sensor);
-		if (value < previousValue[sensor]) { // descending pressures only
-			sums[sensor] += value;
-			readingCount[sensor]++; //keeps count of the number of readings collected
-		} else {                       //above the previous value or equal to it
-			if (readingCount[sensor] > 1) {
-				//calculate the average now we've measured a whole "vacuum signal flank"
-				avg[sensor].longVal = longExponentialMovingAverage( factor, avg[sensor].longVal, sums[sensor] / readingCount[sensor]);
-				average[sensor] = avg[sensor].intVal[1];
-			}
-			//done the calculations, now reset everything ready to start over when the signal drops again
-			sums[sensor] = 0;
-			readingCount[sensor] = 0;
-		}
-		previousValue[sensor] = value;
 	}
 }
 
@@ -391,7 +349,6 @@ void lcdDiagnosticDisplay(unsigned int value[]) {
 	}
 	printLcdInteger(timeBase, 15, 0, 5); //time base
 	printLcdInteger(periodUs, 15, 1, 5); //interrupt freq in uS
-	//printLcdInteger(stableRPM, 15, 2, 5); //stable RPM
 	printLcdInteger(interruptDurationUs, 15, 2, 5);
 	printLcdInteger(packetCounter, 15, 3, 5); //serial packetrs sent
 
@@ -893,7 +850,7 @@ void doRevs() {
 	int previous = 1024;
 	int descentCount = 0;
 	int ascentCount = 0;
-	int factor = settings.emaFactor;
+	int factor = settings.rpmDamping;
 	longAverages rpmAverage;
 
 	initRpmDisplay();
@@ -1135,6 +1092,7 @@ void doRelativeDemo() {
 }
 
 void doDeviceInfo() {
+	setInterrupt(false);
 	unsigned long speed = measureLCDSpeed();
 	lcd_setCursor(0, 0);
 	lcd_print(txtVersion);
@@ -1152,6 +1110,7 @@ void doDeviceInfo() {
 	lcd_print(txtLcdSpeed);
 	lcd_printLong(speed);
 	waitForAnyKey();
+	setInterrupt(true);
 }
 
 ISR(TIMER1_COMPA_vect){
@@ -1164,14 +1123,7 @@ ISR(TIMER1_COMPA_vect){
 			average[sensor] = readSensorCalibrated(sensor);
 		}
 	} else {
-		switch (settings.averagingMethod) {
-			case 0:
-				intRunningAverage();
-				break;		//calculate the averages and return asap
-			case 1:
-				descendingAverage();
-				break;
-		}
+		intRunningAverage();
 	}
 	interruptDurationUs = micros() - microSecond;
 	isSerialAllowed = true;

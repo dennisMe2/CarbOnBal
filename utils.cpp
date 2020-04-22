@@ -30,9 +30,6 @@
 #include "lcdWrapper.h"
 
 extern settings_t settings;
-extern long sums[NUM_SENSORS];
-extern int readingCount[NUM_SENSORS];
-extern unsigned int average[NUM_SENSORS];
 
 float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversion factor to convert the arduino readings to millibars
 
@@ -51,13 +48,6 @@ void setInterrupt(bool enabled){
 	}
 }
 
-void resetAverages(){
-	for(int sensor=0; sensor< NUM_SENSORS; sensor++){
-		sums[sensor] = 0;
-		readingCount[sensor] = 0;
-		average[sensor] = 0;
-	}
-}
 
 float convertToPreferredUnits(int value, int ambient){
   if (0 == settings.units) return value;

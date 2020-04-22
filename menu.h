@@ -37,6 +37,7 @@ void actionDisplayMainMenu() ;
 void actionDisplaySettingsMenu() ;
 void actionDisplaySoftwareSettingsMenu() ;
 void actionDisplayHardwareSettingsMenu() ;
+void actionDisplayButtonsMenu();
 void actionDisplayCommsMenu() ;
 void actionDisplayDisplayMenu() ;
 void actionDisplayExtraMenu();
@@ -58,6 +59,7 @@ void doZeroCalibrations();
 void actionDisplayClearCalibrationMenu();
 int doBasicSettingChanger(const char* valueName, int minimum, int maximum, int startValue, int steps );
 int doSettingChanger(const char* valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i) );
+int doSettingChangerDelay(const char* valueName, int minimum, int maximum, int startValue, int steps, void (*func)(int i), unsigned int delayMs );
 int doSettingChooser(const char* valueName, const char* settings[], int count, int startIndex) ;
 
 void drawCaret(uint8_t line);

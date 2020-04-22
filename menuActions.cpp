@@ -59,6 +59,10 @@ void doBrightness(int value) {
     analogWrite(brightnessPin, value);
 }
 
+void doEmaFactor(int value){
+	settings.emaFactor = value/6;
+}
+
 void actionContrast() {
     settings.contrast = doSettingChanger(txtContrast, 0, 127, settings.contrast, 1, &doContrast) ;
     actionSaveSettings();
@@ -80,12 +84,7 @@ void doSplashScreen(){
 	    settings.splashScreen = (bool) doSettingChooser(txtSplashScreen, actions, 2, (int) settings.splashScreen) ;
 	    actionSaveSettings();
 }
-void actionAveragingMethod(){
-	const char* actions[] = {txtIntRunningAverage, txtDescendingAverage};
-		    settings.averagingMethod = doSettingChooser(txtAveragingMethod, actions, 2, settings.averagingMethod) ;
-		    actionSaveSettings();
-		    resetAverages();
-}
+
 void doAdvanced() {
   bool oldAdvanced = settings.advanced;
 	const char* actions[] = {txtDisabled, txtEnabled};
@@ -120,10 +119,14 @@ void actionReset() {
 
 
 void actionEmaFactor() {
-    settings.emaFactor = (uint8_t) doBasicSettingChanger(txtEmaFactor, 0, 15, settings.emaFactor, 1);
+    settings.emaFactor = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, settings.emaFactor*6, 6) / 6);
     actionSaveSettings();
 }
 
+void actionRpmEmaFactor() {
+    settings.rpmDamping = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, settings.rpmDamping*6, 6) / 6);
+    actionSaveSettings();
+}
 
 void actionCylinders() {
     settings.cylinders = (uint8_t) doBasicSettingChanger(txtCylinderCount, 1, 4, settings.cylinders, 1);
@@ -145,17 +148,27 @@ void fixMaster(){
 }
 
 void actionBrightnessButton(){
-	const char* actions[] = {txtBrightness, txtRpmDisplay};
-    settings.button2 = doSettingChooser(txtButton2, actions, 2, (int) settings.button2) ;
+	const char* actions[] = {txtBrightness, txtRpmDisplay, txtDampingMore};
+    settings.button2 = doSettingChooser(txtBrightnessButton, actions, 3, (int) settings.button2) ;
+    if(settings.button2 == 2) settings.button1 = 2;
+
     actionSaveSettings();
 }
 
 void actionContrastButton(){
-	const char* actions[] = {txtContrast, txtResetMeasurements};
-    settings.button1 = doSettingChooser(txtContrast, actions, 2, (int) settings.button1) ;
+	const char* actions[] = {txtContrast, txtResetMeasurements, txtDampingLess};
+    settings.button1 = doSettingChooser(txtContrastButton, actions, 3, (int) settings.button1) ;
+    if(settings.button1 == 2) settings.button2 = 2;
+
     actionSaveSettings();
 }
 
+void actionCancelButton(){
+	const char* actions[] = {txtFreezeDisplay, txtResetMeasurements, txtRpmDisplay};
+    settings.button3 = doSettingChooser(txtCancelButton, actions, 3, (int) settings.button3) ;
+
+    actionSaveSettings();
+}
 
 void doUnits(){
     const char* actions[] = {txtRawValues,txtRawDescending, txtMillibarHpa, txtMillibarHpaDesc,
