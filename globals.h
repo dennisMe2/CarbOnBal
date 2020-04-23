@@ -51,17 +51,18 @@ static const int maxValue=1024;
 static const uint8_t brightnessPin=6;
 static const uint8_t contrastPin=11;
 static const int numberOfCalibrationValues=256;
-static const int calibrationOffset=256; //eeprom base address for calibration
+static const int calibrationOffset=256; //eeprom base address for calibration data
 
 
-static const uint8_t versionUID = 24; //update when settings_t changes!
-static const uint8_t settingsOffset = sizeof(versionUID);
+static const uint8_t versionUID = 27; //update when settings_t changes!
 
 //this struct is used to store settings in NVRAM
 //does not use bit fields because these cause more writes to the same NVRAM locations
+//if a setting is not writable then the settings are moved to the next available location in NVRAM
+//this allows more than enough writes in total for endless futzing around
 struct settings_t
 {
-    bool usePeakAverage;
+    bool usePeakAverage;//removed
     bool silent;
     bool advanced;
     bool splashScreen;
@@ -78,13 +79,13 @@ struct settings_t
     int delayTime;		//removed
     int threshold;      //removed
     uint8_t rpmDamping;
-    uint8_t responsiveness;
+    uint8_t responsiveness; //removed
     uint8_t units;
     uint8_t zoom;
     uint8_t calibrationMax;
     bool arduinoCompatible;
-    uint8_t averagingMethod;
-    uint8_t emaShift;
+    uint8_t averagingMethod;  //removed
+    uint8_t emaShift;         //removed
     uint8_t emaFactor;
     uint8_t emaCorrection;
     uint8_t emaRpmSensitivity;

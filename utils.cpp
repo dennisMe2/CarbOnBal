@@ -125,8 +125,8 @@ void resetToFactoryDefaultSettings(){
     settings.threshold  = 100;
     settings.button1 = 0;
     settings.button2 = 0;
-    settings.rpmDamping = 35;
-    settings.responsiveness = 75;
+    settings.rpmDamping = 42;
+    settings.responsiveness = 75;//obsolete
     settings.units = 0;
     settings.zoom = 0;
     settings.calibrationMax = 32;
@@ -134,10 +134,10 @@ void resetToFactoryDefaultSettings(){
     settings.splashScreen = true;
     settings.arduinoCompatible = true;
     settings.averagingMethod = 0;
-    settings.emaShift = 12;
+    settings.emaShift = 12; //obsolete
     settings.emaFactor = 8;
-    settings.emaCorrection = 6;
-    settings.emaRpmSensitivity = 2;
+    settings.emaCorrection = 6;  //obsolete
+    settings.emaRpmSensitivity = 2; //obsolete
 }
 
 // tests if a button was pressed and applies debounce logic

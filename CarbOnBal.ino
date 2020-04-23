@@ -34,6 +34,7 @@
 #include "menuActions.h"
 #include "utils.h"
 settings_t settings;
+uint8_t settingsOffset = 1;
 
 // The software uses a lot of global variables. This may not be elegant but its one way of writing non-blocking code
 int inputPin[NUM_SENSORS] = { A0, A1, A2, A3 }; //used as a means to access the sensor pins using a counter
@@ -43,8 +44,8 @@ long sums[NUM_SENSORS] = { 0, 0, 0, 0 }; //tracks totals for calculating a numer
 bool freezeDisplay = false; //used to tell when a user wants to freeze the display
 unsigned int rpm;                                       //stores the current RPM
 
-int readingCount[NUM_SENSORS]; //used to store the number of captured readings for calculating a numerical average
-int previousValue[NUM_SENSORS]; //stores the previous sensor value to determine ascending v. descending pressures
+//int readingCount[NUM_SENSORS]; //used to store the number of captured readings for calculating a numerical average
+//int previousValue[NUM_SENSORS]; //stores the previous sensor value to determine ascending v. descending pressures
 unsigned int average[NUM_SENSORS]; //used to share the current average for each sensor
 int ambientPressure; //stores current ambient pressure for negative pressure display
 unsigned long lastUpdate;
@@ -69,7 +70,7 @@ bool dataDumpMode = false;
 void setup() {
 	lcd_begin(DISPLAY_COLS, DISPLAY_ROWS);
 
-	loadSettings();                 //load saved settings into memory from FLASH
+	loadSettings(settings);                 //load saved settings into memory from FLASH
 	Serial.begin(getBaud(settings.baudRate));
 
 	setInputActiveLow(SELECT);          //set the pins connected to the switches
@@ -147,9 +148,10 @@ void loop() {
 	case LEFT:
 		if (settings.button1 == 0) { // there are three modes for this pin, user settable
 			actionContrast();
-		} else if(settings.button1 == 2){ //DECREASE DAMPING
-			if (settings.emaFactor > 0) settings.emaFactor--;
-			doSettingChangerDelay(txtDampingPerc, 0, 100, settings.emaFactor*6, 6, &doEmaFactor, 750);
+		} else if(settings.button1 == 2){ //DAMPING
+			//if (settings.emaFactor > 0) settings.emaFactor--;
+			settings.emaFactor = doBasicSettingChanger(txtDampingPerc, 0, 100, settings.emaFactor*6, 6) /6;
+			actionSaveSettings();
 		} else {
 			doResetAveraging();
 		}
@@ -157,9 +159,10 @@ void loop() {
 	case RIGHT:
 		if (settings.button2 == 0) { // there are three modes for this pin, user settable
 			actionBrightness();
-		} else if(settings.button2 == 2){ //INCREASE DAMPING
-			if (settings.emaFactor < 14) settings.emaFactor++;
-			 doSettingChangerDelay(txtDampingPerc, 0, 100, settings.emaFactor * 6, 6, &doEmaFactor, 750);
+		} else if(settings.button2 == 2){ // DAMPING
+			//if (settings.emaFactor < 14) settings.emaFactor++;
+			settings.rpmDamping = doBasicSettingChanger(txtRpmDampingPerc, 0, 100, settings.rpmDamping * 6, 6)/6;
+			actionSaveSettings();
 		} else {
 			doRevs();
 		}
@@ -169,8 +172,10 @@ void loop() {
 		if (settings.button3 == 0) { // there are three modes for this pin, user settable
 			freezeDisplay = !freezeDisplay;	//toggle the freezeDisplay option
 		} else if(settings.button3 == 1){ //INCREASE DAMPING
+			freezeDisplay = false;
 			doResetAveraging();
 		} else {
+			freezeDisplay = false;
 			doRevs();
 		}
 		break;
@@ -354,20 +359,45 @@ void lcdDiagnosticDisplay(unsigned int value[]) {
 
 }
 
+//compares freshly loaded settings to the freshly saved verion, if there is a difference the save must have failed
+//fail on write is the most common NVRAM failure by far
+bool verifySettings(){
+	settings_t settingsCopy = settings;
+	loadSettings(settingsCopy);
+	return memcmp(&settings, &settingsCopy, sizeof(settings));
+}
+
 //saves our settings struct
 void actionSaveSettings() {
+
 	EEPROM.put(0, versionUID);  //only saves changed bytes!
+	EEPROM.put(1, settingsOffset);
 	EEPROM.put(settingsOffset, settings);  //only saves changed bytes!
+
+	//Move our settings up 1 position and retry while memory lasts!
+	if (0 != verifySettings()){
+		if(settingsOffset + sizeof(settings) < 255) settingsOffset += sizeof(settings);
+		EEPROM.put(1, settingsOffset);
+		actionSaveSettings();
+		lcd_clear();
+		lcd_setCursor(0,1);
+		lcd_print(F("SETTINGS WRITE ERROR"));
+		lcd_setCursor(0,2);
+		lcd_print(F("SETTINGS RELOCATED"));
+		waitForAnyKey();
+	}
 }
 
 //loads the settings from EEPROM (Flash)
-void loadSettings() {
+void loadSettings(settings_t settings) {
 	uint8_t compareVersion = 0;
 	EEPROM.get(0, compareVersion);
+	EEPROM.get(1, settingsOffset);
 
 	if (compareVersion == versionUID) { //only load settings if saved by the current version, otherwise reset to 'factory' defaults
 		EEPROM.get(settingsOffset, settings); //settings are stored immediately after the version UID
 	} else {
+		settingsOffset = 2;
 		resetToFactoryDefaultSettings();
 	}
 
@@ -1054,12 +1084,14 @@ void doAbsoluteDemo() {
 			values[j] = i;
 		}
 		lcdBarsSmooth(values);
+		if (buttonPressed()) return;
 	}
 	for (unsigned int i = 1024; i >= 30; i -= 30) {
 		for (int j = 0; j < NUM_SENSORS; j++) {
 			values[j] = i;
 		}
 		lcdBarsSmooth(values);
+		if (buttonPressed()) return;
 	}
 
 	settings.silent = silent;
@@ -1078,6 +1110,7 @@ void doRelativeDemo() {
 		values[2] = i;
 		values[3] = masterValue;
 		lcdBarsCenterSmooth(values);
+		if (buttonPressed()) return;
 	}
 	settings.master = 1;
 	for (int i = masterValue - delta; i <= masterValue + delta; i += 4) {
@@ -1086,6 +1119,7 @@ void doRelativeDemo() {
 		values[2] = i;
 		values[3] = i;
 		lcdBarsCenterSmooth(values);
+		if (buttonPressed()) return;
 	}
 	settings.master = master;
 	settings.silent = silent;
@@ -1099,8 +1133,11 @@ void doDeviceInfo() {
 	lcd_print(F(SOFTWARE_VERSION));
 
 	lcd_setCursor(0, 1);
-	lcd_print(txtSettingsBytes);
-	lcd_printInt(sizeof(settings));
+	lcd_print(F("Sett: "));
+	lcd_printInt((int) sizeof(settings));
+	lcd_setCursor(9, 1);
+	lcd_print("(B) &");
+	lcd_printInt(settingsOffset);
 
 	lcd_setCursor(0, 2);
 	lcd_print(txtFreeRam);

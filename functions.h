@@ -23,6 +23,8 @@
 // along with CarbOnBal.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <Arduino.h>
+#include"globals.h"
+
 void makeCenterBars(char *bars, int8_t number);
 void initRpmDisplay();
 int readSensorRaw(int sensor);
@@ -45,7 +47,7 @@ void intRunningAverage();
 bool isRPMStable(int sensor);
 void descendingAverage();
 void crawlingAverage();
-void loadSettings();
+void loadSettings(settings_t);
 void lcdBarsSmooth( int value[]);
 void doDataDumpChars();
 void doDataDumpBinary();

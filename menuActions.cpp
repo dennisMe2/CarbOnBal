@@ -148,17 +148,17 @@ void fixMaster(){
 }
 
 void actionBrightnessButton(){
-	const char* actions[] = {txtBrightness, txtRpmDisplay, txtDampingMore};
+	const char* actions[] = {txtBrightness, txtRpmDisplay, txtRpmDamping};
     settings.button2 = doSettingChooser(txtBrightnessButton, actions, 3, (int) settings.button2) ;
-    if(settings.button2 == 2) settings.button1 = 2;
+    //if(settings.button2 == 2) settings.button1 = 2;
 
     actionSaveSettings();
 }
 
 void actionContrastButton(){
-	const char* actions[] = {txtContrast, txtResetMeasurements, txtDampingLess};
+	const char* actions[] = {txtContrast, txtResetMeasurements, txtDamping};
     settings.button1 = doSettingChooser(txtContrastButton, actions, 3, (int) settings.button1) ;
-    if(settings.button1 == 2) settings.button2 = 2;
+    //if(settings.button1 == 2) settings.button2 = 2;
 
     actionSaveSettings();
 }
