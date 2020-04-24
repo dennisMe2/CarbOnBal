@@ -114,30 +114,19 @@ float differenceToInHg(int value){
 void resetToFactoryDefaultSettings(){
     settings.brightness = 255;
     settings.contrast = 10;
-    settings.damping = 85;//obsolete
-    settings.delayTime = 0;
     settings.graphType = 0;
-    settings.usePeakAverage = false;
-    settings.baudRate = 9;
     settings.silent = false;
     settings.cylinders = 4;
-    settings.master = 4;
-    settings.threshold  = 100;
+    settings.master = 1;
     settings.button1 = 0;
     settings.button2 = 0;
-    settings.rpmDamping = 42;
-    settings.responsiveness = 75;//obsolete
+    settings.rpmDamping = 10;
     settings.units = 0;
     settings.zoom = 0;
     settings.calibrationMax = 32;
     settings.advanced = false;
     settings.splashScreen = true;
-    settings.arduinoCompatible = true;
-    settings.averagingMethod = 0;
-    settings.emaShift = 12; //obsolete
-    settings.emaFactor = 8;
-    settings.emaCorrection = 6;  //obsolete
-    settings.emaRpmSensitivity = 2; //obsolete
+    settings.damping = 8;
 }
 
 // tests if a button was pressed and applies debounce logic
@@ -269,26 +258,6 @@ unsigned int minVal( unsigned int value[]) {
     return minValue;
 }
 
-// convert an integer index into a baud rate for the arduino
-unsigned long getBaud(int index){
-    const unsigned long baud[] = {
-        300,
-        600,
-        1200,
-        2400,
-        4800,
-        9600,
-        14400,
-        19200,
-        28800,
-        31250,
-        38400,
-        57600,
-        115200,
-		230400
-    };
-    return baud[index];
-}
 
 //Free memory routine from the Arduino playground
 #ifdef __arm__

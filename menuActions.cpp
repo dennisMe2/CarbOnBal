@@ -43,11 +43,6 @@ void doConfirmation(){
 	waitForAnyKey();
 }
 
-void doBaudRate(){
-	const char* actions[] = {txt300, txt600, txt1200, txt2400, txt4800, txt9600, txt14400, txt19200, txt28800, txt31250, txt38400, txt57600, txt115200, txt230400};
-	settings.baudRate = doSettingChooser(txtBaudRate, actions, 14, settings.baudRate) ;
-    actionSaveSettings();
-}
 
 void actionBrightness() {
     settings.brightness = doSettingChanger(txtBrightness, 0, 255, settings.brightness, 10, &doBrightness) ;
@@ -60,7 +55,7 @@ void doBrightness(int value) {
 }
 
 void doEmaFactor(int value){
-	settings.emaFactor = value/6;
+	settings.damping = value/6;
 }
 
 void actionContrast() {
@@ -95,11 +90,6 @@ void doAdvanced() {
     }
 }
 
-void doArduinoMode() {
-	const char* actions[] = {txtDisabled, txtEnabled};
-    settings.arduinoCompatible = (bool) doSettingChooser(txtArduinoMode, actions, 2, (int) settings.arduinoCompatible) ;
-    actionSaveSettings();
-}
 
 void actionGraphing() {
 	const char* actions[] = {txtAbsoluteGraph, txtCenteredGraph, txtDiagnostic};
@@ -119,12 +109,12 @@ void actionReset() {
 
 
 void actionEmaFactor() {
-    settings.emaFactor = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, settings.emaFactor*6, 6) / 6);
+    settings.damping = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, (uint8_t) settings.damping*6.25, 6) / 6.25);
     actionSaveSettings();
 }
 
 void actionRpmEmaFactor() {
-    settings.rpmDamping = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, settings.rpmDamping*6, 6) / 6);
+    settings.rpmDamping = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, (uint8_t) settings.rpmDamping*6.25, 6) / 6.25);
     actionSaveSettings();
 }
 

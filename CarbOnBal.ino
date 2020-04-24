@@ -34,7 +34,7 @@
 #include "menuActions.h"
 #include "utils.h"
 settings_t settings;
-uint8_t settingsOffset = 1;
+uint8_t settingsOffset = 2;
 
 // The software uses a lot of global variables. This may not be elegant but its one way of writing non-blocking code
 int inputPin[NUM_SENSORS] = { A0, A1, A2, A3 }; //used as a means to access the sensor pins using a counter
@@ -70,8 +70,8 @@ bool dataDumpMode = false;
 void setup() {
 	lcd_begin(DISPLAY_COLS, DISPLAY_ROWS);
 
-	loadSettings(settings);                 //load saved settings into memory from FLASH
-	Serial.begin(getBaud(settings.baudRate));
+	settings = loadSettings(settings);                 //load saved settings into memory from FLASH
+	Serial.begin(BAUD_RATE);
 
 	setInputActiveLow(SELECT);          //set the pins connected to the switches
 	setInputActiveLow(LEFT);             //switches are wired directly and could
@@ -120,8 +120,8 @@ void doSerialReadCommand() {
 }
 
 void doResetAveraging(){
-	emaTarget = settings.emaFactor;
-	settings.emaFactor = 0;
+	emaTarget = settings.damping;
+	settings.damping = 0;
 	emaMillis = millis();
 }
 
@@ -130,8 +130,8 @@ void loop() {
 
 	if(emaTarget >= 0){
 		if((millis() - emaMillis) >= 125){
-			if(emaTarget > settings.emaFactor){
-				settings.emaFactor++;
+			if(emaTarget > settings.damping){
+				settings.damping++;
 			}else{
 				emaTarget = -1;
 			}
@@ -149,8 +149,7 @@ void loop() {
 		if (settings.button1 == 0) { // there are three modes for this pin, user settable
 			actionContrast();
 		} else if(settings.button1 == 2){ //DAMPING
-			//if (settings.emaFactor > 0) settings.emaFactor--;
-			settings.emaFactor = doBasicSettingChanger(txtDampingPerc, 0, 100, settings.emaFactor*6, 6) /6;
+			settings.damping = (int8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, (int8_t) settings.damping*6.25, 6) / 6.25);
 			actionSaveSettings();
 		} else {
 			doResetAveraging();
@@ -159,9 +158,8 @@ void loop() {
 	case RIGHT:
 		if (settings.button2 == 0) { // there are three modes for this pin, user settable
 			actionBrightness();
-		} else if(settings.button2 == 2){ // DAMPING
-			//if (settings.emaFactor < 14) settings.emaFactor++;
-			settings.rpmDamping = doBasicSettingChanger(txtRpmDampingPerc, 0, 100, settings.rpmDamping * 6, 6)/6;
+		} else if(settings.button2 == 2){ // RPMDAMPING
+			settings.rpmDamping = (int8_t) (doBasicSettingChanger(txtRpmDampingPerc, 0, 100, (int8_t) settings.rpmDamping * 6.25, 6)/6.25);
 			actionSaveSettings();
 		} else {
 			doRevs();
@@ -171,7 +169,7 @@ void loop() {
 	case CANCEL:
 		if (settings.button3 == 0) { // there are three modes for this pin, user settable
 			freezeDisplay = !freezeDisplay;	//toggle the freezeDisplay option
-		} else if(settings.button3 == 1){ //INCREASE DAMPING
+		} else if(settings.button3 == 1){
 			freezeDisplay = false;
 			doResetAveraging();
 		} else {
@@ -193,22 +191,13 @@ void loop() {
 			lcdBarsCenterSmooth(average);
 			lastUpdate = millis();
 			break;    //
-		case 2: //in diagnostic mode we output the values via the serial port for display or analysis on a PC
-
-			if (isSerialAllowed && settings.arduinoCompatible) {
-				serialOut(average);
-			} else if (isSerialAllowed ) {
-				serialOutBytes(average);
-			}
-			isSerialAllowed = false;
-
+		case 2:
 			if ((millis() - lastUpdate) > 100) {
 				lcdDiagnosticDisplay(average);
 				lastUpdate = millis();
 			}
 			break;
 		}
-
 	} else if (freezeDisplay) {
 		//show a little snow flake to indicate the frozen state of the display
 		drawSnowFlake();
@@ -221,7 +210,7 @@ void loop() {
 // now the definitive algorithm
 void intRunningAverage() {
 	unsigned int value;
-	int factor = settings.emaFactor;
+	int factor = settings.damping;
 
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
 		value = (unsigned int) readSensorCalibrated(sensor);
@@ -369,7 +358,6 @@ bool verifySettings(){
 
 //saves our settings struct
 void actionSaveSettings() {
-
 	EEPROM.put(0, versionUID);  //only saves changed bytes!
 	EEPROM.put(1, settingsOffset);
 	EEPROM.put(settingsOffset, settings);  //only saves changed bytes!
@@ -389,13 +377,13 @@ void actionSaveSettings() {
 }
 
 //loads the settings from EEPROM (Flash)
-void loadSettings(settings_t settings) {
+settings_t loadSettings(settings_t settings) {
 	uint8_t compareVersion = 0;
 	EEPROM.get(0, compareVersion);
 	EEPROM.get(1, settingsOffset);
 
 	if (compareVersion == versionUID) { //only load settings if saved by the current version, otherwise reset to 'factory' defaults
-		EEPROM.get(settingsOffset, settings); //settings are stored immediately after the version UID
+		settings = EEPROM.get(settingsOffset, settings); //settings are stored immediately after the version UID
 	} else {
 		settingsOffset = 2;
 		resetToFactoryDefaultSettings();
@@ -403,6 +391,7 @@ void loadSettings(settings_t settings) {
 
 	doContrast(settings.contrast);
 	doBrightness(settings.brightness);
+	return settings;
 }
 
 //does the display while clearing the calibration array
@@ -747,103 +736,44 @@ void doCalibrationDump() {
 	lcd_setCursor(0, 1);
 	lcd_print(txtConnectSerial);
 	lcd_setCursor(0, 1);
-	Serial.begin(getBaud(settings.baudRate));
-	if (Serial) {
-
-		Serial.println(txtSerialHeader);
-		Serial.println(unitsAsText());
+	Serial.begin(BAUD_RATE);
+	if (Serial.availableForWrite()) {
+		lcd_setCursor(0, 1);
+		lcd_print(txtDumpingSensorData);
 		for (int i = 0; i < numberOfCalibrationValues; i++) {
-			Serial.print(i);
-			Serial.print("  \t");
+			Serial.write(START_PACKET);
+			Serial.write(REQUEST_CALIBRATION);
+			Serial.write((int8_t) i);
 			for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
-				Serial.print(
-						differenceToPreferredUnits(
-								(int) ((int8_t) EEPROM.read(
-										getCalibrationTableOffsetByPosition(
-												sensor, i)))));
-				Serial.print("  \t");
+				Serial.write((int8_t) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
 			}
-			Serial.print("\n");
 		}
-		Serial.print(txtSerialFooter);
 	}
 	setInterrupt(true);
 }
 
-void serialOut(unsigned int value[]) {
-
-	if(!Serial.availableForWrite()) Serial.begin(getBaud(settings.baudRate));
-	for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
-		Serial.print(convertToPreferredUnits(value[sensor], ambientPressure));
-		Serial.print("\t");
-	}
-	Serial.print("\n");
-}
-
-void serialWriteHeader() {
-	Serial.write(START_PACKET);
-}
 
 void serialWriteInteger(intByteUnion value) {
 	Serial.write(value.byteVal[1]);
 	Serial.write(value.byteVal[0]);
 }
 
-void serialOutBytes(unsigned int value[]) {
-	intByteUnion intByte;
-	if(!Serial.availableForWrite()) Serial.begin(getBaud(settings.baudRate));
-	serialWriteHeader();
-
-	for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
-		intByte.intVal = value[sensor];
-		serialWriteInteger(intByte);
-	}
-}
 
 //dump calibrated sensor data directly to serial
 void doDataDump() {
 	dataDumpMode = true;
-	if (settings.arduinoCompatible) {
-		doDataDumpChars();
-	} else {
-		doDataDumpBinary();
-	}
+	doDataDumpBinary();
 	dataDumpMode = false;
 }
 
-void doDataDumpChars() {
-	int reading = 0;
 
-	lcd_clear();
-	lcd_setCursor(0, 1);
-	lcd_print(txtConnectSerial);
-	Serial.begin(getBaud(settings.baudRate));
-
-	if (Serial) {
-		lcd_setCursor(0, 1);
-		lcd_print(txtDumpingSensorData);
-
-		Serial.println(F("0\t0\t0\t0"));
-
-		while (!(buttonPressed() == CANCEL)) {
-
-			for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
-				reading = readSensorCalibrated(sensor);
-				Serial.print(convertToPreferredUnits(reading, ambientPressure));
-				Serial.print("\t");
-			}
-			Serial.print("\n");
-		}
-		Serial.print(txtSerialFooter);
-	}
-}
 void doDataDumpBinary() {
 	intByteUnion intVals;
 
 	lcd_clear();
 	lcd_setCursor(0, 1);
 	lcd_print(txtConnectSerial);
-	Serial.begin(getBaud(settings.baudRate));
+	Serial.begin(BAUD_RATE);
 	setInterrupt(true);
 
 	if (Serial.availableForWrite()) {
@@ -852,13 +782,13 @@ void doDataDumpBinary() {
 
 		while (!(buttonPressed() == CANCEL)) {//loop while interrupt routine gathers data
 			if(isSerialAllowed){
-				//serialWriteHeader();
-
+				Serial.write(START_PACKET);
+				Serial.write(REQUEST_PACKET);
 				for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
 					intVals.intVal = average[sensor];
 					serialWriteInteger(intVals);
 				}
-				Serial.write(REQUEST_PACKET);
+
 			}
 			isSerialAllowed = false;
 		}
@@ -1136,7 +1066,7 @@ void doDeviceInfo() {
 	lcd_print(F("Sett: "));
 	lcd_printInt((int) sizeof(settings));
 	lcd_setCursor(9, 1);
-	lcd_print("(B) &");
+	lcd_print(F("(B) >"));
 	lcd_printInt(settingsOffset);
 
 	lcd_setCursor(0, 2);

@@ -43,6 +43,9 @@
 
 #define START_PACKET 0xfe
 #define REQUEST_PACKET 0xfd
+#define REQUEST_CALIBRATION 0xfc
+
+#define BAUD_RATE 115200
 
 #define LANGUAGE "lang_en_gb.h"			//select a different language file to change translations
 //#define LANGUAGE "lang_nl_nl.h"
@@ -54,18 +57,16 @@ static const int numberOfCalibrationValues=256;
 static const int calibrationOffset=256; //eeprom base address for calibration data
 
 
-static const uint8_t versionUID = 27; //update when settings_t changes!
+static const uint8_t versionUID = 28; //update when settings_t changes!
 
 //this struct is used to store settings in NVRAM
 //does not use bit fields because these cause more writes to the same NVRAM locations
 //if a setting is not writable then the settings are moved to the next available location in NVRAM
 //this allows more than enough writes in total for endless futzing around
-struct settings_t
-{
-    bool usePeakAverage;//removed
+struct settings_t {
     bool silent;
     bool advanced;
-    bool splashScreen;
+    bool splashScreen;//bool is 8 bits on Arduino
     uint8_t cylinders;
     uint8_t master;
     uint8_t button1;
@@ -74,21 +75,11 @@ struct settings_t
     uint8_t contrast;
     uint8_t brightness;
     uint8_t graphType;
-    int baudRate;
-    uint8_t damping;
-    int delayTime;		//removed
-    int threshold;      //removed
     uint8_t rpmDamping;
-    uint8_t responsiveness; //removed
     uint8_t units;
     uint8_t zoom;
     uint8_t calibrationMax;
-    bool arduinoCompatible;
-    uint8_t averagingMethod;  //removed
-    uint8_t emaShift;         //removed
-    uint8_t emaFactor;
-    uint8_t emaCorrection;
-    uint8_t emaRpmSensitivity;
+    uint8_t damping;
 };
 
 union longAverages{
@@ -103,18 +94,9 @@ union intByteUnion{
 extern int readingCount[NUM_SENSORS];
 extern unsigned int average[NUM_SENSORS];
 extern int total[NUM_SENSORS];
-
-//int timeBase=0;
-
 extern int reading[NUM_SENSORS];
-extern int peak[NUM_SENSORS];
 extern unsigned int rpm;
-//unsigned long smoothed16=0;
-
-
 extern settings_t settings;
 extern int ambientPressure;
-
-extern float damping;
 
 #endif
