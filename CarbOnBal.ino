@@ -729,6 +729,13 @@ void makeCalibrationChars() {
 	}
 }
 
+void sendEndSerialData(){
+	Serial.write(START_PACKET);
+	Serial.write(REQUEST_PACKET);
+	Serial.write(0xE4);
+}
+
+
 //dump the calibration array to the serial port for review
 void doCalibrationDump() {
 	setInterrupt(false);
@@ -742,12 +749,14 @@ void doCalibrationDump() {
 		lcd_print(txtDumpingSensorData);
 		for (int i = 0; i < numberOfCalibrationValues; i++) {
 			Serial.write(START_PACKET);
-			Serial.write(REQUEST_CALIBRATION);
+			Serial.write(REQUEST_PACKET);
+			Serial.write(0xE1);
 			Serial.write((int8_t) i);
 			for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
 				Serial.write((int8_t) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
 			}
 		}
+		sendEndSerialData();
 	}
 	setInterrupt(true);
 }
@@ -784,6 +793,7 @@ void doDataDumpBinary() {
 			if(isSerialAllowed){
 				Serial.write(START_PACKET);
 				Serial.write(REQUEST_PACKET);
+				Serial.write(0xE0);
 				for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
 					intVals.intVal = average[sensor];
 					serialWriteInteger(intVals);
@@ -792,6 +802,7 @@ void doDataDumpBinary() {
 			}
 			isSerialAllowed = false;
 		}
+		sendEndSerialData();
 	}
 	setInterrupt(false);
 }
