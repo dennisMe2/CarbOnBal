@@ -43,7 +43,11 @@
 
 #define START_PACKET 0xfe
 #define REQUEST_PACKET 0xfd
-#define REQUEST_CALIBRATION 0xfc
+#define CARB_VACUUM 0xe0
+#define CALIBRATION 0xe1
+#define SETTINGS 0xe2
+#define DIAGNOSTICS 0xe3
+#define END_DATA 0xe4
 
 #define BAUD_RATE 115200
 

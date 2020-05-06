@@ -114,6 +114,9 @@ void setup() {
 void doSerialReadCommand() {
 	if(isSerialAllowed && (Serial.available() >= 1)){
 		if ((uint8_t) Serial.read() == 0xFC){
+			delay(1000);
+			doSettingsDump();
+			doCalibrationDump();
 			doDataDump();
 		}
 	}
@@ -729,10 +732,16 @@ void makeCalibrationChars() {
 	}
 }
 
+void sendStartSerialData(byte code){
+	Serial.write(START_PACKET);
+		Serial.write(REQUEST_PACKET);
+		Serial.write(code);
+}
+
 void sendEndSerialData(){
 	Serial.write(START_PACKET);
 	Serial.write(REQUEST_PACKET);
-	Serial.write(0xE4);
+	Serial.write(END_DATA);
 }
 
 
@@ -748,9 +757,7 @@ void doCalibrationDump() {
 		lcd_setCursor(0, 1);
 		lcd_print(txtDumpingSensorData);
 		for (int i = 0; i < numberOfCalibrationValues; i++) {
-			Serial.write(START_PACKET);
-			Serial.write(REQUEST_PACKET);
-			Serial.write(0xE1);
+			sendStartSerialData(CALIBRATION);
 			Serial.write((int8_t) i);
 			for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
 				Serial.write((int8_t) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
@@ -761,6 +768,23 @@ void doCalibrationDump() {
 	setInterrupt(true);
 }
 
+void doSettingsDump(){
+	uint8_t* ptr = (uint8_t*)&settings;
+
+	setInterrupt(false);
+	Serial.begin(BAUD_RATE);
+		if (Serial.availableForWrite()) {
+			sendStartSerialData(SETTINGS);
+			Serial.write((int8_t) versionUID);
+			for (size_t i = 0; i < sizeof(settings); i++) {
+			//	Serial.write((int8_t) i);
+				Serial.write(*ptr);
+				ptr++;
+			}
+			sendEndSerialData();
+		}
+	setInterrupt(true);
+}
 
 void serialWriteInteger(intByteUnion value) {
 	Serial.write(value.byteVal[1]);
@@ -791,9 +815,7 @@ void doDataDumpBinary() {
 
 		while (!(buttonPressed() == CANCEL)) {//loop while interrupt routine gathers data
 			if(isSerialAllowed){
-				Serial.write(START_PACKET);
-				Serial.write(REQUEST_PACKET);
-				Serial.write(0xE0);
+				sendStartSerialData(CARB_VACUUM);
 				for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
 					intVals.intVal = average[sensor];
 					serialWriteInteger(intVals);
