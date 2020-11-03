@@ -777,7 +777,6 @@ void doSettingsDump(){
 			sendStartSerialData(SETTINGS);
 			Serial.write((int8_t) versionUID);
 			for (size_t i = 0; i < sizeof(settings); i++) {
-			//	Serial.write((int8_t) i);
 				Serial.write(*ptr);
 				ptr++;
 			}

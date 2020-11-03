@@ -41,7 +41,6 @@ uint8_t displayCalibrationSensorMenuLine = 0;
 uint8_t displayExtraMenuLine = 0;
 uint8_t displaySoftwareSettingsMenuLine = 0;
 uint8_t displayHardwareSettingsMenuLine = 0;
-uint8_t displayCommsMenuLine = 0;
 uint8_t displayDisplayMenuLine = 0;
 uint8_t displayCalibrationMenuLine = 0;
 uint8_t displayViewCalibrationMenuLine = 0;
@@ -52,9 +51,9 @@ uint8_t displayViewCalibrationMenuLine = 0;
 void actionDisplayMainMenu() {
 	setInterrupt(false);
 	quitMenu = false;
-	const char* menu[] = {txtDisplay, txtSettings, txtCalibration, txtDataTransfer};
-	void (*actions[])() = {&actionDisplayDisplayMenu, &actionDisplaySettingsMenu, &actionDisplayCalibrationMenu, &actionDisplayCommsMenu};
-	uint8_t menuSize = 4;
+	const char* menu[] = {txtDisplay, txtSettings, txtCalibration};
+	void (*actions[])() = {&actionDisplayDisplayMenu, &actionDisplaySettingsMenu, &actionDisplayCalibrationMenu};
+	uint8_t menuSize = 3;
 	handleMenu(menu, actions, menuSize, mainMenuLine);
 	setInterrupt(true);
 }
@@ -92,13 +91,6 @@ void actionDisplayHardwareSettingsMenu() {
 	void (*actions[])() = {&actionCylinders, &actionMaster };
 	uint8_t menuSize = 2;
 	handleMenu(menu, actions, menuSize,  displayHardwareSettingsMenuLine);
-}
-
-void actionDisplayCommsMenu() {
-	const char* const menu[] = {txtCalibrationDump, txtLiveDataDump};
-	void (*actions[])() = {&doCalibrationDump, &doDataDump };
-	uint8_t menuSize = 2;
-	handleAdvancedMenu(menu, actions, menuSize, B11, displayCommsMenuLine);
 }
 
 void actionDisplayDisplayMenu() {
