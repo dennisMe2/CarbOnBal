@@ -9,7 +9,7 @@
             			
             <provider-reference id="org.eclipse.cdt.core.ReferencedProjectsLanguageSettingsProvider" ref="shared-provider"/>
             			
-            <provider class="io.sloeber.core.toolchain.ArduinoLanguageProvider" console="false" env-hash="163700734544155443" id="io.sloeber.languageSettingsProvider" keep-relative-paths="false" name="Arduino Compiler Settings" parameter="${COMMAND} -E -P -v -dD -D__IN_ECLIPSE__ &quot;${INPUTS}&quot;" prefer-non-shared="true">
+            <provider class="io.sloeber.core.toolchain.ArduinoLanguageProvider" console="false" env-hash="-51967009629050303" id="io.sloeber.languageSettingsProvider" keep-relative-paths="false" name="Arduino Compiler Settings" parameter="${COMMAND} -E -P -v -dD -D__IN_ECLIPSE__ &quot;${INPUTS}&quot;" prefer-non-shared="true">
                 				
                 <language-scope id="org.eclipse.cdt.core.gcc"/>
                 				

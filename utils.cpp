@@ -34,6 +34,7 @@ extern settings_t settings;
 float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversion factor to convert the arduino readings to millibars
 
 byte buttonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH}; //array for recording the state of buttons
+byte buttonCount[NUM_BUTTONS] = {0, 0, 0, 0}; //array for recording the state of buttons
 byte lastButtonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH};//array for recording the previous state of buttons
 unsigned long lastDebounceTime[NUM_BUTTONS]; //array for recording when the button press was first seen
 unsigned long lastEntry = 0 ;
@@ -129,31 +130,61 @@ void resetToFactoryDefaultSettings(){
     settings.damping = 8;
 }
 
+void doContrast(int value) {
+    analogWrite(contrastPin, value);
+}
+
+void doBrightness(int value) {
+    analogWrite(brightnessPin, value);
+}
+
+void doHeldButtonAction (int button){
+	switch (button) {
+
+	case CANCEL:
+		resetToFactoryDefaultSettings();
+		doContrast(settings.contrast);
+		doBrightness(settings.brightness);
+		break;
+	}
+}
+
 // tests if a button was pressed and applies debounce logic
 // this function assumes all buttons are input_pullup, active LOW, and contiguous pin numbers!
 // this function does not use wait loops or other blocking functions which delay processing
 int buttonPressed() {
+	int pressedButton = 0;
 	if( millis() - lastEntry < 50) return 0;//checking more often that every 50ms is nonsense, just return
 	lastEntry = millis();
 
 	for (uint8_t button = SELECT; button <= CANCEL; button++) {
-		buttonState[button-SELECT] = digitalRead(button);
+		uint8_t buttonIndex = button-SELECT;
+		buttonState[buttonIndex] = digitalRead(button);
 
-		if ( (millis() - lastDebounceTime[button-SELECT]) > debounceDelay) {
-			if ((buttonState[button-SELECT] != lastButtonState[button-SELECT] ) || ((millis() - lastDebounceTime[button-SELECT]) > debounceDelay * 2) ) {
-				if (buttonState[button-SELECT] == LOW) {
-					lastDebounceTime[button-SELECT] = millis();
-					lastButtonState[button-SELECT] = buttonState[button-SELECT];
-					return button;
-				}
+		if ( (millis() - lastDebounceTime[buttonIndex]) < debounceDelay) return 0; //return if this button hasn't settled yet
+		lastDebounceTime[buttonIndex] = millis();
+
+		if (buttonState[buttonIndex] == RELEASED && lastButtonState[buttonIndex] == PRESSED){
+			buttonCount[buttonIndex] = 0;
+			pressedButton = button;
+		} else if(buttonState[buttonIndex] == PRESSED && lastButtonState[buttonIndex] == PRESSED){
+			buttonCount[buttonIndex]++;
+
+			if(button == LEFT) pressedButton = LEFT;
+			if(button == RIGHT)	pressedButton = RIGHT;
+
+			if (buttonCount[buttonIndex] > 10){
+				buttonCount[buttonIndex] = 0;
+				doHeldButtonAction(button);
 			}
-			lastButtonState[button-SELECT] = buttonState[button-SELECT];
 		}
+
+		lastButtonState[buttonIndex] = buttonState[buttonIndex];
 	}
 
-
-    return 0;//just don't try to connect a button to pin 0
+    return pressedButton;//just don't try to connect a button to pin 0
 }
+
 
 //creates a special character which is stored in the display's memory
 void createWaitKeyPressChar(){

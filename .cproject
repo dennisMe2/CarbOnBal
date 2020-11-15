@@ -37,7 +37,7 @@
                             							
                             <tool id="io.sloeber.tool.sketch.compiler.cpp.100393587" name="Arduino C++ Compiler" superClass="io.sloeber.tool.sketch.compiler.cpp">
                                 								
-                                <option id="io.sloeber.compiler.cpp.sketch.option.incpath.1111050771" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
+                                <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.cpp.sketch.option.incpath.1111050771" name="Include Paths (-I)" superClass="io.sloeber.compiler.cpp.sketch.option.incpath" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/core/core}&quot;"/>
                                     									
@@ -47,19 +47,15 @@
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/EEPROM}&quot;"/>
                                     									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/EEPROM/src}&quot;"/>
-                                    									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Wire}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Wire/src}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/NewLiquidCrystal1.3.5}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Newliquidcrystal_1.3.5}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/LiquidCrystal}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/LiquidCrystal/src}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/EEPROM/src}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Wire/src}&quot;"/>
                                     								
                                 </option>
                                 								
@@ -69,7 +65,7 @@
                             							
                             <tool id="io.sloeber.tool.compiler.c.885555191" name="Arduino C Compiler" superClass="io.sloeber.tool.compiler.c">
                                 								
-                                <option id="io.sloeber.compiler.c.sketch.option.incpath.149609923" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
+                                <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.c.sketch.option.incpath.149609923" name="Include Paths (-I)" superClass="io.sloeber.compiler.c.sketch.option.incpath" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/core/core}&quot;"/>
                                     									
@@ -79,19 +75,15 @@
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/EEPROM}&quot;"/>
                                     									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/EEPROM/src}&quot;"/>
-                                    									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Wire}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Wire/src}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/NewLiquidCrystal1.3.5}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Newliquidcrystal_1.3.5}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/LiquidCrystal}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/LiquidCrystal/src}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/EEPROM/src}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Wire/src}&quot;"/>
                                     								
                                 </option>
                                 								
@@ -101,7 +93,7 @@
                             							
                             <tool id="io.sloeber.tool.sketch.compiler.s.1686460323" name="Arduino Assembler" superClass="io.sloeber.tool.sketch.compiler.s">
                                 								
-                                <option id="io.sloeber.compiler.asm.sketch.option.incpath.669718804" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
+                                <option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="io.sloeber.compiler.asm.sketch.option.incpath.669718804" name="Include Paths (-I)" superClass="io.sloeber.compiler.asm.sketch.option.incpath" valueType="includePath">
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/core/core}&quot;"/>
                                     									
@@ -111,19 +103,15 @@
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/EEPROM}&quot;"/>
                                     									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/EEPROM/src}&quot;"/>
-                                    									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Wire}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Wire/src}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/NewLiquidCrystal1.3.5}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Newliquidcrystal_1.3.5}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/LiquidCrystal}&quot;"/>
                                     									
                                     <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/LiquidCrystal/src}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/EEPROM/src}&quot;"/>
+                                    									
+                                    <listOptionValue builtIn="false" value="&quot;${workspace_loc:/CarbOnBal/libraries/Wire/src}&quot;"/>
                                     								
                                 </option>
                                 								

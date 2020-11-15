@@ -22,8 +22,8 @@
 // You should have received a copy of the GNU General Public License
 // along with CarbOnBal.  If not, see <http://www.gnu.org/licenses/>.
 
-#include <Arduino.h>
-#include <EEPROM.h>
+#include "Arduino.h"
+#include "EEPROM.h"
 
 #include "functions.h"
 #include "globals.h"

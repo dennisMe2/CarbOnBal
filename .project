@@ -39,37 +39,27 @@
 		<link>
 			<name>core/core</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.6.20/cores/arduino</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.8.3/cores/arduino</locationURI>
 		</link>
 		<link>
 			<name>core/variant</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.6.20/variants/eightanaloginputs</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.8.3/variants/eightanaloginputs</locationURI>
 		</link>
 		<link>
 			<name>libraries/EEPROM</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.6.20/libraries/EEPROM</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.8.3/libraries/EEPROM</locationURI>
 		</link>
 		<link>
 			<name>libraries/LiquidCrystal</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/libraries/LiquidCrystal/1.0.7</locationURI>
-		</link>
-		<link>
-			<name>libraries/NewLiquidCrystal1.3.5</name>
-			<type>2</type>
-			<location>/home/dennis/Arduino/libraries/NewLiquidCrystal1.3.5</location>
-		</link>
-		<link>
-			<name>libraries/Newliquidcrystal_1.3.5</name>
-			<type>2</type>
-			<location>/home/dennis/Arduino/libraries/Newliquidcrystal_1.3.5</location>
+			<location>/home/dennis/arduino-1.8.13/libraries/LiquidCrystal</location>
 		</link>
 		<link>
 			<name>libraries/Wire</name>
 			<type>2</type>
-			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.6.20/libraries/Wire</locationURI>
+			<locationURI>ECLIPSE_HOME/arduinoPlugin/packages/arduino/hardware/avr/1.8.3/libraries/Wire</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

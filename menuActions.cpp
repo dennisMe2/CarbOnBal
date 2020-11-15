@@ -50,9 +50,7 @@ void actionBrightness() {
     lcd_clear();
 }
 
-void doBrightness(int value) {
-    analogWrite(brightnessPin, value);
-}
+
 
 void doEmaFactor(int value){
 	settings.damping = value/6;
@@ -64,9 +62,7 @@ void actionContrast() {
     lcd_clear();
 }
 
-void doContrast(int value) {
-    analogWrite(contrastPin, value);
-}
+
 
 void actionSilent() {
 	const char* actions[] = {txtEnabled,txtDisabled};
