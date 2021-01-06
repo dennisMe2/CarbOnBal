@@ -104,12 +104,12 @@ void actionReset() {
 }
 
 
-void actionEmaFactor() {
+void actionEmaDamping() {
     settings.damping = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, (uint8_t) settings.damping*6.25, 6) / 6.25);
     actionSaveSettings();
 }
 
-void actionRpmEmaFactor() {
+void actionRpmEmaDamping() {
     settings.rpmDamping = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, (uint8_t) settings.rpmDamping*6.25, 6) / 6.25);
     actionSaveSettings();
 }

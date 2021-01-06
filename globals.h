@@ -27,7 +27,7 @@
 #define GLOBALS_H_INCLUDED
 #include <Arduino.h>
 
-#define SOFTWARE_VERSION "2.0.0"
+#define SOFTWARE_VERSION "2.0.b1"
 
 #define SELECT 2
 #define LEFT 3
@@ -64,7 +64,7 @@ static const int numberOfCalibrationValues=256;
 static const int calibrationOffset=256; //eeprom base address for calibration data
 
 
-static const uint8_t versionUID = 28; //update when settings_t changes!
+static const uint8_t versionUID = 29; //update when settings_t changes!
 
 //this struct is used to store settings in NVRAM
 //does not use bit fields because these cause more writes to the same NVRAM locations

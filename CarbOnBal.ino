@@ -43,9 +43,6 @@ long sums[NUM_SENSORS] = { 0, 0, 0, 0 }; //tracks totals for calculating a numer
 
 bool freezeDisplay = false; //used to tell when a user wants to freeze the display
 unsigned int rpm;                                       //stores the current RPM
-
-//int readingCount[NUM_SENSORS]; //used to store the number of captured readings for calculating a numerical average
-//int previousValue[NUM_SENSORS]; //stores the previous sensor value to determine ascending v. descending pressures
 unsigned int average[NUM_SENSORS]; //used to share the current average for each sensor
 int ambientPressure; //stores current ambient pressure for negative pressure display
 unsigned long lastUpdate;
@@ -364,6 +361,7 @@ void actionSaveSettings() {
 	EEPROM.put(0, versionUID);  //only saves changed bytes!
 	EEPROM.put(1, settingsOffset);
 	EEPROM.put(settingsOffset, settings);  //only saves changed bytes!
+	delay(100);//eeprom settle time
 
 	//Move our settings up 1 position and retry while memory lasts!
 	if (0 != verifySettings()){

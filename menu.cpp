@@ -81,7 +81,7 @@ void actionDisplayExtraMenu(){
 
 void actionDisplaySoftwareSettingsMenu() {
 	const char* const menu[] = {  txtDamping, txtRpmDamping};
-	void (*actions[])() = { &actionEmaFactor, &actionRpmEmaFactor};
+	void (*actions[])() = { &actionEmaDamping, &actionRpmEmaDamping};
 	uint8_t menuSize = 2;
 	handleMenu(menu, actions, menuSize, displaySoftwareSettingsMenuLine);
 }
