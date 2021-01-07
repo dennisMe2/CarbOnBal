@@ -26,7 +26,7 @@
 #ifndef UTILS_H_INCLUDED
 #define UTILS_H_INCLUDED
 #include <Arduino.h>
-
+#include "globals.h"
 void setInterrupt(bool enabled);
 void resetAverages();
 float convertToPreferredUnits(int value, int ambient);
@@ -40,7 +40,7 @@ float differenceToInHg(int value);
 const char* unitsAsText();
 void createWaitKeyPressChar();
 void displayKeyPressPrompt();
-void resetToFactoryDefaultSettings();
+settings_t fetchFactoryDefaultSettings();
 int buttonPressed();
 void waitForAnyKey();
 void setInputActiveLow(int i);

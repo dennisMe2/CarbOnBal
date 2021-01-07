@@ -112,22 +112,27 @@ float differenceToInHg(int value){
 
 
 //reset to factory defaults
-void resetToFactoryDefaultSettings(){
-    settings.brightness = 255;
-    settings.contrast = 10;
+settings_t fetchFactoryDefaultSettings(){
+	settings_t settings;
+
+	settings.silent = false;
+	settings.advanced = false;
+	settings.splashScreen = true;
+	settings.cylinders = 4;
+	settings.master = 1;
+	settings.button1 = 0;
+	settings.button2 = 0;
+	settings.button3 = 0;
+	settings.contrast = 10;
+	settings.brightness = 255;
     settings.graphType = 0;
-    settings.silent = false;
-    settings.cylinders = 4;
-    settings.master = 1;
-    settings.button1 = 0;
-    settings.button2 = 0;
     settings.rpmDamping = 10;
     settings.units = 0;
     settings.zoom = 0;
     settings.calibrationMax = 32;
-    settings.advanced = false;
-    settings.splashScreen = true;
     settings.damping = 8;
+
+    return settings;
 }
 
 void doContrast(int value) {
@@ -142,7 +147,7 @@ void doHeldButtonAction (int button){
 	switch (button) {
 
 	case CANCEL:
-		resetToFactoryDefaultSettings();
+		settings = fetchFactoryDefaultSettings();
 		doContrast(settings.contrast);
 		doBrightness(settings.brightness);
 		break;

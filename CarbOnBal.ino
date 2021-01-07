@@ -80,19 +80,6 @@ void setup() {
 
 	ambientPressure = detectAmbient(); //set ambient pressure (important because it varies with weather and altitude)
 
-	if (settings.splashScreen) {
-		doMatrixDemo();
-
-		lcd_setCursor(4, 1);
-		lcd_print(txtWelcome);
-		delay(2000);
-
-		lcd_clear();
-		doAbsoluteDemo();
-		doRelativeDemo();
-	}
-
-
 	//set timer1 interrupt at 1Hz
 	TCCR1A = 0;// set entire TCCR1A register to 0
 	TCCR1B = 0;// same for TCCR1B
@@ -106,6 +93,21 @@ void setup() {
 	// enable timer compare interrupt
 	TIMSK1 |= (1 << OCIE1A);
 	setInterrupt(true);
+
+	delay (1000); // wait for serial control request after reset from java
+
+	if ((Serial.available() == 0) && settings.splashScreen ) { //only do demo if no control request was sent
+		doMatrixDemo();
+
+		lcd_setCursor(4, 1);
+		lcd_print(txtWelcome);
+		delay(2000);
+
+		lcd_clear();
+		doAbsoluteDemo();
+		doRelativeDemo();
+	}
+
 }
 
 void doSerialReadCommand() {
@@ -352,7 +354,7 @@ void lcdDiagnosticDisplay(unsigned int value[]) {
 //fail on write is the most common NVRAM failure by far
 bool verifySettings(){
 	settings_t settingsCopy = settings;
-	loadSettings(settingsCopy);
+	settings = loadSettings(settingsCopy);
 	return memcmp(&settings, &settingsCopy, sizeof(settings));
 }
 
@@ -384,10 +386,10 @@ settings_t loadSettings(settings_t settings) {
 	EEPROM.get(1, settingsOffset);
 
 	if (compareVersion == versionUID) { //only load settings if saved by the current version, otherwise reset to 'factory' defaults
-		settings = EEPROM.get(settingsOffset, settings); //settings are stored immediately after the version UID
+		settings = EEPROM.get(settingsOffset, settings);
 	} else {
 		settingsOffset = 2;
-		resetToFactoryDefaultSettings();
+		settings = fetchFactoryDefaultSettings();
 	}
 
 	doContrast(settings.contrast);

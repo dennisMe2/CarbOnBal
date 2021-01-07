@@ -97,7 +97,7 @@ void actionReset() {
 	const char* actions[] ={ txtKeepSettings, txtResetSettings};
     bool reset = doSettingChooser(txtFactoryReset, actions, 2, 0);
     if(reset){
-        resetToFactoryDefaultSettings();
+        fetchFactoryDefaultSettings();
         actionSaveSettings();     //store the data
         asm volatile ("  jmp 0");                                 //soft reset by jumping into the arduino boot loader directly
     }

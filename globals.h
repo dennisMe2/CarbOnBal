@@ -64,7 +64,7 @@ static const int numberOfCalibrationValues=256;
 static const int calibrationOffset=256; //eeprom base address for calibration data
 
 
-static const uint8_t versionUID = 29; //update when settings_t changes!
+static const uint8_t versionUID = 31; //update when settings_t changes!
 
 //this struct is used to store settings in NVRAM
 //does not use bit fields because these cause more writes to the same NVRAM locations
