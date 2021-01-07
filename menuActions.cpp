@@ -33,8 +33,6 @@
 
 extern settings_t settings;
 extern bool quitMenu;
-extern const uint8_t brightnessPin;//6
-extern const uint8_t contrastPin;//11
 
 void doConfirmation(){
 	lcd_clear();
@@ -105,12 +103,12 @@ void actionReset() {
 
 
 void actionEmaDamping() {
-    settings.damping = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, (uint8_t) settings.damping*6.25, 6) / 6.25);
+    settings.damping = doBasicSettingChanger(txtDampingPerc, 0, 16, settings.damping, 1);
     actionSaveSettings();
 }
 
 void actionRpmEmaDamping() {
-    settings.rpmDamping = (uint8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, (uint8_t) settings.rpmDamping*6.25, 6) / 6.25);
+    settings.rpmDamping = doBasicSettingChanger(txtRpmDampingPerc, 0, 16, settings.rpmDamping, 1);
     actionSaveSettings();
 }
 

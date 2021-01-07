@@ -830,6 +830,7 @@ void doDataDumpBinary() {
 
 void doRevs() {
 	setInterrupt(false);
+	int hysteresis = 2; //number of descending or ascending measurements needed
 	bool descending = false;
 	bool previousDescending = false;
 
@@ -851,21 +852,16 @@ void doRevs() {
 
 		measurement = readSensorRaw(0);
 
-		if (measurement < (previous)) {
-			descentCount++;
-			ascentCount--;
-		}
-		if (measurement > (previous)) {
-			ascentCount++;
-			descentCount--;
-		}
-		if (descentCount > 2) {
+		if (measurement < previous) descentCount++;
+		if (measurement > previous)	ascentCount++;
+
+		if (descentCount >= hysteresis) {
 			descending = true;
 			ascentCount = 0;
 			descentCount = 0;
 		}
 
-		if (ascentCount > 4) {
+		if (ascentCount >= hysteresis) {
 			descending = false;
 			descentCount = 0;
 			ascentCount = 0;
