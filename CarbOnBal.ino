@@ -94,7 +94,7 @@ void setup() {
 	TIMSK1 |= (1 << OCIE1A);
 	setInterrupt(true);
 
-	delay (1000); // wait for serial control request after reset from java
+	delay (1500); // wait for serial control request after reset from java
 
 	if (!Serial.available() && settings.splashScreen ) { //only do demo if no serial data was sent
 		doMatrixDemo();
