@@ -49,7 +49,7 @@
 #define DIAGNOSTICS 0xe3
 #define END_DATA 0xe4
 
-#define BAUD_RATE 115200
+#define BAUD_RATE 230400
 
 #define RELEASED 0x1
 #define PRESSED  0x0

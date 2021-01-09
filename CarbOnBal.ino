@@ -59,7 +59,7 @@ unsigned long startTime;
 volatile unsigned long lastInterrupt = micros();
 volatile unsigned long periodUs = 0;
 volatile unsigned long interruptDurationUs = 0;
-volatile bool isSerialAllowed = false;
+volatile bool isSerialAllowed = true;
 bool dataDumpMode = false;
 
 
@@ -96,12 +96,12 @@ void setup() {
 
 	delay (1000); // wait for serial control request after reset from java
 
-	if ((Serial.available() == 0) && settings.splashScreen ) { //only do demo if no control request was sent
+	if (!Serial.available() && settings.splashScreen ) { //only do demo if no serial data was sent
 		doMatrixDemo();
 
 		lcd_setCursor(4, 1);
 		lcd_print(txtWelcome);
-		delay(2000);
+		delay(1000);
 
 		lcd_clear();
 		doAbsoluteDemo();
@@ -113,9 +113,11 @@ void setup() {
 void doSerialReadCommand() {
 	if(isSerialAllowed && (Serial.available() >= 1)){
 		if ((uint8_t) Serial.read() == 0xFC){
-			delay(1000);
+			delay(10);
 			doSettingsDump();
+			delay(500);
 			doCalibrationDump();
+			delay(500);
 			doDataDump();
 		}
 	}
@@ -748,23 +750,14 @@ void sendEndSerialData(){
 //dump the calibration array to the serial port for review
 void doCalibrationDump() {
 	setInterrupt(false);
-	lcd_clear();
-	lcd_setCursor(0, 1);
-	lcd_print(txtConnectSerial);
-	lcd_setCursor(0, 1);
-	Serial.begin(BAUD_RATE);
-	if (Serial.availableForWrite()) {
-		lcd_setCursor(0, 1);
-		lcd_print(txtDumpingSensorData);
-		for (int i = 0; i < numberOfCalibrationValues; i++) {
-			sendStartSerialData(CALIBRATION);
-			Serial.write((int8_t) i);
-			for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
-				Serial.write((int8_t) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
-			}
+	for (int i = 0; i < numberOfCalibrationValues; i++) {
+		sendStartSerialData(CALIBRATION);
+		Serial.write((int8_t) i);
+		for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
+			Serial.write((int8_t) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
 		}
-		sendEndSerialData();
 	}
+	sendEndSerialData();
 	setInterrupt(true);
 }
 
@@ -772,16 +765,13 @@ void doSettingsDump(){
 	uint8_t* ptr = (uint8_t*)&settings;
 
 	setInterrupt(false);
-	Serial.begin(BAUD_RATE);
-		if (Serial.availableForWrite()) {
-			sendStartSerialData(SETTINGS);
-			Serial.write((int8_t) versionUID);
-			for (size_t i = 0; i < sizeof(settings); i++) {
-				Serial.write(*ptr);
-				ptr++;
-			}
-			sendEndSerialData();
-		}
+	sendStartSerialData(SETTINGS);
+	Serial.write((int8_t) versionUID);
+	for (size_t i = 0; i < sizeof(settings); i++) {
+		Serial.write(*ptr);
+		ptr++;
+	}
+	sendEndSerialData();
 	setInterrupt(true);
 }
 
@@ -805,7 +795,7 @@ void doDataDumpBinary() {
 	lcd_clear();
 	lcd_setCursor(0, 1);
 	lcd_print(txtConnectSerial);
-	Serial.begin(BAUD_RATE);
+	//Serial.begin(BAUD_RATE);
 	setInterrupt(true);
 
 	if (Serial.availableForWrite()) {
