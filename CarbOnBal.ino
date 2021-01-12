@@ -94,7 +94,7 @@ void setup() {
 	TIMSK1 |= (1 << OCIE1A);
 	setInterrupt(true);
 
-	delay (1500); // wait for serial control request after reset from java
+	delay (1000); // wait for serial control request after reset from java
 
 	if (!Serial.available() && settings.splashScreen ) { //only do demo if no serial data was sent
 		doMatrixDemo();
@@ -109,15 +109,21 @@ void setup() {
 	}
 
 }
+int sendDataOnRequest(){
+	uint8_t command = 0x00;
+
+	if((Serial.available() >= 1)){
+		command = Serial.read();
+		if(command == CALIBRATION) doCalibrationDump();
+		if(command == SETTINGS) doSettingsDump();
+	}
+	return command;
+}
 
 void doSerialReadCommand() {
-	if(isSerialAllowed && (Serial.available() >= 1)){
-		if ((uint8_t) Serial.read() == 0xFC){
-			delay(10);
-			doSettingsDump();
-			delay(500);
-			doCalibrationDump();
-			delay(500);
+	if(isSerialAllowed){
+		uint8_t command = sendDataOnRequest();
+		if ((uint8_t) command == CARB_VACUUM){
 			doDataDump();
 		}
 	}
@@ -809,9 +815,11 @@ void doDataDumpBinary() {
 					intVals.intVal = average[sensor];
 					serialWriteInteger(intVals);
 				}
-
+				sendDataOnRequest();
 			}
 			isSerialAllowed = false;
+
+
 		}
 		sendEndSerialData();
 	}
