@@ -113,16 +113,38 @@ int sendDataOnRequest(){
 	uint8_t command = 0x00;
 
 	if((Serial.available() >= 1)){
+
 		command = Serial.read();
-		if(command == CALIBRATION) doCalibrationDump();
-		if(command == SETTINGS) doSettingsDump();
+		lcd_clear();
+		lcd_setCursor(4, 1);
+
+		if(command == CALIBRATION){
+			lcd_print(F("CAL"));
+			delay(1000);
+			doCalibrationDump();
+		}else if(command == SETTINGS){
+			lcd_print(F("SET"));
+			delay(1000);
+			doSettingsDump();
+		}else if(command == CARB_VACUUM){
+			lcd_print(F("VAC"));
+			delay(1000);
+		}else if(command == CARB_VACUUM){
+			lcd_print(F("DIA"));
+			delay(1000);
+		}else{
+			lcd_print(F("HUH?!?"));
+			delay(1000);
+		}
 	}
+
 	return command;
 }
 
 void doSerialReadCommand() {
+	uint8_t command = sendDataOnRequest();
 	if(isSerialAllowed){
-		uint8_t command = sendDataOnRequest();
+
 		if ((uint8_t) command == CARB_VACUUM){
 			doDataDump();
 		}
@@ -749,7 +771,7 @@ void sendStartSerialData(byte code){
 void sendEndSerialData(){
 	Serial.write(START_PACKET);
 	Serial.write(REQUEST_PACKET);
-	Serial.write(END_DATA);
+	//Serial.write(END_DATA);
 }
 
 
@@ -821,7 +843,7 @@ void doDataDumpBinary() {
 
 
 		}
-		sendEndSerialData();
+		//sendEndSerialData();
 	}
 	setInterrupt(false);
 }
