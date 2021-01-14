@@ -116,25 +116,18 @@ int sendDataOnRequest(){
 
 		command = Serial.read();
 		lcd_clear();
-		lcd_setCursor(4, 1);
+		lcd_setCursor(1, 1);
 
 		if(command == CALIBRATION){
-			lcd_print(F("CAL"));
-			delay(1000);
 			doCalibrationDump();
 		}else if(command == SETTINGS){
-			lcd_print(F("SET"));
-			delay(1000);
 			doSettingsDump();
-		}else if(command == CARB_VACUUM){
-			lcd_print(F("VAC"));
-			delay(1000);
-		}else if(command == CARB_VACUUM){
-			lcd_print(F("DIA"));
-			delay(1000);
+		}else if(command == DIAGNOSTICS){
+			//TODO implement
+			//doDiagnosticsDump();
 		}else{
-			lcd_print(F("HUH?!?"));
-			delay(1000);
+			lcd_print(F(" UNKNOWN COMMAND?!?"));
+			delay(1500);
 		}
 	}
 
@@ -762,44 +755,49 @@ void makeCalibrationChars() {
 	}
 }
 
-void sendStartSerialData(byte code){
-	Serial.write(START_PACKET);
-		Serial.write(REQUEST_PACKET);
-		Serial.write(code);
+void sendStartSerialData(byte dataType){
+		Serial.write(dataType);
 }
 
-void sendEndSerialData(){
+void sendEndSerialData(uint8_t counter){
+	Serial.write(counter);
 	Serial.write(START_PACKET);
-	Serial.write(REQUEST_PACKET);
-	//Serial.write(END_DATA);
+	Serial.write(END_DATA);
 }
 
 
 //dump the calibration array to the serial port for review
 void doCalibrationDump() {
 	setInterrupt(false);
+
 	for (int i = 0; i < numberOfCalibrationValues; i++) {
+		uint8_t counter = 0;
 		sendStartSerialData(CALIBRATION);
 		Serial.write((int8_t) i);
+		counter++;
 		for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
 			Serial.write((int8_t) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
+			counter++;
 		}
+		sendEndSerialData(counter);
 	}
-	sendEndSerialData();
+
 	setInterrupt(true);
 }
 
 void doSettingsDump(){
 	uint8_t* ptr = (uint8_t*)&settings;
-
+	uint8_t counter = 0;
 	setInterrupt(false);
 	sendStartSerialData(SETTINGS);
 	Serial.write((int8_t) versionUID);
+	counter++;
 	for (size_t i = 0; i < sizeof(settings); i++) {
 		Serial.write(*ptr);
 		ptr++;
+		counter++;
 	}
-	sendEndSerialData();
+	sendEndSerialData(counter);
 	setInterrupt(true);
 }
 
@@ -833,17 +831,17 @@ void doDataDumpBinary() {
 		while (!(buttonPressed() == CANCEL)) {//loop while interrupt routine gathers data
 			if(isSerialAllowed){
 				sendStartSerialData(CARB_VACUUM);
+				int counter = 0;
 				for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
 					intVals.intVal = average[sensor];
 					serialWriteInteger(intVals);
+					counter += 2; //2 byte integers!
 				}
+				sendEndSerialData(counter);
 				sendDataOnRequest();
 			}
 			isSerialAllowed = false;
-
-
 		}
-		//sendEndSerialData();
 	}
 	setInterrupt(false);
 }
