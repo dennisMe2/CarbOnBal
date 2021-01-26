@@ -62,12 +62,11 @@ volatile unsigned long interruptDurationUs = 0;
 volatile bool isSerialAllowed = true;
 bool dataDumpMode = false;
 
-
 //this does the initial setup on startup.
 void setup() {
 	lcd_begin(DISPLAY_COLS, DISPLAY_ROWS);
 
-	settings = loadSettings(settings);                 //load saved settings into memory from FLASH
+	settings = loadSettings(settings); //load saved settings into memory from FLASH
 	Serial.begin(BAUD_RATE);
 
 	setInputActiveLow(SELECT);          //set the pins connected to the switches
@@ -81,11 +80,11 @@ void setup() {
 	ambientPressure = detectAmbient(); //set ambient pressure (important because it varies with weather and altitude)
 
 	//set timer1 interrupt at 1Hz
-	TCCR1A = 0;// set entire TCCR1A register to 0
-	TCCR1B = 0;// same for TCCR1B
-	TCNT1  = 0;//initialize counter value to 0
+	TCCR1A = 0; // set entire TCCR1A register to 0
+	TCCR1B = 0; // same for TCCR1B
+	TCNT1 = 0; //initialize counter value to 0
 	// set compare match register for 1hz increments
-	OCR1A = 249;// = (16*10^6) / (1*1024) - 1 (must be <65536)
+	OCR1A = 249;	// = (16*10^6) / (1*1024) - 1 (must be <65536)
 	// turn on CTC mode
 	TCCR1B |= (1 << WGM12);
 	// Set CS10 and CS11 bits for 64 prescaler
@@ -94,9 +93,9 @@ void setup() {
 	TIMSK1 |= (1 << OCIE1A);
 	setInterrupt(true);
 
-	delay (1000); // wait for serial control request after reset from java
+	delay(1000); // wait for serial control request after reset from java
 
-	if (!Serial.available() && settings.splashScreen ) { //only do demo if no serial data was sent
+	if (!Serial.available() && settings.splashScreen) { //only do demo if no serial data was sent
 		doMatrixDemo();
 
 		lcd_setCursor(4, 1);
@@ -109,23 +108,25 @@ void setup() {
 	}
 
 }
-int sendDataOnRequest(){
+int sendDataOnRequest() {
 	uint8_t command = 0x00;
 
-	if((Serial.available() >= 1)){
+	if ((Serial.available() >= 1)) {
 
 		command = Serial.read();
 		lcd_clear();
 		lcd_setCursor(1, 1);
 
-		if(command == CALIBRATION){
+		if (command == CALIBRATION) {
 			doCalibrationDump();
-		}else if(command == SETTINGS){
+		} else if (command == SETTINGS) {
 			doSettingsDump();
-		}else if(command == DIAGNOSTICS){
+		} else if ((uint8_t) command == CARB_VACUUM) {
+			//Do nothing here to prevent unwanted recursion
+		} else if (command == DIAGNOSTICS) {
 			//TODO implement
 			//doDiagnosticsDump();
-		}else{
+		} else {
 			lcd_print(F(" UNKNOWN COMMAND?!?"));
 			delay(1500);
 		}
@@ -136,15 +137,15 @@ int sendDataOnRequest(){
 
 void doSerialReadCommand() {
 	uint8_t command = sendDataOnRequest();
-	if(isSerialAllowed){
+	if (isSerialAllowed) {
 
-		if ((uint8_t) command == CARB_VACUUM){
+		if ((uint8_t) command == CARB_VACUUM) {
 			doDataDump();
 		}
 	}
 }
 
-void doResetAveraging(){
+void doResetAveraging() {
 	emaTarget = settings.damping;
 	settings.damping = 0;
 	emaMillis = millis();
@@ -153,11 +154,11 @@ void doResetAveraging(){
 void loop() {
 	startTime = micros();
 
-	if(emaTarget >= 0){
-		if((millis() - emaMillis) >= 125){
-			if(emaTarget > settings.damping){
+	if (emaTarget >= 0) {
+		if ((millis() - emaMillis) >= 125) {
+			if (emaTarget > settings.damping) {
 				settings.damping++;
-			}else{
+			} else {
 				emaTarget = -1;
 			}
 			emaMillis = millis();
@@ -173,8 +174,9 @@ void loop() {
 	case LEFT:
 		if (settings.button1 == 0) { // there are three modes for this pin, user settable
 			actionContrast();
-		} else if(settings.button1 == 2){ //DAMPING
-			settings.damping = (int8_t) (doBasicSettingChanger(txtDampingPerc, 0, 100, (int8_t) settings.damping*6.25, 6) / 6.25);
+		} else if (settings.button1 == 2) { //DAMPING
+			settings.damping = (int8_t) (doBasicSettingChanger(txtDampingPerc,
+					0, 100, (int8_t) settings.damping * 6.25, 6) / 6.25);
 			actionSaveSettings();
 		} else {
 			doResetAveraging();
@@ -183,8 +185,10 @@ void loop() {
 	case RIGHT:
 		if (settings.button2 == 0) { // there are three modes for this pin, user settable
 			actionBrightness();
-		} else if(settings.button2 == 2){ // RPMDAMPING
-			settings.rpmDamping = (int8_t) (doBasicSettingChanger(txtRpmDampingPerc, 0, 100, (int8_t) settings.rpmDamping * 6.25, 6)/6.25);
+		} else if (settings.button2 == 2) { // RPMDAMPING
+			settings.rpmDamping = (int8_t) (doBasicSettingChanger(
+					txtRpmDampingPerc, 0, 100,
+					(int8_t) settings.rpmDamping * 6.25, 6) / 6.25);
 			actionSaveSettings();
 		} else {
 			doRevs();
@@ -194,7 +198,7 @@ void loop() {
 	case CANCEL:
 		if (settings.button3 == 0) { // there are three modes for this pin, user settable
 			freezeDisplay = !freezeDisplay;	//toggle the freezeDisplay option
-		} else if(settings.button3 == 1){
+		} else if (settings.button3 == 1) {
 			freezeDisplay = false;
 			doResetAveraging();
 		} else {
@@ -230,7 +234,6 @@ void loop() {
 	timeBase = micros() - startTime; //monitor how long it takes to traverse the main loop
 }
 
-
 // Alternative basic algorithm using only long integer arithmetic
 // now the definitive algorithm
 void intRunningAverage() {
@@ -239,7 +242,8 @@ void intRunningAverage() {
 
 	for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
 		value = (unsigned int) readSensorCalibrated(sensor);
-		avg[sensor].longVal = longExponentialMovingAverage( factor, avg[sensor].longVal, value);
+		avg[sensor].longVal = longExponentialMovingAverage(factor,
+				avg[sensor].longVal, value);
 		average[sensor] = avg[sensor].intVal[1];
 	}
 }
@@ -375,7 +379,7 @@ void lcdDiagnosticDisplay(unsigned int value[]) {
 
 //compares freshly loaded settings to the freshly saved verion, if there is a difference the save must have failed
 //fail on write is the most common NVRAM failure by far
-bool verifySettings(){
+bool verifySettings() {
 	settings_t settingsCopy = settings;
 	settings = loadSettings(settingsCopy);
 	return memcmp(&settings, &settingsCopy, sizeof(settings));
@@ -386,17 +390,18 @@ void actionSaveSettings() {
 	EEPROM.put(0, versionUID);  //only saves changed bytes!
 	EEPROM.put(1, settingsOffset);
 	EEPROM.put(settingsOffset, settings);  //only saves changed bytes!
-	delay(100);//eeprom settle time
+	delay(100);  //eeprom settle time
 
 	//Move our settings up 1 position and retry while memory lasts!
-	if (0 != verifySettings()){
-		if(settingsOffset + sizeof(settings) < 255) settingsOffset += sizeof(settings);
+	if (0 != verifySettings()) {
+		if (settingsOffset + sizeof(settings) < 255)
+			settingsOffset += sizeof(settings);
 		EEPROM.put(1, settingsOffset);
 		actionSaveSettings();
 		lcd_clear();
-		lcd_setCursor(0,1);
+		lcd_setCursor(0, 1);
 		lcd_print(F("SETTINGS WRITE ERROR"));
-		lcd_setCursor(0,2);
+		lcd_setCursor(0, 2);
 		lcd_print(F("SETTINGS RELOCATED"));
 		waitForAnyKey();
 	}
@@ -610,8 +615,8 @@ void doViewCalibration(int sensor) {
 
 //display indicator arrows and numeric offsets so we don't get lost in the graph of calibration values.
 void displayNavArrowsAndOffsets(int valueOffset,
-bool topLeftArrowPositionAvailable,
-bool topRightArrowPositionAvailable) {
+		bool topLeftArrowPositionAvailable,
+		bool topRightArrowPositionAvailable) {
 	if (valueOffset == 0) {
 		(topLeftArrowPositionAvailable) ?
 				lcd_setCursor(0, 0) : lcd_setCursor(0, 3);
@@ -755,16 +760,15 @@ void makeCalibrationChars() {
 	}
 }
 
-void sendStartSerialData(byte dataType){
-		Serial.write(dataType);
+void sendStartSerialData(byte dataType) {
+	Serial.write(dataType);
 }
 
-void sendEndSerialData(uint8_t counter){
+void sendEndSerialData(uint8_t counter) {
 	Serial.write(counter);
 	Serial.write(START_PACKET);
 	Serial.write(END_DATA);
 }
-
 
 //dump the calibration array to the serial port for review
 void doCalibrationDump() {
@@ -776,7 +780,9 @@ void doCalibrationDump() {
 		Serial.write((int8_t) i);
 		counter++;
 		for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
-			Serial.write((int8_t) EEPROM.read(getCalibrationTableOffsetByPosition(sensor, i)));
+			Serial.write(
+					(int8_t) EEPROM.read(
+							getCalibrationTableOffsetByPosition(sensor, i)));
 			counter++;
 		}
 		sendEndSerialData(counter);
@@ -785,8 +791,8 @@ void doCalibrationDump() {
 	setInterrupt(true);
 }
 
-void doSettingsDump(){
-	uint8_t* ptr = (uint8_t*)&settings;
+void doSettingsDump() {
+	uint8_t *ptr = (uint8_t*) &settings;
 	uint8_t counter = 0;
 	setInterrupt(false);
 	sendStartSerialData(SETTINGS);
@@ -806,14 +812,12 @@ void serialWriteInteger(intByteUnion value) {
 	Serial.write(value.byteVal[0]);
 }
 
-
 //dump calibrated sensor data directly to serial
 void doDataDump() {
 	dataDumpMode = true;
 	doDataDumpBinary();
 	dataDumpMode = false;
 }
-
 
 void doDataDumpBinary() {
 	intByteUnion intVals;
@@ -828,8 +832,8 @@ void doDataDumpBinary() {
 		lcd_setCursor(0, 1);
 		lcd_print(txtDumpingSensorData);
 
-		while (!(buttonPressed() == CANCEL)) {//loop while interrupt routine gathers data
-			if(isSerialAllowed){
+		while (!(buttonPressed() == CANCEL)) { //loop while interrupt routine gathers data
+			if (isSerialAllowed) {
 				sendStartSerialData(CARB_VACUUM);
 				int counter = 0;
 				for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
@@ -870,8 +874,10 @@ void doRevs() {
 
 		measurement = readSensorRaw(0);
 
-		if (measurement < previous) descentCount++;
-		if (measurement > previous)	ascentCount++;
+		if (measurement < previous)
+			descentCount++;
+		if (measurement > previous)
+			ascentCount++;
 
 		if (descentCount >= hysteresis) {
 			descending = true;
@@ -892,7 +898,8 @@ void doRevs() {
 			if (delta < 1) {
 				rpm = 0;
 			} else {
-				rpmAverage.longVal = longExponentialMovingAverage( factor, rpmAverage.longVal, 120000 / delta);
+				rpmAverage.longVal = longExponentialMovingAverage(factor,
+						rpmAverage.longVal, 120000 / delta);
 				rpm = rpmAverage.intVal[1];
 			}
 			previousPeak = peak;
@@ -1060,14 +1067,16 @@ void doAbsoluteDemo() {
 			values[j] = i;
 		}
 		lcdBarsSmooth(values);
-		if (buttonPressed()) return;
+		if (buttonPressed())
+			return;
 	}
 	for (unsigned int i = 1024; i >= 30; i -= 30) {
 		for (int j = 0; j < NUM_SENSORS; j++) {
 			values[j] = i;
 		}
 		lcdBarsSmooth(values);
-		if (buttonPressed()) return;
+		if (buttonPressed())
+			return;
 	}
 
 	settings.silent = silent;
@@ -1086,7 +1095,8 @@ void doRelativeDemo() {
 		values[2] = i;
 		values[3] = masterValue;
 		lcdBarsCenterSmooth(values);
-		if (buttonPressed()) return;
+		if (buttonPressed())
+			return;
 	}
 	settings.master = 1;
 	for (int i = masterValue - delta; i <= masterValue + delta; i += 4) {
@@ -1095,7 +1105,8 @@ void doRelativeDemo() {
 		values[2] = i;
 		values[3] = i;
 		lcdBarsCenterSmooth(values);
-		if (buttonPressed()) return;
+		if (buttonPressed())
+			return;
 	}
 	settings.master = master;
 	settings.silent = silent;
@@ -1126,12 +1137,12 @@ void doDeviceInfo() {
 	setInterrupt(true);
 }
 
-ISR(TIMER1_COMPA_vect){
+ISR(TIMER1_COMPA_vect) {
 	unsigned long microSecond = micros();
 	periodUs = microSecond - lastInterrupt;
 	lastInterrupt = microSecond;
 
-	if(dataDumpMode){
+	if (dataDumpMode) {
 		for (int sensor = 0; sensor < settings.cylinders; sensor++) { //loop over all sensors
 			average[sensor] = readSensorCalibrated(sensor);
 		}

@@ -22,7 +22,6 @@
 // You should have received a copy of the GNU General Public License
 // along with CarbOnBal.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #include "utils.h"
 #include <Arduino.h>
 #include "globals.h"
@@ -31,88 +30,110 @@
 
 extern settings_t settings;
 
-float millibarFactor =  (P5VSENSOR - P0VSENSOR) / 1024.00;           //conversion factor to convert the arduino readings to millibars
+float millibarFactor = (P5VSENSOR - P0VSENSOR) / 1024.00; //conversion factor to convert the arduino readings to millibars
 
-byte buttonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH}; //array for recording the state of buttons
-byte buttonCount[NUM_BUTTONS] = {0, 0, 0, 0}; //array for recording the state of buttons
-byte lastButtonState[NUM_BUTTONS] = {HIGH, HIGH, HIGH, HIGH};//array for recording the previous state of buttons
+byte buttonState[NUM_BUTTONS] = { HIGH, HIGH, HIGH, HIGH }; //array for recording the state of buttons
+byte buttonCount[NUM_BUTTONS] = { 0, 0, 0, 0 }; //array for recording the state of buttons
+byte lastButtonState[NUM_BUTTONS] = { HIGH, HIGH, HIGH, HIGH }; //array for recording the previous state of buttons
 unsigned long lastDebounceTime[NUM_BUTTONS]; //array for recording when the button press was first seen
-unsigned long lastEntry = 0 ;
+unsigned long lastEntry = 0;
 
 uint8_t debounceDelay = 200; //allow 200ms for switches to settle before they register
 
-void setInterrupt(bool enabled){
-	if(enabled) {
+void setInterrupt(bool enabled) {
+	if (enabled) {
 		TIMSK1 |= (1 << OCIE1A);
-	}else{
+	} else {
 		TIMSK1 |= (0 << OCIE1A);
 	}
 }
 
-
-float convertToPreferredUnits(int value, int ambient){
-  if (0 == settings.units) return value;
-  if (1 == settings.units) return ambient - value;
-  if (2 == settings.units) return convertToMillibar(value);
-  if (3 == settings.units) return convertToMillibar(ambient) - convertToMillibar(value);
-  if (4 == settings.units) return convertToCmHg(value);
-  if (5 == settings.units) return convertToCmHg(ambient) - convertToCmHg(value);
-  if (6 == settings.units) return convertToInHg(value);
-  if (7 == settings.units) return convertToInHg(ambient) - convertToInHg(value);
-  return 0; //error
+float convertToPreferredUnits(int value, int ambient) {
+	if (0 == settings.units)
+		return value;
+	if (1 == settings.units)
+		return ambient - value;
+	if (2 == settings.units)
+		return convertToMillibar(value);
+	if (3 == settings.units)
+		return convertToMillibar(ambient) - convertToMillibar(value);
+	if (4 == settings.units)
+		return convertToCmHg(value);
+	if (5 == settings.units)
+		return convertToCmHg(ambient) - convertToCmHg(value);
+	if (6 == settings.units)
+		return convertToInHg(value);
+	if (7 == settings.units)
+		return convertToInHg(ambient) - convertToInHg(value);
+	return 0; //error
 }
-float differenceToPreferredUnits(int value){
-  if (0 == settings.units) return value;
-  if (1 == settings.units) return value;
-  if (2 == settings.units) return differenceToMillibar(value);
-  if (3 == settings.units) return differenceToMillibar(value);
-  if (4 == settings.units) return differenceToCmHg(value);
-  if (5 == settings.units) return differenceToCmHg(value);
-  if (6 == settings.units) return differenceToInHg(value);
-  if (7 == settings.units) return differenceToInHg(value);
-  return 0; //error
+float differenceToPreferredUnits(int value) {
+	if (0 == settings.units)
+		return value;
+	if (1 == settings.units)
+		return value;
+	if (2 == settings.units)
+		return differenceToMillibar(value);
+	if (3 == settings.units)
+		return differenceToMillibar(value);
+	if (4 == settings.units)
+		return differenceToCmHg(value);
+	if (5 == settings.units)
+		return differenceToCmHg(value);
+	if (6 == settings.units)
+		return differenceToInHg(value);
+	if (7 == settings.units)
+		return differenceToInHg(value);
+	return 0; //error
 }
 
-const char* unitsAsText(){
-	 if (0 == settings.units) return txtRawValues;
-	 if (1 == settings.units) return txtRawDescending;
-	 if (2 == settings.units) return txtMillibarHpa;
-	 if (3 == settings.units) return txtMillibarHpaDesc;
-	 if (4 == settings.units) return txtCmMercury;
-	 if (5 == settings.units) return txtCmMercuryDesc;
-	 if (6 == settings.units) return txtInchMercury;
-	 if (7 == settings.units) return txtInchMercuryDesc;
-	 return 0;
+const char* unitsAsText() {
+	if (0 == settings.units)
+		return txtRawValues;
+	if (1 == settings.units)
+		return txtRawDescending;
+	if (2 == settings.units)
+		return txtMillibarHpa;
+	if (3 == settings.units)
+		return txtMillibarHpaDesc;
+	if (4 == settings.units)
+		return txtCmMercury;
+	if (5 == settings.units)
+		return txtCmMercuryDesc;
+	if (6 == settings.units)
+		return txtInchMercury;
+	if (7 == settings.units)
+		return txtInchMercuryDesc;
+	return 0;
 }
 
 //convert the arduino reading to millibars for display
-float convertToMillibar(int value){
-  return value * millibarFactor + P0VSENSOR;                      //convert reading and add the sensor's minimum pressure
+float convertToMillibar(int value) {
+	return value * millibarFactor + P0VSENSOR; //convert reading and add the sensor's minimum pressure
 }
-float differenceToMillibar(int value){
-  return value * millibarFactor;                      //convert reading and add the sensor's minimum pressure
+float differenceToMillibar(int value) {
+	return value * millibarFactor; //convert reading and add the sensor's minimum pressure
 }
 
 //convert the arduino readings to centimeters of mercury
-float convertToCmHg(int value){
-    return convertToMillibar(value) * 0.075;
+float convertToCmHg(int value) {
+	return convertToMillibar(value) * 0.075;
 }
-float differenceToCmHg(int value){
-    return differenceToMillibar(value) * 0.075;
+float differenceToCmHg(int value) {
+	return differenceToMillibar(value) * 0.075;
 }
 
 //convert the arduino readings to inches of mercury
-float convertToInHg(int value){
-    return convertToMillibar(value) * 0.02953;
+float convertToInHg(int value) {
+	return convertToMillibar(value) * 0.02953;
 }
 
-float differenceToInHg(int value){
-    return differenceToMillibar(value) * 0.02953;
+float differenceToInHg(int value) {
+	return differenceToMillibar(value) * 0.02953;
 }
-
 
 //reset to factory defaults
-settings_t fetchFactoryDefaultSettings(){
+settings_t fetchFactoryDefaultSettings() {
 	settings_t settings;
 
 	settings.silent = false;
@@ -125,25 +146,25 @@ settings_t fetchFactoryDefaultSettings(){
 	settings.button3 = 0;
 	settings.contrast = 10;
 	settings.brightness = 255;
-    settings.graphType = 0;
-    settings.rpmDamping = 10;
-    settings.units = 0;
-    settings.zoom = 0;
-    settings.calibrationMax = 32;
-    settings.damping = 8;
+	settings.graphType = 0;
+	settings.rpmDamping = 10;
+	settings.units = 0;
+	settings.zoom = 0;
+	settings.calibrationMax = 32;
+	settings.damping = 8;
 
-    return settings;
+	return settings;
 }
 
 void doContrast(int value) {
-    analogWrite(contrastPin, value);
+	analogWrite(contrastPin, value);
 }
 
 void doBrightness(int value) {
-    analogWrite(brightnessPin, value);
+	analogWrite(brightnessPin, value);
 }
 
-void doHeldButtonAction (int button){
+void doHeldButtonAction(int button) {
 	switch (button) {
 
 	case CANCEL:
@@ -159,26 +180,32 @@ void doHeldButtonAction (int button){
 // this function does not use wait loops or other blocking functions which delay processing
 int buttonPressed() {
 	int pressedButton = 0;
-	if( millis() - lastEntry < 50) return 0;//checking more often that every 50ms is nonsense, just return
+	if (millis() - lastEntry < 50)
+		return 0; //checking more often that every 50ms is nonsense, just return
 	lastEntry = millis();
 
 	for (uint8_t button = SELECT; button <= CANCEL; button++) {
-		uint8_t buttonIndex = button-SELECT;
+		uint8_t buttonIndex = button - SELECT;
 		buttonState[buttonIndex] = digitalRead(button);
 
-		if ( (millis() - lastDebounceTime[buttonIndex]) < debounceDelay) return 0; //return if this button hasn't settled yet
+		if ((millis() - lastDebounceTime[buttonIndex]) < debounceDelay)
+			return 0; //return if this button hasn't settled yet
 		lastDebounceTime[buttonIndex] = millis();
 
-		if (buttonState[buttonIndex] == RELEASED && lastButtonState[buttonIndex] == PRESSED){
+		if (buttonState[buttonIndex] == RELEASED
+				&& lastButtonState[buttonIndex] == PRESSED) {
 			buttonCount[buttonIndex] = 0;
 			pressedButton = button;
-		} else if(buttonState[buttonIndex] == PRESSED && lastButtonState[buttonIndex] == PRESSED){
+		} else if (buttonState[buttonIndex] == PRESSED
+				&& lastButtonState[buttonIndex] == PRESSED) {
 			buttonCount[buttonIndex]++;
 
-			if(button == LEFT) pressedButton = LEFT;
-			if(button == RIGHT)	pressedButton = RIGHT;
+			if (button == LEFT)
+				pressedButton = LEFT;
+			if (button == RIGHT)
+				pressedButton = RIGHT;
 
-			if (buttonCount[buttonIndex] > 10){
+			if (buttonCount[buttonIndex] > 10) {
 				buttonCount[buttonIndex] = 0;
 				doHeldButtonAction(button);
 			}
@@ -187,47 +214,38 @@ int buttonPressed() {
 		lastButtonState[buttonIndex] = buttonState[buttonIndex];
 	}
 
-    return pressedButton;//just don't try to connect a button to pin 0
+	return pressedButton; //just don't try to connect a button to pin 0
 }
-
 
 //creates a special character which is stored in the display's memory
-void createWaitKeyPressChar(){
-		byte customChar[8] = {
-			0b00100,
-			0b00100,
-			0b10101,
-			0b01110,
-			0b00100,
-			0b00000,
-			0b01110,
-			0b11111
-		};
-		lcd_createChar(0, customChar);
+void createWaitKeyPressChar() {
+	byte customChar[8] = { 0b00100, 0b00100, 0b10101, 0b01110, 0b00100, 0b00000,
+			0b01110, 0b11111 };
+	lcd_createChar(0, customChar);
 }
 
-void displayKeyPressPrompt(){
+void displayKeyPressPrompt() {
 	createWaitKeyPressChar();
-			lcd_setCursor(19,0);
-			lcd_write(byte((byte) 0));
+	lcd_setCursor(19, 0);
+	lcd_write(byte((byte) 0));
 }
-void waitForAnyKey(){
+void waitForAnyKey() {
 	displayKeyPressPrompt();
-      while(!buttonPressed()){
-      delay(50);
-    }
+	while (!buttonPressed()) {
+		delay(50);
+	}
 }
 
 // used by switches which "short" the pin to ground, saves wiring a resistor per switch
 void setInputActiveLow(int i) {
-    pinMode(i, INPUT);
-    digitalWrite(i, HIGH);  // turn on internal pullups
+	pinMode(i, INPUT);
+	digitalWrite(i, HIGH);  // turn on internal pullups
 }
 
 // sets a pin to output, with internal pull-up resistors
 void setOutputHigh(int i) {
-    pinMode(i, OUTPUT);
-    digitalWrite(i, HIGH);  // turn on internal pullups
+	pinMode(i, OUTPUT);
+	digitalWrite(i, HIGH);  // turn on internal pullups
 }
 
 // calculate Extremely Fast Integer Exponentially weighted moving average for smoothing.
@@ -238,62 +256,61 @@ void setOutputHigh(int i) {
 //    NOTE that this value is stored shifted 'shift' bits to the left and must be unshifted before use
 //    NOTE2 the shift WILL truncate if you overdo it, best used on 8-bit Bytes etc.
 int intExponentialMovingAverage(int shift, int factor, int average, int input) {
-    average += ((input<<shift) - average)>>factor;
-    return(average);
+	average += ((input << shift) - average) >> factor;
+	return (average);
 }
 
 //slower than the int version but extremely accurate / sensitive
-long longExponentialMovingAverage( int factor,  long average,  int input) {
-    longAverages longValue; //this insane union is used to save CPU cycles, instead of shifting bits 16x we just load the upper int in one go
-    longValue.intVal[0] = 0;
-    longValue.intVal[1] = input;
-    average += (longValue.longVal - average) >> factor;
-    return(average);
+long longExponentialMovingAverage(int factor, long average, int input) {
+	longAverages longValue; //this insane union is used to save CPU cycles, instead of shifting bits 16x we just load the upper int in one go
+	longValue.intVal[0] = 0;
+	longValue.intVal[1] = input;
+	average += (longValue.longVal - average) >> factor;
+	return (average);
 }
 
-long mulExponentialMovingAverage( long average, int input) {
+long mulExponentialMovingAverage(long average, int input) {
 	long weight = 1000;
-	average += (((long)input * 1000) - average) / weight;
-    return(average);
+	average += (((long) input * 1000) - average) / weight;
+	return (average);
 }
 
 //need a performance benchmark
-float floatExponentialMovingAverage(float weight, float average, int input){
-	average += ((float)input - average) / weight;
+float floatExponentialMovingAverage(float weight, float average, int input) {
+	average += ((float) input - average) / weight;
 	return (average);
 }
 
 // calculate the absolute difference between two integers
-int delta(int first, int second){
-    if( first >= second){
-        return first-second;
-    }else{
-        return second-first;
-    }
+int delta(int first, int second) {
+	if (first >= second) {
+		return first - second;
+	} else {
+		return second - first;
+	}
 }
 
 // return the highest value from a given array
-unsigned int maxVal( unsigned int value[]) {
-    unsigned int maxValue = 0;
-    for (int index = 0 ; index < NUM_SENSORS; index++) {
-        if (value[index] > maxValue) {
-            maxValue = value[index];
-        }
-    }
-    return maxValue;
+unsigned int maxVal(unsigned int value[]) {
+	unsigned int maxValue = 0;
+	for (int index = 0; index < NUM_SENSORS; index++) {
+		if (value[index] > maxValue) {
+			maxValue = value[index];
+		}
+	}
+	return maxValue;
 }
 
 // return the lowest value from a given array
-unsigned int minVal( unsigned int value[]) {
-    unsigned int minValue = 20000;
-    for (int index = 0 ; index < NUM_SENSORS; index++) {
-        if (value[index] < minValue) {
-            minValue = value[index];
-        }
-    }
-    return minValue;
+unsigned int minVal(unsigned int value[]) {
+	unsigned int minValue = 20000;
+	for (int index = 0; index < NUM_SENSORS; index++) {
+		if (value[index] < minValue) {
+			minValue = value[index];
+		}
+	}
+	return minValue;
 }
-
 
 //Free memory routine from the Arduino playground
 #ifdef __arm__
@@ -304,11 +321,11 @@ extern char *__brkval;
 #endif  // __arm__
 
 int freeMemory() {
-  char top;
+	char top;
 #ifdef __arm__
   return &top - reinterpret_cast<char*>(sbrk(0));
 #elif defined(CORE_TEENSY) || (ARDUINO > 103 && ARDUINO != 151)
-  return &top - __brkval;
+	return &top - __brkval;
 #else  // __arm__
   return __brkval ? &top - __brkval : &top - __malloc_heap_start;
 #endif  // __arm__
