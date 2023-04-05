@@ -79,7 +79,10 @@ void setup() {
 
     ambientPressure = detectAmbient(); //set ambient pressure (important because it varies with weather and altitude)
 
-    //set timer1 interrupt at 1Hz
+    //the computation for the interrunpt timing is as follows:
+    //AtMega328p running at 16Mhz native frequency
+    //Use a 64 prescaler value to arrive at a timer frequency of 16,000,000/64 = 250,000
+    //Set timer (OCR1A setting) to count 0 - 249, then reset to 0, so 250,000/250 = 1000/1Khz
     TCCR1A = 0; // set entire TCCR1A register to 0
     TCCR1B = 0; // same for TCCR1B
     TCNT1 = 0; //initialize counter value to 0
