@@ -89,13 +89,13 @@ struct settings_t {
     uint8_t damping;
 };
 
-union longAverages{
-	long longVal;
-	int intVal[2];
+union longAverages {
+    long longVal;
+    int intVal[2];
 };
-union intByteUnion{
-	unsigned int intVal;
-	uint8_t byteVal[2];
+union intByteUnion {
+    unsigned int intVal;
+    uint8_t byteVal[2];
 };
 
 extern int readingCount[NUM_SENSORS];

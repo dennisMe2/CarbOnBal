@@ -33,119 +33,119 @@
 //  Order of parameters: RS, E, D4, D5, D6, D7
 LiquidCrystal lcd(13,12,10,9,8,7);
 
-void lcd_setCursor(int a, int i){
-	lcd.setCursor(a, i);
+void lcd_setCursor(int a, int i) {
+    lcd.setCursor(a, i);
 }
 
-void lcd_print(String str){
-	lcd.print(str);
+void lcd_print(String str) {
+    lcd.print(str);
 }
 
 //print strings stored in PROGMEM to LCD without using a buffer
-void lcd_print(const char* str){
-	for (int i = 0; (unsigned) i < strlen_P(str); i++){
-		lcd.print((char) pgm_read_byte_near(str + i));
-	}
+void lcd_print(const char* str) {
+    for (int i = 0; (unsigned) i < strlen_P(str); i++) {
+        lcd.print((char) pgm_read_byte_near(str + i));
+    }
 }
 
-void lcd_print(char* str){
-	lcd.print(str);
+void lcd_print(char* str) {
+    lcd.print(str);
 }
 
-void lcd_printInt(int integer){
-	lcd.print(integer);
+void lcd_printInt(int integer) {
+    lcd.print(integer);
 }
 
-void lcd_printLong(unsigned long integer){
-	lcd.print(String(integer));
+void lcd_printLong(unsigned long integer) {
+    lcd.print(String(integer));
 }
 
-void lcd_printFloat(float value){
-	lcd.print(String(value));
+void lcd_printFloat(float value) {
+    lcd.print(String(value));
 }
 
-void lcd_printFormatted(float value){
-	float fractionalPart = abs(value) - (long)abs(value);
+void lcd_printFormatted(float value) {
+    float fractionalPart = abs(value) - (long)abs(value);
 
-	//if(value < 0.0) lcd.print('-');
+    //if(value < 0.0) lcd.print('-');
 
-	if ((0 == settings.units)|| (1 == settings.units)){
-		lcd.print(String((int)value));
-	}
+    if ((0 == settings.units)|| (1 == settings.units)) {
+        lcd.print(String((int)value));
+    }
 
-	if ((2 == settings.units)|| (3 == settings.units)){
-		lcd.print(String((int)value));
-		lcd.print('.');
-		lcd.print((int)(fractionalPart * 10.0));
-	}
+    if ((2 == settings.units)|| (3 == settings.units)) {
+        lcd.print(String((int)value));
+        lcd.print('.');
+        lcd.print((int)(fractionalPart * 10.0));
+    }
 
-	if ((4 == settings.units)|| (5 == settings.units)){
-			lcd.print(String((int)value));
-			lcd.print('.');
-			lcd.print((int)(fractionalPart * 10.0));
-		}
+    if ((4 == settings.units)|| (5 == settings.units)) {
+        lcd.print(String((int)value));
+        lcd.print('.');
+        lcd.print((int)(fractionalPart * 10.0));
+    }
 
-	if ((6 == settings.units)|| (7 == settings.units)){
-			lcd.print(String(value));
-		}
+    if ((6 == settings.units)|| (7 == settings.units)) {
+        lcd.print(String(value));
+    }
 
 }
 
-void lcd_printChar(char chr){
-	lcd.print(chr);
+void lcd_printChar(char chr) {
+    lcd.print(chr);
 }
 
-void lcd_begin(int cols, int rows){
-	lcd.begin(cols, rows);
+void lcd_begin(int cols, int rows) {
+    lcd.begin(cols, rows);
 }
 
-void lcd_createChar(byte byt, byte array[]){
-	lcd.createChar(byt, array);
+void lcd_createChar(byte byt, byte array[]) {
+    lcd.createChar(byt, array);
 }
 
-void lcd_write(byte byt){
-	lcd.write(byt);
+void lcd_write(byte byt) {
+    lcd.write(byt);
 }
 
-void lcd_clear(){
-	lcd.clear();
+void lcd_clear() {
+    lcd.clear();
 }
 
-void printLcdSpace( uint8_t column, uint8_t row, uint8_t length){
-	char space[length+1];
-	for (uint8_t i=0 ; i<length; i++){
-		space[i] = ' ';
-	}
-	space[length] = 0x00;
+void printLcdSpace( uint8_t column, uint8_t row, uint8_t length) {
+    char space[length+1];
+    for (uint8_t i=0 ; i<length; i++) {
+        space[i] = ' ';
+    }
+    space[length] = 0x00;
 
-	lcd_setCursor(column, row);
-	lcd_print(space);
-	lcd_setCursor(column, row);
+    lcd_setCursor(column, row);
+    lcd_print(space);
+    lcd_setCursor(column, row);
 }
 
-void printLcdInteger(int value, uint8_t column, uint8_t row, uint8_t length){
-	printLcdSpace(column,row,length);
-	lcd_print(String(value));
+void printLcdInteger(int value, uint8_t column, uint8_t row, uint8_t length) {
+    printLcdSpace(column,row,length);
+    lcd_print(String(value));
 }
-void printLcdFloat(float value, uint8_t column, uint8_t row, uint8_t length){
-	printLcdSpace(column,row,length);
-	lcd_print(String(value));
+void printLcdFloat(float value, uint8_t column, uint8_t row, uint8_t length) {
+    printLcdSpace(column,row,length);
+    lcd_print(String(value));
 }
 
 void drawSnowFlake() {
-	//make a little snow flake to indicate the frozen state of the display
-	byte frozen[8] = {
-			0b00000,
-			0b00000,
-			0b01010,
-			0b10101,
-			0b01110,
-			0b10101,
-			0b01010,
-			0b00000
-	};
-	lcd_createChar(7, frozen); //tells LCD to store our snow flake in slot 7
-	lcd_setCursor(19, 0); // place the cursor on the LCD
-	lcd_write(byte(0x07)); //display the stored snow flake
+    //make a little snow flake to indicate the frozen state of the display
+    byte frozen[8] = {
+        0b00000,
+        0b00000,
+        0b01010,
+        0b10101,
+        0b01110,
+        0b10101,
+        0b01010,
+        0b00000
+    };
+    lcd_createChar(7, frozen); //tells LCD to store our snow flake in slot 7
+    lcd_setCursor(19, 0); // place the cursor on the LCD
+    lcd_write(byte(0x07)); //display the stored snow flake
 }
 
