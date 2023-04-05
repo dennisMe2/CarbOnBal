@@ -68,27 +68,22 @@ void lcd_printFormatted(float value) {
     float fractionalPart = abs(value) - (long)abs(value);
 
     //if(value < 0.0) lcd.print('-');
-
-    if ((0 == settings.units)|| (1 == settings.units)) {
+    switch(settings.units) {
+    case PressureUnit::RAW:
+    case PressureUnit::RAW_DESCENDING:
         lcd.print(String((int)value));
-    }
-
-    if ((2 == settings.units)|| (3 == settings.units)) {
-        lcd.print(String((int)value));
-        lcd.print('.');
-        lcd.print((int)(fractionalPart * 10.0));
-    }
-
-    if ((4 == settings.units)|| (5 == settings.units)) {
+        break;
+    case PressureUnit::MILLIBAR_HPA:
+    case PressureUnit::MILLIBAR_HPA_DESCENDING:
+    case PressureUnit::CM_MERCURY:
+    case PressureUnit::CM_MERCURY_DESCENDING:
         lcd.print(String((int)value));
         lcd.print('.');
         lcd.print((int)(fractionalPart * 10.0));
+        break;
+    default:
+        lcd.print(String((int)value));
     }
-
-    if ((6 == settings.units)|| (7 == settings.units)) {
-        lcd.print(String(value));
-    }
-
 }
 
 void lcd_printChar(char chr) {

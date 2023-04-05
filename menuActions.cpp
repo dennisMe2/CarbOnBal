@@ -29,6 +29,7 @@
 #include "menu.h"
 #include "lcdWrapper.h"
 #include "utils.h"
+#include "globals.h"
 
 extern bool quitMenu;
 
@@ -166,8 +167,8 @@ void doUnits() {
                               txtMillibarHpaDesc, txtCmMercury, txtCmMercuryDesc, txtInchMercury,
                               txtInchMercuryDesc
                             };
-    settings.units = doSettingChooser(txtDisplayUnits, actions, 8,
-                                      (int) settings.units);
+    settings.units = (enum PressureUnit) doSettingChooser(txtDisplayUnits, actions, 8,
+                     (int) settings.units);
     actionSaveSettings();
 }
 
@@ -181,31 +182,43 @@ void doMaxZoom() {
 
     static uint8_t count = 5;
 
-    if ((0 == settings.units) || (1 == settings.units)) {
+    switch(settings.units) {
+    case PressureUnit::RAW:
+    case PressureUnit::RAW_DESCENDING:
+    {
         const char *actions[] = { txt100Max, txt200, txt300, txt600,
                                   txt1024NoZoom
                                 };
         settings.zoom = doSettingChooser(txtZoomUnits, actions, count,
                                          (int) settings.zoom);
     }
-
-    if ((2 == settings.units) || (3 == settings.units)) {
+    break;
+    case PressureUnit::MILLIBAR_HPA:
+    case PressureUnit::MILLIBAR_HPA_DESCENDING:
+    {
         const char *actions[] =
         { txt84Max, txt169, txt254, txt509, txt870NoZoom };
         settings.zoom = doSettingChooser(txtZoomMillibar, actions, count,
                                          (int) settings.zoom);
     }
-
-    if ((4 == settings.units) || (5 == settings.units)) {
+    break;
+    case PressureUnit::CM_MERCURY:
+    case PressureUnit::CM_MERCURY_DESCENDING:
+    {
         const char *actions[] = { txt6Max, txt9, txt19, txt32, txt65NoZoom };
         settings.zoom = doSettingChooser(txtZoomCmMercury, actions, count,
                                          (int) settings.zoom);
     }
-
-    if ((6 == settings.units) || (7 == settings.units)) {
+    break;
+    case PressureUnit::INCH_MERCURY:
+    case PressureUnit::INCH_MERCURY_DESCENDING:
+    {
         const char *actions[] = { txt2Max, txt5, txt7, txt15, txt25NoZoom };
         settings.zoom = doSettingChooser(txtZoomInMercury, actions, count,
                                          (int) settings.zoom);
+    }
+
+    break;
     }
 
     actionSaveSettings();

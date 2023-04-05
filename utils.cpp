@@ -47,61 +47,64 @@ void setInterrupt(bool enabled) {
 }
 
 float convertToPreferredUnits(int value, int ambient) {
-    if (0 == settings.units)
+    switch(settings.units) {
+    case PressureUnit::RAW:
         return value;
-    if (1 == settings.units)
+    case PressureUnit::RAW_DESCENDING:
         return ambient - value;
-    if (2 == settings.units)
+    case PressureUnit::MILLIBAR_HPA:
         return convertToMillibar(value);
-    if (3 == settings.units)
+    case PressureUnit::MILLIBAR_HPA_DESCENDING:
         return convertToMillibar(ambient) - convertToMillibar(value);
-    if (4 == settings.units)
+    case PressureUnit::CM_MERCURY:
         return convertToCmHg(value);
-    if (5 == settings.units)
+    case PressureUnit::CM_MERCURY_DESCENDING:
         return convertToCmHg(ambient) - convertToCmHg(value);
-    if (6 == settings.units)
+    case PressureUnit::INCH_MERCURY:
         return convertToInHg(value);
-    if (7 == settings.units)
+    case PressureUnit::INCH_MERCURY_DESCENDING:
         return convertToInHg(ambient) - convertToInHg(value);
+    }
     return 0; //error
 }
+
 float differenceToPreferredUnits(int value) {
-    if (0 == settings.units)
+    switch(settings.units) {
+    case PressureUnit::RAW:
+    case PressureUnit::RAW_DESCENDING:
         return value;
-    if (1 == settings.units)
-        return value;
-    if (2 == settings.units)
+    case PressureUnit::MILLIBAR_HPA:
+    case PressureUnit::MILLIBAR_HPA_DESCENDING:
         return differenceToMillibar(value);
-    if (3 == settings.units)
-        return differenceToMillibar(value);
-    if (4 == settings.units)
+    case PressureUnit::CM_MERCURY:
+    case PressureUnit::CM_MERCURY_DESCENDING:
         return differenceToCmHg(value);
-    if (5 == settings.units)
-        return differenceToCmHg(value);
-    if (6 == settings.units)
+    case PressureUnit::INCH_MERCURY:
+    case PressureUnit::INCH_MERCURY_DESCENDING:
         return differenceToInHg(value);
-    if (7 == settings.units)
-        return differenceToInHg(value);
+    }
     return 0; //error
 }
 
 const char* unitsAsText() {
-    if (0 == settings.units)
+    switch(settings.units) {
+    case PressureUnit::RAW:
         return txtRawValues;
-    if (1 == settings.units)
+    case PressureUnit::RAW_DESCENDING:
         return txtRawDescending;
-    if (2 == settings.units)
+    case PressureUnit::MILLIBAR_HPA:
         return txtMillibarHpa;
-    if (3 == settings.units)
+    case PressureUnit::MILLIBAR_HPA_DESCENDING:
         return txtMillibarHpaDesc;
-    if (4 == settings.units)
+    case PressureUnit::CM_MERCURY:
         return txtCmMercury;
-    if (5 == settings.units)
+    case PressureUnit::CM_MERCURY_DESCENDING:
         return txtCmMercuryDesc;
-    if (6 == settings.units)
+    case PressureUnit::INCH_MERCURY:
         return txtInchMercury;
-    if (7 == settings.units)
+    case PressureUnit::INCH_MERCURY_DESCENDING:
         return txtInchMercuryDesc;
+    }
     return 0;
 }
 
@@ -146,7 +149,7 @@ settings_t fetchFactoryDefaultSettings() {
     settings.brightness = 255;
     settings.graphType = 0;
     settings.rpmDamping = 10;
-    settings.units = 0;
+    settings.units = PressureUnit::RAW;
     settings.zoom = 0;
     settings.calibrationMax = 32;
     settings.damping = 8;

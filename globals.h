@@ -65,6 +65,13 @@ static const int calibrationOffset=256; //eeprom base address for calibration da
 
 static const uint8_t versionUID = 31; //update when settings_t changes!
 
+enum class PressureUnit : uint8_t {
+    RAW, RAW_DESCENDING,
+    MILLIBAR_HPA, MILLIBAR_HPA_DESCENDING,
+    CM_MERCURY, CM_MERCURY_DESCENDING,
+    INCH_MERCURY, INCH_MERCURY_DESCENDING,
+};
+
 //this struct is used to store settings in NVRAM
 //does not use bit fields because these cause more writes to the same NVRAM locations
 //if a setting is not writable then the settings are moved to the next available location in NVRAM
@@ -82,7 +89,7 @@ struct settings_t {
     uint8_t brightness;
     uint8_t graphType;
     uint8_t rpmDamping;
-    uint8_t units;
+    enum PressureUnit units;
     uint8_t zoom;
     uint8_t calibrationMax;
     uint8_t damping;
