@@ -86,8 +86,8 @@ void doAdvanced() {
 void actionGraphing() {
     const char *actions[] =
     { txtAbsoluteGraph, txtCenteredGraph, txtDiagnostic };
-    settings.graphType = doSettingChooser(txtSelectGraphType, actions, 3,
-                                          settings.graphType);
+    settings.graphType = (enum GraphType) doSettingChooser(txtSelectGraphType, actions, 3,
+                         (int) settings.graphType);
     actionSaveSettings();
 }
 

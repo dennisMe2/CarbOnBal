@@ -147,7 +147,7 @@ settings_t fetchFactoryDefaultSettings() {
     settings.button3 = 0;
     settings.contrast = 10;
     settings.brightness = 255;
-    settings.graphType = 0;
+    settings.graphType = GraphType::BARS;
     settings.rpmDamping = 10;
     settings.units = PressureUnit::RAW;
     settings.zoom = 0;

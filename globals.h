@@ -72,6 +72,10 @@ enum class PressureUnit : uint8_t {
     INCH_MERCURY, INCH_MERCURY_DESCENDING,
 };
 
+enum class GraphType : uint8_t {
+    BARS, BARS_SMOOTH, DIAGNOSTIC,
+};
+
 //this struct is used to store settings in NVRAM
 //does not use bit fields because these cause more writes to the same NVRAM locations
 //if a setting is not writable then the settings are moved to the next available location in NVRAM
@@ -87,7 +91,7 @@ struct settings_t {
     uint8_t button3;
     uint8_t contrast;
     uint8_t brightness;
-    uint8_t graphType;
+    enum GraphType graphType;
     uint8_t rpmDamping;
     enum PressureUnit units;
     uint8_t zoom;

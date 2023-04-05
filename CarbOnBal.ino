@@ -209,18 +209,18 @@ void loop() {
     }
 
     if (!freezeDisplay
-            && (settings.graphType == 2 || (millis() - lastUpdate) > 100)) {//only update the display every 100ms or so to prevent flickering
+            && (settings.graphType == GraphType::DIAGNOSTIC || (millis() - lastUpdate) > 100)) {//only update the display every 100ms or so to prevent flickering
 
         switch (settings.graphType) { //there are two types of graph. bar and centered around the value of the master carb
-        case 0:
+        case GraphType::BARS:
             lcdBarsSmooth(average);
             lastUpdate = millis();
             break;          //these functions both draw a graph and return asap
-        case 1:
+        case GraphType::BARS_SMOOTH:
             lcdBarsCenterSmooth(average);
             lastUpdate = millis();
             break;    //
-        case 2:
+        case GraphType::DIAGNOSTIC:
             if ((millis() - lastUpdate) > 100) {
                 lcdDiagnosticDisplay(average);
                 lastUpdate = millis();
