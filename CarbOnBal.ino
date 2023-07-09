@@ -376,11 +376,11 @@ void lcdDiagnosticDisplay(unsigned int value[]) {
     printLcdInteger(timeBase, 15, 0, 5); //time base
     printLcdInteger(periodUs, 15, 1, 5); //interrupt freq in uS
     printLcdInteger(interruptDurationUs, 15, 2, 5);
-    printLcdInteger(packetCounter, 15, 3, 5); //serial packetrs sent
+    printLcdInteger(packetCounter, 15, 3, 5); //serial packets sent
 
 }
 
-//compares freshly loaded settings to the freshly saved verion, if there is a difference the save must have failed
+//compares freshly loaded settings to the freshly saved version, if there is a difference the save must have failed
 //fail on write is the most common NVRAM failure by far
 bool verifySettings() {
     settings_t settingsCopy = settings;
