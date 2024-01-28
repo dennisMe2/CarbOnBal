@@ -142,9 +142,9 @@ settings_t fetchFactoryDefaultSettings() {
     settings.splashScreen = true;
     settings.cylinders = 4;
     settings.master = 1;
-    settings.button1 = 0;
-    settings.button2 = 0;
-    settings.button3 = 0;
+    settings.button1 = Button1Mode::CONTRAST;
+    settings.button2 = Button2Mode::BRIGHTNESS;
+    settings.button3 = Button3Mode::FREEZE_DISPLAY;
     settings.contrast = 10;
     settings.brightness = 255;
     settings.graphType = GraphType::BARS;

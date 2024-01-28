@@ -76,6 +76,27 @@ enum class GraphType : uint8_t {
     BARS, BARS_SMOOTH, DIAGNOSTIC,
 };
 
+/* button1 has three user-settable modes */
+enum class Button1Mode : uint8_t {
+    CONTRAST,
+    DAMPING,
+    RESET_AVERAGING,
+};
+
+/* button2 has three user-settable modes */
+enum class Button2Mode : uint8_t {
+    BRIGHTNESS,
+    RPM_DISPLAY,
+    RPM_DAMPING,
+};
+
+/* button3 has three user-settable modes */
+enum class Button3Mode : uint8_t {
+    FREEZE_DISPLAY,
+    RESET_MEASUREMENTS,
+    RPM_DISPLAY /* NOTE:overlap with button2 */
+};
+
 //this struct is used to store settings in NVRAM
 //does not use bit fields because these cause more writes to the same NVRAM locations
 //if a setting is not writable then the settings are moved to the next available location in NVRAM
@@ -86,9 +107,9 @@ struct settings_t {
     bool splashScreen;//bool is 8 bits on Arduino
     uint8_t cylinders;
     uint8_t master;
-    uint8_t button1;
-    uint8_t button2;
-    uint8_t button3;
+    enum Button1Mode button1;
+    enum Button2Mode button2;
+    enum Button3Mode button3;
     uint8_t contrast;
     uint8_t brightness;
     enum GraphType graphType;

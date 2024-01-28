@@ -172,38 +172,50 @@ void loop() {
         actionDisplayMainMenu();
         break;        //the menu is the only function that does not return asap
     case LEFT:
-        if (settings.button1 == 0) { // there are three modes for this pin, user settable
+        switch(settings.button1) {
+        case Button1Mode::CONTRAST:
             actionContrast();
-        } else if (settings.button1 == 2) { //DAMPING
+            break;
+        case Button1Mode::DAMPING:
             settings.damping = (int8_t) (doBasicSettingChanger(txtDampingPerc,
                                          0, 100, (int8_t) settings.damping * 6.25, 6) / 6.25);
             actionSaveSettings();
-        } else {
+            break;
+        case Button1Mode::RESET_AVERAGING:
             doResetAveraging();
+            break;
         }
         break;
     case RIGHT:
-        if (settings.button2 == 0) { // there are three modes for this pin, user settable
+        switch(settings.button2) {
+        case Button2Mode::BRIGHTNESS:
             actionBrightness();
-        } else if (settings.button2 == 2) { // RPMDAMPING
+            break;
+        case Button2Mode::RPM_DISPLAY:
+            doRevs();
+            break;
+        case Button2Mode::RPM_DAMPING:
             settings.rpmDamping = (int8_t) (doBasicSettingChanger(
                                                 txtRpmDampingPerc, 0, 100,
                                                 (int8_t) settings.rpmDamping * 6.25, 6) / 6.25);
             actionSaveSettings();
-        } else {
-            doRevs();
+            break;
         }
         break;
 
     case CANCEL:
-        if (settings.button3 == 0) { // there are three modes for this pin, user settable
+        switch(settings.button3) {
+        case Button3Mode::FREEZE_DISPLAY:
             freezeDisplay = !freezeDisplay;	//toggle the freezeDisplay option
-        } else if (settings.button3 == 1) {
+            break;
+        case Button3Mode::RESET_MEASUREMENTS:
             freezeDisplay = false;
             doResetAveraging();
-        } else {
+            break;
+        case Button3Mode::RPM_DISPLAY:
             freezeDisplay = false;
             doRevs();
+            break;
         }
         break;
     }

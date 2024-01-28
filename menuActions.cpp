@@ -136,8 +136,8 @@ void fixMaster() {
 
 void actionBrightnessButton() {
     const char *actions[] = { txtBrightness, txtRpmDisplay, txtRpmDamping };
-    settings.button2 = doSettingChooser(txtBrightnessButton, actions, 3,
-                                        (int) settings.button2);
+    settings.button2 = (enum Button2Mode) doSettingChooser(txtBrightnessButton, actions, 3,
+                       (int) settings.button2);
     //if(settings.button2 == 2) settings.button1 = 2;
 
     actionSaveSettings();
@@ -145,8 +145,8 @@ void actionBrightnessButton() {
 
 void actionContrastButton() {
     const char *actions[] = { txtContrast, txtResetMeasurements, txtDamping };
-    settings.button1 = doSettingChooser(txtContrastButton, actions, 3,
-                                        (int) settings.button1);
+    settings.button1 = (enum Button1Mode) doSettingChooser(txtContrastButton, actions, 3,
+                       (int) settings.button1);
     //if(settings.button1 == 2) settings.button2 = 2;
 
     actionSaveSettings();
@@ -156,8 +156,8 @@ void actionCancelButton() {
     const char *actions[] = { txtFreezeDisplay, txtResetMeasurements,
                               txtRpmDisplay
                             };
-    settings.button3 = doSettingChooser(txtCancelButton, actions, 3,
-                                        (int) settings.button3);
+    settings.button3 = (enum Button3Mode) doSettingChooser(txtCancelButton, actions, 3,
+                       (int) settings.button3);
 
     actionSaveSettings();
 }
