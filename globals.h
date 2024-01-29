@@ -41,13 +41,16 @@
 #define DISPLAY_COLS 20
 #define DISPLAY_ROWS 4
 
-#define START_PACKET 0xfe
-#define REQUEST_PACKET 0xfd
-#define CARB_VACUUM 0xe0
-#define CALIBRATION 0xe1
-#define SETTINGS 0xe2
-#define DIAGNOSTICS 0xe3
-#define END_DATA 0xe4
+enum class Command : byte {
+    NO_COMMAND = 0x0,
+    START_PACKET = 0xfe,
+    REQUEST_PACKET = 0xfd,
+    CARB_VACUUM = 0xe0,
+    CALIBRATION = 0xe1,
+    SETTINGS = 0xe2,
+    DIAGNOSTICS = 0xe3,
+    END_DATA = 0xe4
+};
 
 #define BAUD_RATE 230400
 

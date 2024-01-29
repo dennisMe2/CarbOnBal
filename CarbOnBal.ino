@@ -108,25 +108,29 @@ void setup() {
     }
 
 }
-int sendDataOnRequest() {
-    uint8_t command = 0x00;
+enum Command sendDataOnRequest() {
+    enum Command command = Command::NO_COMMAND;
 
     if ((Serial.available() >= 1)) {
-
-        command = Serial.read();
+        command = static_cast<enum Command>(Serial.read());
         lcd_clear();
         lcd_setCursor(1, 1);
 
-        if (command == CALIBRATION) {
+        switch(command) {
+        case Command::CALIBRATION:
             doCalibrationDump();
-        } else if (command == SETTINGS) {
+            break;
+        case Command::SETTINGS:
             doSettingsDump();
-        } else if ((uint8_t) command == CARB_VACUUM) {
+            break;
+        case Command::CARB_VACUUM:
             //Do nothing here to prevent unwanted recursion
-        } else if (command == DIAGNOSTICS) {
+            break;
+        case Command::DIAGNOSTICS:
             //TODO implement
             //doDiagnosticsDump();
-        } else {
+            break;
+        default:
             lcd_print(F(" UNKNOWN COMMAND?!?"));
             delay(1500);
         }
@@ -136,10 +140,9 @@ int sendDataOnRequest() {
 }
 
 void doSerialReadCommand() {
-    uint8_t command = sendDataOnRequest();
+    enum Command command = sendDataOnRequest();
     if (isSerialAllowed) {
-
-        if ((uint8_t) command == CARB_VACUUM) {
+        if (command == Command::CARB_VACUUM) {
             doDataDump();
         }
     }
@@ -772,14 +775,14 @@ void makeCalibrationChars() {
     }
 }
 
-void sendStartSerialData(byte dataType) {
-    Serial.write(dataType);
+void sendStartSerialData(enum Command dataType) {
+    Serial.write(static_cast<byte>(dataType));
 }
 
 void sendEndSerialData(uint8_t counter) {
     Serial.write(counter);
-    Serial.write(START_PACKET);
-    Serial.write(END_DATA);
+    Serial.write(static_cast<byte>(Command::START_PACKET));
+    Serial.write(static_cast<byte>(Command::END_DATA));
 }
 
 //dump the calibration array to the serial port for review
@@ -788,7 +791,7 @@ void doCalibrationDump() {
 
     for (int i = 0; i < numberOfCalibrationValues; i++) {
         uint8_t counter = 0;
-        sendStartSerialData(CALIBRATION);
+        sendStartSerialData(Command::CALIBRATION);
         Serial.write((int8_t) i);
         counter++;
         for (uint8_t sensor = 1; sensor < (NUM_SENSORS); sensor++) {
@@ -807,7 +810,7 @@ void doSettingsDump() {
     uint8_t *ptr = (uint8_t*) &settings;
     uint8_t counter = 0;
     setInterrupt(false);
-    sendStartSerialData(SETTINGS);
+    sendStartSerialData(Command::SETTINGS);
     Serial.write((int8_t) versionUID);
     counter++;
     for (size_t i = 0; i < sizeof(settings); i++) {
@@ -846,7 +849,7 @@ void doDataDumpBinary() {
 
         while (!(buttonPressed() == CANCEL)) { //loop while interrupt routine gathers data
             if (isSerialAllowed) {
-                sendStartSerialData(CARB_VACUUM);
+                sendStartSerialData(Command::CARB_VACUUM);
                 int counter = 0;
                 for (uint8_t sensor = 0; sensor < (NUM_SENSORS); sensor++) {
                     intVals.intVal = average[sensor];
