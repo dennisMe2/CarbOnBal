@@ -81,7 +81,7 @@ void actionDisplayExtraMenu() {
                                };
     void (*actions[])() = {&doDeviceInfo, &doAdvanced, &doSplashScreen, &actionReset};
     uint8_t menuSize = 4;
-    handleAdvancedMenu(menu, actions, menuSize, B1100, displayExtraMenuLine);
+    handleAdvancedMenu(menu, actions, menuSize, 0b1100, displayExtraMenuLine);
 }
 
 void actionDisplaySoftwareSettingsMenu() {
@@ -106,7 +106,7 @@ void actionDisplayDisplayMenu() {
                            &doRevs, &doUnits,&doMaxZoom
                           };
     uint8_t menuSize = 7;
-    handleAdvancedMenu(menu, actions, menuSize, B1110100,
+    handleAdvancedMenu(menu, actions, menuSize, 0b1110100,
                        displayDisplayMenuLine);
 }
 
@@ -116,7 +116,7 @@ void actionDisplayCalibrationMenu() {
                                };
     void (*actions[])() = {&actionDisplayViewCalibrationMenu, &actionDisplayCalibrationSensorMenu, &actionDisplayClearCalibrationMenu};
     uint8_t menuSize = 3;
-    handleAdvancedMenu(menu, actions, menuSize, B110,
+    handleAdvancedMenu(menu, actions, menuSize, 0b110,
                        displayCalibrationMenuLine);
 }
 
@@ -127,7 +127,7 @@ void actionDisplayViewCalibrationMenu() {
                                    };
         void (*actions[])() = {&doViewCalibration1, &doViewCalibration2, &doViewCalibration3, &actionCalibrationMax};
         uint8_t menuSize = 4;
-        handleAdvancedMenu(menu, actions, menuSize, B1110,
+        handleAdvancedMenu(menu, actions, menuSize, 0b1110,
                            displayViewCalibrationMenuLine);
     } else if (settings.cylinders == 3) {
         const char *const menu[] = { txtViewSensor2, txtViewSensor3,
@@ -135,13 +135,13 @@ void actionDisplayViewCalibrationMenu() {
                                    };
         void (*actions[])() = {&doViewCalibration1, &doViewCalibration2, &actionCalibrationMax};
         uint8_t menuSize = 3;
-        handleAdvancedMenu(menu, actions, menuSize, B110,
+        handleAdvancedMenu(menu, actions, menuSize, 0b110,
                            displayViewCalibrationMenuLine);
     } else if (settings.cylinders == 2) {
         const char *const menu[] = { txtViewSensor2, txtSetCalibrationMax };
         void (*actions[])() = {&doViewCalibration1, &actionCalibrationMax};
         uint8_t menuSize = 2;
-        handleAdvancedMenu(menu, actions, menuSize, B10,
+        handleAdvancedMenu(menu, actions, menuSize, 0b10,
                            displayViewCalibrationMenuLine);
     }
 }
@@ -360,13 +360,13 @@ void drawMenu(const char *const pointerTable[], int count, int offset) {
 
     if (offset > 0) {
         byte upArrow[8] = {
-            B00100,
-            B01110,
-            B10101,
-            B00100,
-            B00100,
-            B00000,
-            B00000,
+            0b00100,
+            0b01110,
+            0b10101,
+            0b00100,
+            0b00100,
+            0b00000,
+            0b00000,
         };
         lcd_createChar(2, upArrow);
         lcd_setCursor(19, 0);
@@ -376,13 +376,13 @@ void drawMenu(const char *const pointerTable[], int count, int offset) {
     if (offset < count - DISPLAY_ROWS) {
         byte downArrow[8] = {
 
-            B00000,
-            B00000,
-            B00100,
-            B00100,
-            B10101,
-            B01110,
-            B00100,
+            0b00000,
+            0b00000,
+            0b00100,
+            0b00100,
+            0b10101,
+            0b01110,
+            0b00100,
 
         };
         lcd_createChar(3, downArrow);
@@ -479,12 +479,12 @@ void makeChar(byte *character, int value) {
     if (value >= 0) {
         for (int i = 0; i < value; i++) {
             line >>= 1;
-            line |= B10000;
+            line |= 0b10000;
         }
     } else {
         for (int i = 0; i > value; i--) {
             line <<= 1;
-            line |= B00001;
+            line |= 0b00001;
         }
     }
 
