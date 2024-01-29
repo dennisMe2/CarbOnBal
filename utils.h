@@ -42,6 +42,8 @@ const char* unitsAsText();
 void createWaitKeyPressChar();
 void displayKeyPressPrompt();
 settings_t fetchFactoryDefaultSettings();
+void doContrast(int value);
+void doBrightness(int value);
 int buttonPressed();
 void waitForAnyKey();
 void setInputActiveLow(int i);

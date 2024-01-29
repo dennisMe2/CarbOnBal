@@ -32,10 +32,8 @@
 void doConfirmation();
 void doBaudRate();
 void actionBrightness() ;
-void doBrightness(int value);
 void actionContrast();
 void actionContrastButton();
-void doContrast(int value) ;
 void actionSilent();
 void doAdvanced();
 void doSplashScreen();
