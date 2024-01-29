@@ -288,7 +288,7 @@ int doSettingChangerDelay(const char *valueName, int minimum, int maximum,
 int doSettingChooser(const char *valueName, const char *settings[], int count,
                      int startIndex) {
     int index = startIndex;
-    boolean settingChanged = true;
+    bool settingChanged = true;
 
     lcd_clear();
     lcd_setCursor(0, 0);
