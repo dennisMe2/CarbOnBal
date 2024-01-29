@@ -482,7 +482,7 @@ int readSensorCalibrated(int sensor) {
 
 //clear the flash for a single sensor
 void doClearCalibration(int sensor) {
-    for (int i = 0; i < numberOfCalibrationValues; i++) {
+    for (uint16_t i = 0; i < numberOfCalibrationValues; i++) {
         eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i), 0); //write the data directly to EEPROM
     }
 }
@@ -556,7 +556,7 @@ void doCalibrate(int sensor) {
     //shifting an int left by n bits simply gives us n bits of 'virtual' decimal places
     // this is needed for accuracy because EMA calculation works by adding or subtracting relatively small values
     // which would otherwise all be truncated to '0'
-    for (int i = 0; i < numberOfCalibrationValues; i++) {
+    for (uint16_t i = 0; i < numberOfCalibrationValues; i++) {
         values[i] = (int8_t) EEPROM.read(
                         getCalibrationTableOffsetByPosition(sensor, i));
         values[i] <<= shift;
@@ -585,12 +585,12 @@ void doCalibrate(int sensor) {
     //post_shift the values in preparation of writing back to EEPROM
     // we don't need to save the 'decimal places' because they are not needed anymore.
     // so we lose them by shifting them out of range to the right
-    for (int i = 0; i < numberOfCalibrationValues; i++) {
+    for (uint16_t i = 0; i < numberOfCalibrationValues; i++) {
         values[i] >>= shift;
     }
 
     //save calibrations
-    for (int i = 0; i < numberOfCalibrationValues; i++) {
+    for (uint16_t i = 0; i < numberOfCalibrationValues; i++) {
         eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i),
                              (int8_t) values[i]);
     }
@@ -619,7 +619,7 @@ void doViewCalibration(int sensor) {
     setInterrupt(false);
     int values[numberOfCalibrationValues];
 
-    for (int i = 0; i < numberOfCalibrationValues; i++) {
+    for (uint16_t i = 0; i < numberOfCalibrationValues; i++) {
         values[i] = (int8_t) EEPROM.read(
                         getCalibrationTableOffsetByPosition(sensor, i));
     }
@@ -650,7 +650,7 @@ void displayNavArrowsAndOffsets(int valueOffset,
         lcd_printInt(valueOffset + 20);
         lcd_printChar(']');
     }
-    if (valueOffset < numberOfCalibrationValues - 20) {
+    if (valueOffset < static_cast<int16_t>(numberOfCalibrationValues - 20)) {
         (topRightArrowPositionAvailable) ?
         lcd_setCursor(16, 0) : lcd_setCursor(16, 3);
         if ((valueOffset + 20) < 100)
@@ -741,11 +741,11 @@ void displayCalibratedValues(int values[]) {
             valueOffset = 0;
             dataChanged = true;
         } else if ((pressedButton == RIGHT)
-                   && (valueOffset < numberOfCalibrationValues - 20 - 20)) {
+                   && (valueOffset < static_cast<int16_t>(numberOfCalibrationValues - 20 - 20))) {
             valueOffset = (valueOffset + 20);
             dataChanged = true;
         } else if ((pressedButton == RIGHT)
-                   && (valueOffset >= numberOfCalibrationValues - 20 - 20)) {
+                   && (valueOffset >= static_cast<int16_t>(numberOfCalibrationValues - 20 - 20))) {
             valueOffset = (numberOfCalibrationValues - 20);
             dataChanged = true;
         } else {
@@ -789,7 +789,7 @@ void sendEndSerialData(uint8_t counter) {
 void doCalibrationDump() {
     setInterrupt(false);
 
-    for (int i = 0; i < numberOfCalibrationValues; i++) {
+    for (uint16_t i = 0; i < numberOfCalibrationValues; i++) {
         uint8_t counter = 0;
         sendStartSerialData(Command::CALIBRATION);
         Serial.write((int8_t) i);

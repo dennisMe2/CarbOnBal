@@ -62,9 +62,8 @@ enum class Command : byte {
 static const uint8_t numReadings=20;
 static const uint8_t brightnessPin=6;
 static const uint8_t contrastPin=11;
-static const int numberOfCalibrationValues=256;
-static const int calibrationOffset=256; //eeprom base address for calibration data
-
+static const uint16_t numberOfCalibrationValues=256;
+static const uint16_t calibrationOffset=256; //eeprom base address for calibration data
 
 static const uint8_t versionUID = 31; //update when settings_t changes!
 
