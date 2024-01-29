@@ -459,13 +459,6 @@ int getCalibrationTableOffsetByValue(int sensor, int value) {
     return getCalibrationTableOffsetByPosition(sensor, value >> 2);
 }
 
-//only write if the value needs writing (saves write cycles)
-void eepromWriteIfChanged(int address, int8_t data) {
-    if ((uint8_t) data != EEPROM.read(address)) {
-        EEPROM.write(address, (uint8_t) data); 		//write the data to EEPROM
-    }
-}
-
 int readSensorRaw(int sensor) {
     //dummy read did nothing measurable, skip that nonsense
     return (analogRead(inputPin[sensor]));
@@ -482,7 +475,7 @@ int readSensorCalibrated(int sensor) {
 //clear the flash for a single sensor
 void doClearCalibration(int sensor) {
     for (uint16_t i = 0; i < numberOfCalibrationValues; i++) {
-        eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i), 0); //write the data directly to EEPROM
+        EEPROM.update(getCalibrationTableOffsetByPosition(sensor, i), 0); //write the data directly to EEPROM
     }
 }
 
@@ -590,8 +583,8 @@ void doCalibrate(int sensor) {
 
     //save calibrations
     for (uint16_t i = 0; i < numberOfCalibrationValues; i++) {
-        eepromWriteIfChanged(getCalibrationTableOffsetByPosition(sensor, i),
-                             (int8_t) values[i]);
+        EEPROM.update(getCalibrationTableOffsetByPosition(sensor, i),
+                      (int8_t) values[i]);
     }
 
     lcd_clear();

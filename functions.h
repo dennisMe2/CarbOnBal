@@ -31,7 +31,6 @@ int readSensorRaw(int sensor);
 int readSensorCalibrated(int sensor);
 int getCalibrationOffset(int sensor, int value);
 void updateRpmDisplay(unsigned int rpm);
-void eepromWriteIfChanged(int address, int8_t data);
 int detectAmbient();
 void serialOut(unsigned int value[]);
 void serialOutBytes(unsigned int value[]);
