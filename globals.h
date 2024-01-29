@@ -57,7 +57,6 @@
 #define LANGUAGE "lang_en_gb.h"			//select a different language file to change translations
 //#define LANGUAGE "lang_nl_nl.h"
 static const uint8_t numReadings=20;
-static const int maxValue=1024;
 static const uint8_t brightnessPin=6;
 static const uint8_t contrastPin=11;
 static const int numberOfCalibrationValues=256;
