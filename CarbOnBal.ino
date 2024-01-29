@@ -348,7 +348,7 @@ void lcdBarsSmooth(unsigned int value[]) {
     char bars[DISPLAY_COLS + 1];
 
     for (int sensor = 0; sensor < settings.cylinders; sensor++) {
-        int TotalNumberOfLitSegments = 100000L / 1024 * value[sensor] / 1000; // integer math works faster, so we multiply by 1000 and divide later, powers of two would be even faster
+        int TotalNumberOfLitSegments = 100000L / analogReadRange * value[sensor] / 1000; // integer math works faster, so we multiply by 1000 and divide later, powers of two would be even faster
         int numberOfLitBars = TotalNumberOfLitSegments / segmentsInCharacter;
         int numberOfLitSegments = TotalNumberOfLitSegments
                                   % segmentsInCharacter;
@@ -523,7 +523,7 @@ void doCalibrate(int sensor) {
     const int factor = 4;
     int maxValue = -127;
     int minValue = 127;
-    int lowestCalibratedValue = 1024;
+    int lowestCalibratedValue = analogReadRange;
     int readingStandardPre, readingSensor, readingStandardPost;
     setInterrupt(false);
 
@@ -868,8 +868,8 @@ void doRevs() {
     unsigned long previousPeak = millis();
     unsigned long lastUpdateTime = millis();
 
-    int measurement = 1024;
-    int previous = 1024;
+    int measurement = analogReadRange;
+    int previous = analogReadRange;
     int descentCount = 0;
     int ascentCount = 0;
     int factor = settings.rpmDamping;

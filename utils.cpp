@@ -28,7 +28,7 @@
 #include LANGUAGE
 #include "lcdWrapper.h"
 
-float millibarFactor = (P5VSENSOR - P0VSENSOR) / 1024.00; //conversion factor to convert the arduino readings to millibars
+float millibarFactor = (P5VSENSOR - P0VSENSOR) / static_cast<float>(analogReadRange); //conversion factor to convert the arduino readings to millibars
 
 byte buttonState[NUM_BUTTONS] = { HIGH, HIGH, HIGH, HIGH }; //array for recording the state of buttons
 byte buttonCount[NUM_BUTTONS] = { 0, 0, 0, 0 }; //array for recording the state of buttons

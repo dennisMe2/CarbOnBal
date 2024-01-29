@@ -59,6 +59,7 @@ enum class Command : byte {
 
 #define LANGUAGE "lang_en_gb.h"			//select a different language file to change translations
 //#define LANGUAGE "lang_nl_nl.h"
+static const uint16_t analogReadRange=1024;// The Nano has a 10-bit ADC
 static const uint8_t numReadings=20;
 static const uint8_t brightnessPin=6;
 static const uint8_t contrastPin=11;
