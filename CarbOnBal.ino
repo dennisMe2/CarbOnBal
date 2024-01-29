@@ -449,15 +449,14 @@ void doZeroCalibrations() {
     doConfirmation();
 }
 
-//determine where the calibration value is stored in EEPROM depending on the sample value
-int getCalibrationTableOffsetByValue(int sensor, int value) {
-    return calibrationOffset + ((sensor - 1) * numberOfCalibrationValues)
-           + (value >> 2);
-}
-
 //determine where in EEPROM the calibration value is stored depending on the position
 int getCalibrationTableOffsetByPosition(int sensor, int pos) {
     return calibrationOffset + ((sensor - 1) * numberOfCalibrationValues) + pos;
+}
+
+//determine where the calibration value is stored in EEPROM depending on the sample value
+int getCalibrationTableOffsetByValue(int sensor, int value) {
+    return getCalibrationTableOffsetByPosition(sensor, value >> 2);
 }
 
 //only write if the value needs writing (saves write cycles)
