@@ -30,7 +30,6 @@
 #include "lcdWrapper.h"
 #include "utils.h"
 
-extern settings_t settings;
 extern bool quitMenu;
 
 void doConfirmation() {
