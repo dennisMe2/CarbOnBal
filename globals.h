@@ -90,11 +90,11 @@ struct settings_t {
 };
 
 union longAverages {
-    long longVal;
-    int intVal[2];
+    int32_t longVal;
+    int16_t intVal[2];
 };
 union intByteUnion {
-    unsigned int intVal;
+    uint16_t intVal;
     uint8_t byteVal[2];
 };
 
