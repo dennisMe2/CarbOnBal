@@ -48,7 +48,6 @@ void setOutputHigh(int i);
 int intExponentialMovingAverage(int shift, int factor,int average, int input);
 long longExponentialMovingAverage(int factor, long average, int input);
 long mulExponentialMovingAverage( long average, int input);
-unsigned long crawlingAverage(unsigned int factor, unsigned long average, unsigned int input);
 float floatExponentialMovingAverage(float weight, float average, int input);
 int delta(int first, int second);
 unsigned int maxVal( unsigned int value[]);
