@@ -74,9 +74,6 @@ void setup() {
     setInputActiveLow(RIGHT);                //short out the pins if setup wrong
     setInputActiveLow(CANCEL);
 
-    analogWrite(brightnessPin, settings.brightness);  //brightness is PWM driven
-    analogWrite(contrastPin, settings.contrast); //contrast is PWM with smoothing (R/C network) to prevent flicker
-
     ambientPressure = detectAmbient(); //set ambient pressure (important because it varies with weather and altitude)
 
     //the computation for the interrunpt timing is as follows:
