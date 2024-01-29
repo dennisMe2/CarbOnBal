@@ -176,11 +176,11 @@ settings_t fetchFactoryDefaultSettings() {
     return settings;
 }
 
-void doContrast(int value) {
+void doContrast(uint8_t value) {
     analogWrite(contrastPin, value);
 }
 
-void doBrightness(int value) {
+void doBrightness(uint8_t value) {
     analogWrite(brightnessPin, value);
 }
 

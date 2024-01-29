@@ -198,7 +198,7 @@ int doBasicSettingChanger(const char *valueName, int minimum, int maximum,
 }
 
 int doSettingChanger(const char *valueName, int minimum, int maximum,
-                     int startValue, int steps, void (*func)(int i)) {
+                     int startValue, int steps, void (*func)(uint8_t i)) {
     return doSettingChangerDelay(valueName, minimum, maximum, startValue, steps,
                                  func, 0);
 }
@@ -206,7 +206,7 @@ int doSettingChanger(const char *valueName, int minimum, int maximum,
 // display a settings change screen that calls a function every time the value changes for an immediate response
 // normally used for setting contrast and brightness
 int doSettingChangerDelay(const char *valueName, int minimum, int maximum,
-                          int startValue, int steps, void (*func)(int i), unsigned int delayMs) {
+                          int startValue, int steps, void (*func)(uint8_t i), unsigned int delayMs) {
     unsigned long startTime = millis();
     int value = startValue;
     lcd_clear();
