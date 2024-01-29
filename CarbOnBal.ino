@@ -606,7 +606,7 @@ void doViewCalibration(int sensor) {
 }
 
 //display indicator arrows and numeric offsets so we don't get lost in the graph of calibration values.
-void displayNavArrowsAndOffsets(int valueOffset,
+void displayNavArrowsAndOffsets(uint16_t valueOffset,
                                 bool topLeftArrowPositionAvailable,
                                 bool topRightArrowPositionAvailable) {
     if (valueOffset == 0) {
@@ -627,7 +627,7 @@ void displayNavArrowsAndOffsets(int valueOffset,
         lcd_printInt(valueOffset + 20);
         lcd_printChar(']');
     }
-    if (valueOffset < static_cast<int16_t>(numberOfCalibrationValues - 20)) {
+    if (valueOffset < numberOfCalibrationValues - 20) {
         (topRightArrowPositionAvailable) ?
         lcd_setCursor(16, 0) : lcd_setCursor(16, 3);
         if ((valueOffset + 20) < 100)
@@ -643,7 +643,7 @@ void displayNavArrowsAndOffsets(int valueOffset,
 // Note: if all sensors are showing the same type of displacement that means that sensor 0
 // is off by that much in the opposite direction.
 void displayCalibratedValues(int values[]) {
-    int valueOffset = 0;
+    uint16_t valueOffset = 0;
     int numberOfColumns = 20;
     int segmentsPerCharacter = 8;
     int numberOfCharacters = 4;
@@ -718,11 +718,11 @@ void displayCalibratedValues(int values[]) {
             valueOffset = 0;
             dataChanged = true;
         } else if ((pressedButton == RIGHT)
-                   && (valueOffset < static_cast<int16_t>(numberOfCalibrationValues - 20 - 20))) {
+                   && (valueOffset < numberOfCalibrationValues - 20 - 20)) {
             valueOffset = (valueOffset + 20);
             dataChanged = true;
         } else if ((pressedButton == RIGHT)
-                   && (valueOffset >= static_cast<int16_t>(numberOfCalibrationValues - 20 - 20))) {
+                   && (valueOffset >= numberOfCalibrationValues - 20 - 20)) {
             valueOffset = (numberOfCalibrationValues - 20);
             dataChanged = true;
         } else {
