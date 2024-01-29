@@ -28,6 +28,7 @@
 #include <Arduino.h>
 #include "globals.h"
 void setInterrupt(bool enabled);
+void setupInterruptTimer();
 void resetAverages();
 float convertToPreferredUnits(int value, int ambient);
 float differenceToPreferredUnits(int value);
