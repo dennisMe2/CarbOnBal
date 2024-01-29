@@ -817,7 +817,6 @@ void doDataDumpBinary() {
     lcd_clear();
     lcd_setCursor(0, 1);
     lcd_print(txtConnectSerial);
-    //Serial.begin(BAUD_RATE);
     setInterrupt(true);
 
     if (Serial.availableForWrite()) {
