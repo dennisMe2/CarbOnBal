@@ -302,16 +302,6 @@ float floatExponentialMovingAverage(float weight, float average, int input) {
     return (average);
 }
 
-// calculate the absolute difference between two integers
-int delta(int first, int second) {
-    if (first >= second) {
-        return first - second;
-    } else {
-        return second - first;
-    }
-}
-
-// return the highest value from a given array
 unsigned int maxVal(unsigned int value[]) {
     unsigned int maxValue = 0;
     for (int index = 0; index < NUM_SENSORS; index++) {

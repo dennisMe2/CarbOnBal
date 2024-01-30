@@ -52,7 +52,6 @@ int intExponentialMovingAverage(int shift, int factor,int average, int input);
 long longExponentialMovingAverage(int factor, long average, int input);
 long mulExponentialMovingAverage( long average, int input);
 float floatExponentialMovingAverage(float weight, float average, int input);
-int delta(int first, int second);
 unsigned int maxVal( unsigned int value[]);
 unsigned int minVal( unsigned int value[]);
 int freeMemory();
