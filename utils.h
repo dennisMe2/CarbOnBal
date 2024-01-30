@@ -55,6 +55,5 @@ float floatExponentialMovingAverage(float weight, float average, int input);
 unsigned int maxVal( unsigned int value[]);
 unsigned int minVal( unsigned int value[]);
 int freeMemory();
-unsigned long getBaud(int index);
 
 #endif
