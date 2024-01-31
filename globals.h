@@ -41,13 +41,16 @@
 #define DISPLAY_COLS 20
 #define DISPLAY_ROWS 4
 
-#define START_PACKET 0xfe
-#define REQUEST_PACKET 0xfd
-#define CARB_VACUUM 0xe0
-#define CALIBRATION 0xe1
-#define SETTINGS 0xe2
-#define DIAGNOSTICS 0xe3
-#define END_DATA 0xe4
+enum class Command : byte {
+    NO_COMMAND = 0x0,
+    START_PACKET = 0xfe,
+    REQUEST_PACKET = 0xfd,
+    CARB_VACUUM = 0xe0,
+    CALIBRATION = 0xe1,
+    SETTINGS = 0xe2,
+    DIAGNOSTICS = 0xe3,
+    END_DATA = 0xe4
+};
 
 #define BAUD_RATE 230400
 
@@ -56,15 +59,46 @@
 
 #define LANGUAGE "lang_en_gb.h"			//select a different language file to change translations
 //#define LANGUAGE "lang_nl_nl.h"
+static const uint16_t analogReadRange=1024;// The Nano has a 10-bit ADC
 static const uint8_t numReadings=20;
-static const int maxValue=1024;
 static const uint8_t brightnessPin=6;
 static const uint8_t contrastPin=11;
-static const int numberOfCalibrationValues=256;
-static const int calibrationOffset=256; //eeprom base address for calibration data
-
+static const uint16_t numberOfCalibrationValues=256;
+static const uint16_t calibrationOffset=256; //eeprom base address for calibration data
 
 static const uint8_t versionUID = 31; //update when settings_t changes!
+
+enum class PressureUnit : uint8_t {
+    RAW, RAW_DESCENDING,
+    MILLIBAR_HPA, MILLIBAR_HPA_DESCENDING,
+    CM_MERCURY, CM_MERCURY_DESCENDING,
+    INCH_MERCURY, INCH_MERCURY_DESCENDING,
+};
+
+enum class GraphType : uint8_t {
+    BARS, BARS_SMOOTH, DIAGNOSTIC,
+};
+
+/* button1 has three user-settable modes */
+enum class Button1Mode : uint8_t {
+    CONTRAST,
+    DAMPING,
+    RESET_AVERAGING,
+};
+
+/* button2 has three user-settable modes */
+enum class Button2Mode : uint8_t {
+    BRIGHTNESS,
+    RPM_DISPLAY,
+    RPM_DAMPING,
+};
+
+/* button3 has three user-settable modes */
+enum class Button3Mode : uint8_t {
+    FREEZE_DISPLAY,
+    RESET_MEASUREMENTS,
+    RPM_DISPLAY /* NOTE:overlap with button2 */
+};
 
 //this struct is used to store settings in NVRAM
 //does not use bit fields because these cause more writes to the same NVRAM locations
@@ -76,26 +110,26 @@ struct settings_t {
     bool splashScreen;//bool is 8 bits on Arduino
     uint8_t cylinders;
     uint8_t master;
-    uint8_t button1;
-    uint8_t button2;
-    uint8_t button3;
+    enum Button1Mode button1;
+    enum Button2Mode button2;
+    enum Button3Mode button3;
     uint8_t contrast;
     uint8_t brightness;
-    uint8_t graphType;
+    enum GraphType graphType;
     uint8_t rpmDamping;
-    uint8_t units;
+    enum PressureUnit units;
     uint8_t zoom;
     uint8_t calibrationMax;
     uint8_t damping;
 };
 
-union longAverages{
-	long longVal;
-	int intVal[2];
+union longAverages {
+    int32_t longVal;
+    int16_t intVal[2];
 };
-union intByteUnion{
-	unsigned int intVal;
-	uint8_t byteVal[2];
+union intByteUnion {
+    uint16_t intVal;
+    uint8_t byteVal[2];
 };
 
 extern int readingCount[NUM_SENSORS];

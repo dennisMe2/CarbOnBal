@@ -28,6 +28,7 @@
 #include <Arduino.h>
 #include "globals.h"
 void setInterrupt(bool enabled);
+void setupInterruptTimer();
 void resetAverages();
 float convertToPreferredUnits(int value, int ambient);
 float differenceToPreferredUnits(int value);
@@ -41,6 +42,8 @@ const char* unitsAsText();
 void createWaitKeyPressChar();
 void displayKeyPressPrompt();
 settings_t fetchFactoryDefaultSettings();
+void doContrast(uint8_t value);
+void doBrightness(uint8_t value);
 int buttonPressed();
 void waitForAnyKey();
 void setInputActiveLow(int i);
@@ -48,12 +51,9 @@ void setOutputHigh(int i);
 int intExponentialMovingAverage(int shift, int factor,int average, int input);
 long longExponentialMovingAverage(int factor, long average, int input);
 long mulExponentialMovingAverage( long average, int input);
-unsigned long crawlingAverage(unsigned int factor, unsigned long average, unsigned int input);
 float floatExponentialMovingAverage(float weight, float average, int input);
-int delta(int first, int second);
 unsigned int maxVal( unsigned int value[]);
 unsigned int minVal( unsigned int value[]);
 int freeMemory();
-unsigned long getBaud(int index);
 
 #endif

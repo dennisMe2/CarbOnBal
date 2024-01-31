@@ -25,7 +25,7 @@
 #ifndef LANG_H_INCLUDED
 #define LANG_H_INCLUDED
 
-    //keep these alphabetical,helps to identify duplicates and find strings in a long list
+//keep these alphabetical,helps to identify duplicates and find strings in a long list
 
 
 const char txt100Max[]				PROGMEM = "100 = max";
